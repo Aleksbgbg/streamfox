@@ -27,14 +27,14 @@
             return new VideoId(long.Parse(videoId));
         }
 
-        public async Task<ByteStream> Download(VideoId videoId)
+        public async Task<byte[]> Download(VideoId videoId)
         {
             HttpClient httpClient = _webApplicationFactory.CreateClient();
 
             HttpResponseMessage response = await httpClient.GetAsync($"/videos/{videoId.Value}");
             byte[] bytes = await response.Content.ReadAsByteArrayAsync();
 
-            return new ByteStream(bytes);
+            return bytes;
         }
     }
 }

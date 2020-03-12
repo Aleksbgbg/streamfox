@@ -21,9 +21,9 @@
             byte[] readVideoBytes = await new File("Acceptance/VideoHosting/Video.mp4").ReadBytes();
 
             VideoId videoId = await _videoHost.Upload(readVideoBytes);
-            ByteStream downloadedVideoBytes = await _videoHost.Download(videoId);
+            byte[] downloadedVideoBytes = await _videoHost.Download(videoId);
 
-            Assert.Equal(readVideoBytes, downloadedVideoBytes.Bytes);
+            Assert.Equal(readVideoBytes, downloadedVideoBytes);
         }
     }
 }
