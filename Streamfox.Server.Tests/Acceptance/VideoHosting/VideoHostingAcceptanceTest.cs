@@ -8,22 +8,22 @@
 
     public class VideoHostingAcceptanceTest : IClassFixture<WebApplicationFactory<Startup>>
     {
-        private readonly VideoHost _videoHost;
+        private readonly ApplicationHost _applicationHost;
 
         public VideoHostingAcceptanceTest(WebApplicationFactory<Startup> webApplicationFactory)
         {
-            _videoHost = new VideoHost(webApplicationFactory);
+            _applicationHost = new ApplicationHost(webApplicationFactory);
         }
 
         [Fact]
         public async Task UploadVideo_ThenDownload_ExpectExactCopyDownloaded()
         {
-            byte[] readVideoBytes = await new File("Acceptance/VideoHosting/Video.mp4").ReadBytes();
+            byte[] videoBytes = await new File("Acceptance/VideoHosting/Video.mp4").ReadBytes();
 
-            VideoId videoId = await _videoHost.Upload(readVideoBytes);
-            byte[] downloadedVideoBytes = await _videoHost.Download(videoId);
+            VideoId videoId = await _applicationHost.Post("/videos", videoBytes);
+            byte[] downloadedVideoBytes = await _applicationHost.Get($"/videos/{videoId.Value}");
 
-            Assert.Equal(readVideoBytes, downloadedVideoBytes);
+            Assert.Equal(videoBytes, downloadedVideoBytes);
         }
     }
 }
