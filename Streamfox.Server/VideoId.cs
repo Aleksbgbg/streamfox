@@ -1,6 +1,6 @@
 ﻿namespace Streamfox.Server
 {
-    public class VideoId
+    public readonly struct VideoId
     {
         public VideoId(long value)
         {
