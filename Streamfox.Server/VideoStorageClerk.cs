@@ -1,6 +1,7 @@
 ﻿namespace Streamfox.Server
 {
     using System.IO;
+    using System.Threading.Tasks;
 
     public class VideoStorageClerk
     {
@@ -14,10 +15,10 @@
             _videoSaver = videoSaver;
         }
 
-        public VideoId StoreVideo(Stream videoStream)
+        public async Task<VideoId> StoreVideo(Stream videoStream)
         {
             VideoId videoId = _videoIdGenerator.GenerateVideoId();
-            _videoSaver.SaveVideo(videoId.ToString(), videoStream);
+            await _videoSaver.SaveVideo(videoId.ToString(), videoStream);
             return videoId;
         }
     }
