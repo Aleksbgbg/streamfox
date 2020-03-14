@@ -4,6 +4,8 @@
 
     using Microsoft.AspNetCore.Mvc.Testing;
 
+    using Streamfox.Server.VideoManagement;
+
     using Xunit;
 
     public class VideoHostingAcceptanceTest : IClassFixture<WebApplicationFactory<Startup>>

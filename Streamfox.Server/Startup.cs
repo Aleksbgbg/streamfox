@@ -4,6 +4,8 @@ namespace Streamfox.Server
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
 
+    using Streamfox.Server.Controllers.Formatters;
+
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)

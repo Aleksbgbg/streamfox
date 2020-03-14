@@ -7,6 +7,8 @@
 
     using Microsoft.AspNetCore.Mvc.Testing;
 
+    using Streamfox.Server.VideoManagement;
+
     public class ApplicationHost
     {
         private readonly WebApplicationFactory<Startup> _webApplicationFactory;

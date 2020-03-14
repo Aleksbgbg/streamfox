@@ -2,6 +2,9 @@
 {
     using Microsoft.Extensions.DependencyInjection;
 
+    using Streamfox.Server.VideoManagement;
+    using Streamfox.Server.VideoManagement.Persistence;
+
     public static class BootstrappingExtensions
     {
         public static IServiceCollection AddVideoHosting(this IServiceCollection services)
