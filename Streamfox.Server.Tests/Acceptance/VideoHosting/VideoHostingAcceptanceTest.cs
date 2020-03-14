@@ -21,7 +21,7 @@
             byte[] videoBytes = await new File("Acceptance/VideoHosting/Video.mp4").ReadBytes();
 
             VideoId videoId = await _applicationHost.Post("/videos", videoBytes);
-            byte[] downloadedVideoBytes = await _applicationHost.Get($"/videos/{videoId.Value}");
+            byte[] downloadedVideoBytes = await _applicationHost.Get($"/videos/{videoId}");
 
             Assert.Equal(videoBytes, downloadedVideoBytes);
         }

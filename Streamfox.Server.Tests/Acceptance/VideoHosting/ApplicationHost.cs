@@ -2,6 +2,7 @@
 {
     using System.Linq;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc.Testing;
@@ -29,9 +30,16 @@
         {
             HttpClient httpClient = _webApplicationFactory.CreateClient();
 
-            HttpResponseMessage response = await httpClient.PostAsync(endpoint, new ByteArrayContent(content));
+            ByteArrayContent byteArrayContent = new ByteArrayContent(content);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+            {
+                Content = byteArrayContent
+            };
+            byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
-            string downloadUrl = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+
+            string downloadUrl = response.Headers.Location.OriginalString;
             string videoId = downloadUrl.Split('/').Last();
 
             return new VideoId(long.Parse(videoId));
