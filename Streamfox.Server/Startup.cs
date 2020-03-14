@@ -8,10 +8,18 @@ namespace Streamfox.Server
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers(options =>
+            {
+                options.InputFormatters.Add(new RawByteStreamBodyFormatter());
+                options.InputFormatters.Add(new VideoIdParameterFormatter());
+            });
+            services.AddVideoHosting();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseRouting();
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }
 }
