@@ -1,6 +1,7 @@
 ﻿namespace Streamfox.Server
 {
     using System.IO;
+    using System.Threading.Tasks;
 
     public class VideoClerkFacade : IVideoClerk
     {
@@ -19,7 +20,7 @@
             return _videoRetrievalClerk.RetrieveVideo(videoId);
         }
 
-        public VideoId StoreVideo(Stream videoStream)
+        public Task<VideoId> StoreVideo(Stream videoStream)
         {
             return _videoStorageClerk.StoreVideo(videoStream);
         }
