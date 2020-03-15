@@ -1,12 +1,14 @@
 ﻿namespace Streamfox.Server.Tests.Acceptance.VideoHosting
 {
-    using System.Linq;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc.Testing;
 
+    using Newtonsoft.Json;
+
+    using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.VideoManagement;
 
     public class ApplicationHost
@@ -40,11 +42,11 @@
             byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
             HttpResponseMessage response = await httpClient.SendAsync(request);
+            string responseString = await response.Content.ReadAsStringAsync();
 
-            string downloadUrl = response.Headers.Location.OriginalString;
-            string videoId = downloadUrl.Split('/').Last();
+            VideoMetadata videoMetadata = JsonConvert.DeserializeObject<VideoMetadata>(responseString);
 
-            return new VideoId(long.Parse(videoId));
+            return new VideoId(long.Parse(videoMetadata.VideoId));
         }
     }
 }

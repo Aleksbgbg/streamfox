@@ -5,6 +5,7 @@
 
     using Microsoft.AspNetCore.Mvc;
 
+    using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.Controllers.Results;
     using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
@@ -37,7 +38,7 @@
         public async Task<CreatedResult> PostVideo([FromBody] Stream stream)
         {
             VideoId videoId = await _videoClerk.StoreVideo(stream);
-            return Created($"/videos/{videoId}", null);
+            return Created($"/videos/{videoId}", new VideoMetadata(videoId));
         }
 
         private static StreamResult Stream(Stream stream)

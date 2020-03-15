@@ -8,6 +8,7 @@
     using Moq;
 
     using Streamfox.Server.Controllers;
+    using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.Controllers.Results;
     using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
@@ -41,6 +42,20 @@
 
             Assert.Equal("/videos/123", result1.Location);
             Assert.Equal("/videos/456", result2.Location);
+        }
+
+        [Fact]
+        public async Task PostVideo_ReturnsIdInMetadata()
+        {
+            Stream videoStream = new MemoryStream(new byte[] { 1, 2, 3 });
+            _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
+                           .Returns(Task.FromResult(new VideoId(987)));
+
+            CreatedResult result = await _videoController.PostVideo(videoStream);
+
+            VideoMetadata videoMetadata = result.Value as VideoMetadata;
+            Assert.IsType<VideoMetadata>(videoMetadata);
+            Assert.Equal("987", videoMetadata.VideoId);
         }
 
         [Fact]
