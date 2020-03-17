@@ -21,15 +21,16 @@
         {
             _fileSystemCheckerMock = new Mock<IFileSystemChecker>();
             _fileSystemManipulatorMock = new Mock<IFileSystemManipulator>();
-            _videoLoaderFromDisk = new VideoLoaderFromDisk(_fileSystemCheckerMock.Object, _fileSystemManipulatorMock.Object);
+            _videoLoaderFromDisk = new VideoLoaderFromDisk(
+                    _fileSystemCheckerMock.Object,
+                    _fileSystemManipulatorMock.Object);
         }
 
         [Fact]
         public void LoadsExistingLabel()
         {
+            SetupFilesExists("ExistingLabel");
             Stream fileStream = new MemoryStream(new byte[] { 33, 44, 55 });
-            _fileSystemCheckerMock.Setup(checker => checker.FileExists("ExistingLabel"))
-                                  .Returns(true);
             _fileSystemManipulatorMock.Setup(manipulator => manipulator.OpenFile("ExistingLabel"))
                                       .Returns(fileStream);
 
@@ -42,12 +43,27 @@
         [Fact]
         public void ReturnsEmptyWhenLabelDoesNotExist()
         {
-            _fileSystemCheckerMock.Setup(checker => checker.FileExists("NonExistingLabel"))
-                                  .Returns(false);
+            SetupFileDoesNotExist("NonExistingLabel");
 
             Optional<Stream> loadedStream = _videoLoaderFromDisk.LoadVideo("NonExistingLabel");
 
             Assert.False(loadedStream.HasValue, "Video loaded when label does not exist");
+        }
+
+        private void SetupFilesExists(string label)
+        {
+            SetupFileExistence(label, exists: true);
+        }
+
+        private void SetupFileDoesNotExist(string label)
+        {
+            SetupFileExistence(label, exists: false);
+        }
+
+        private void SetupFileExistence(string label, bool exists)
+        {
+            _fileSystemCheckerMock.Setup(checker => checker.FileExists(label))
+                                  .Returns(exists);
         }
     }
 }
