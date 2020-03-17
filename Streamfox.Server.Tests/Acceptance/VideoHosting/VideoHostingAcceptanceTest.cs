@@ -1,5 +1,7 @@
 ﻿namespace Streamfox.Server.Tests.Acceptance.VideoHosting
 {
+    using System;
+    using System.IO;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,13 +10,18 @@
 
     using Xunit;
 
-    public class VideoHostingAcceptanceTest : IClassFixture<WebApplicationFactory<Startup>>
+    public class VideoHostingAcceptanceTest : IClassFixture<WebApplicationFactory<Startup>>, IDisposable
     {
         private readonly ApplicationHost _applicationHost;
 
         public VideoHostingAcceptanceTest(WebApplicationFactory<Startup> webApplicationFactory)
         {
             _applicationHost = new ApplicationHost(webApplicationFactory);
+        }
+
+        public void Dispose()
+        {
+            Directory.Delete("Videos", recursive: true);
         }
 
         [Fact]
