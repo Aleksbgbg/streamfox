@@ -27,11 +27,7 @@
             ModelMetadata modelMetadata =
                     new EmptyModelMetadataProvider().GetMetadataForType(typeof(void));
 
-            return new InputFormatterContext(httpContext,
-                                             modelName: string.Empty,
-                                             modelState: new ModelStateDictionary(),
-                                             modelMetadata,
-                                             readerFactory: (_, __) => TextReader.Null);
+            return InputFormatterContextFor(httpContext, modelMetadata);
         }
 
         public static InputFormatterContext InputFormatterContextFor(
