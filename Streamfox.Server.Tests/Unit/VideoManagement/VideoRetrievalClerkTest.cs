@@ -18,24 +18,22 @@
         public VideoRetrievalClerkTest()
         {
             _videoLoaderMock = new Mock<IVideoLoader>();
-            _videoLoaderMock.Setup(loader => loader.LoadVideo(It.IsAny<string>()))
-                            .Returns(Optional<Stream>.Empty());
-
             _videoRetrievalClerk = new VideoRetrievalClerk(_videoLoaderMock.Object);
         }
 
-        [Fact]
-        public void RetrievesExistingVideo()
+        [Theory]
+        [InlineData(123)]
+        [InlineData(456)]
+        public void RetrievesVideoByUsingIdAsLabel(long videoIdValue)
         {
-            VideoId videoId = new VideoId(123);
-            Stream stream = TestUtils.MockStream();
-            _videoLoaderMock.Setup(loader => loader.LoadVideo("123"))
-                            .Returns(Optional<Stream>.Of(stream));
+            VideoId videoId = new VideoId(videoIdValue);
+            Optional<Stream> videoStream = Optional<Stream>.Of(TestUtils.MockStream());
+            _videoLoaderMock.Setup(loader => loader.LoadVideo(videoId.ToString()))
+                            .Returns(videoStream);
 
-            Optional<Stream> videoStream = _videoRetrievalClerk.RetrieveVideo(videoId);
+            Optional<Stream> videoStreamResult = _videoRetrievalClerk.RetrieveVideo(videoId);
 
-            Assert.True(videoStream.HasValue, "No video retrieved");
-            Assert.Equal(stream, videoStream.Value);
+            Assert.Same(videoStream, videoStreamResult);
         }
     }
 }
