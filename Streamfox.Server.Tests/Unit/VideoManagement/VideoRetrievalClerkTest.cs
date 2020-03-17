@@ -28,7 +28,7 @@
         public void RetrievesExistingVideo()
         {
             VideoId videoId = new VideoId(123);
-            Stream stream = TestUtil.MockStream();
+            Stream stream = TestUtils.MockStream();
             _videoLoaderMock.Setup(loader => loader.LoadVideo("123"))
                             .Returns(Optional<Stream>.Of(stream));
 

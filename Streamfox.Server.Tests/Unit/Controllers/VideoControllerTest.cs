@@ -62,7 +62,7 @@
         public void GetExistingVideo_ReturnsVideoStream()
         {
             VideoId videoId = new VideoId(123);
-            Stream videoStream = TestUtil.MockStream();
+            Stream videoStream = TestUtils.MockStream();
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
                            .Returns(Optional<Stream>.Of(videoStream));
 

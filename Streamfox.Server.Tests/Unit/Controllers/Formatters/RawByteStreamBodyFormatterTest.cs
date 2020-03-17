@@ -5,7 +5,6 @@
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc.Formatters;
-    using Microsoft.AspNetCore.Mvc.ModelBinding;
 
     using Streamfox.Server.Controllers.Formatters;
 
@@ -21,43 +20,24 @@
         }
 
         [Fact]
-        public void SupportsOctetStreamContentType()
-        {
-            Assert.Contains("application/octet-stream", _rawByteStreamBodyFormatter.SupportedMediaTypes);
-        }
-
-        [Fact]
         public void CanReadOctetStream()
         {
-            Assert.True(_rawByteStreamBodyFormatter.CanRead(ContextForMediaType("application/octet-stream")));
+            Assert.True(
+                    _rawByteStreamBodyFormatter.CanRead(
+                            ContextForMediaType("application/octet-stream")));
         }
 
-        [Fact]
-        public async Task ReadByteArray123()
+        [Theory]
+        [InlineData(new byte[] { 1, 2, 3 })]
+        [InlineData(new byte[] { 4, 5, 6 })]
+        public async Task ReadByteArray(byte[] bytes)
         {
-            byte[] bytes = { 1, 2, 3 };
-
-            InputFormatterResult response =
-                    await _rawByteStreamBodyFormatter
-                            .ReadRequestBodyAsync(ContextForMediaTypeWithContent("application/octet-stream", bytes));
+            InputFormatterResult response = await _rawByteStreamBodyFormatter.ReadRequestBodyAsync(
+                    ContextForMediaTypeWithContent("application/octet-stream", bytes));
 
             Stream stream = response.Model as Stream;
             Assert.NotNull(stream);
-            Assert.Equal(bytes, TestUtil.ReadStreamBytes(stream));
-        }
-
-        [Fact]
-        public async Task ReadByteArray456()
-        {
-            byte[] bytes = { 4, 5, 6 };
-
-            InputFormatterResult response =
-                    await _rawByteStreamBodyFormatter
-                            .ReadRequestBodyAsync(ContextForMediaTypeWithContent("application/octet-stream", bytes));
-
-            Stream stream = response.Model as Stream;
-            Assert.NotNull(stream);
-            Assert.Equal(bytes, TestUtil.ReadStreamBytes(stream));
+            Assert.Equal(bytes, TestUtils.ReadStreamBytes(stream));
         }
 
         private static InputFormatterContext ContextForMediaType(string mediaType)
@@ -65,27 +45,17 @@
             HttpContext httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = mediaType;
 
-            return InputFormatterContextFor(httpContext);
+            return TestUtils.InputFormatterContextFor(httpContext);
         }
 
-        private static InputFormatterContext ContextForMediaTypeWithContent(string mediaType, byte[] content)
+        private static InputFormatterContext ContextForMediaTypeWithContent(
+                string mediaType, byte[] content)
         {
             HttpContext httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = mediaType;
             httpContext.Request.Body = new MemoryStream(content);
 
-            return InputFormatterContextFor(httpContext);
-        }
-
-        private static InputFormatterContext InputFormatterContextFor(HttpContext httpContext)
-        {
-            ModelMetadata modelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(void));
-
-            return new InputFormatterContext(httpContext,
-                                             modelName: string.Empty,
-                                             modelState: new ModelStateDictionary(),
-                                             modelMetadata,
-                                             readerFactory: (_, __) => TextReader.Null);
+            return TestUtils.InputFormatterContextFor(httpContext);
         }
     }
 }
