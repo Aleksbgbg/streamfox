@@ -1,5 +1,6 @@
 ﻿namespace Streamfox.Server.Tests.Unit.Controllers
 {
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
 
@@ -27,42 +28,44 @@
             _videoController = new VideoController(_videoClerkMock.Object);
         }
 
-        [Fact]
-        public async Task PostVideoTwice_ReturnSeparateCreatedResultsWithVideoGetUri()
+        public static IEnumerable<object[]> VideoCases => new[]
         {
-            Stream videoStream1 = new MemoryStream(new byte[] { 1, 2, 3 });
-            Stream videoStream2 = new MemoryStream(new byte[] { 4, 5, 6 });
-            _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream1))
-                           .Returns(Task.FromResult(new VideoId(123)));
-            _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream2))
-                           .Returns(Task.FromResult(new VideoId(456)));
+            new object[] { new VideoId(100), new MemoryStream(new byte[] { 1, 2, 3 }) },
+            new object[] { new VideoId(200), new MemoryStream(new byte[] { 4, 5, 6 }) }
+        };
 
-            CreatedResult result1 = await _videoController.PostVideo(videoStream1);
-            CreatedResult result2 = await _videoController.PostVideo(videoStream2);
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public async Task PostVideoCreatesVideoUrlsBasedOnVideoId(
+                VideoId videoId, Stream videoStream)
+        {
+            _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
+                           .Returns(Task.FromResult(videoId));
 
-            Assert.Equal("/videos/123", result1.Location);
-            Assert.Equal("/videos/456", result2.Location);
+            CreatedResult result = await _videoController.PostVideo(videoStream);
+
+            Assert.Equal($"/videos/{videoId}", result.Location);
         }
 
-        [Fact]
-        public async Task PostVideo_ReturnsIdInMetadata()
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public async Task PostVideoReturnsVideoMetadataInResponse(
+                VideoId videoId, Stream videoStream)
         {
-            Stream videoStream = new MemoryStream(new byte[] { 1, 2, 3 });
             _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
-                           .Returns(Task.FromResult(new VideoId(987)));
+                           .Returns(Task.FromResult(videoId));
 
             CreatedResult result = await _videoController.PostVideo(videoStream);
 
             VideoMetadata videoMetadata = result.Value as VideoMetadata;
             Assert.IsType<VideoMetadata>(videoMetadata);
-            Assert.Equal("987", videoMetadata.VideoId);
+            Assert.Equal(videoId.ToString(), videoMetadata.VideoId);
         }
 
-        [Fact]
-        public void GetExistingVideo_ReturnsVideoStream()
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public void GetExistingVideoReturnsVideoStream(VideoId videoId, Stream videoStream)
         {
-            VideoId videoId = new VideoId(123);
-            Stream videoStream = TestUtils.MockStream();
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
                            .Returns(Optional<Stream>.Of(videoStream));
 
@@ -72,14 +75,14 @@
             Assert.Equal(videoStream, result.Stream);
         }
 
-        [Fact]
-        public void GetMissingVideo_ReturnsNotFound()
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public void GetMissingVideoReturnsNotFound(VideoId videoId, Stream _)
         {
-            VideoId videoId = new VideoId(123);
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
                            .Returns(Optional<Stream>.Empty());
 
-            NotFoundResult result = _videoController.GetVideo(videoId) as NotFoundResult;
+            IActionResult result = _videoController.GetVideo(videoId);
 
             Assert.IsType<NotFoundResult>(result);
         }
