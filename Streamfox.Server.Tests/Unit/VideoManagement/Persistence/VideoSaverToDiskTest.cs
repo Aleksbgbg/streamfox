@@ -22,37 +22,40 @@
             _videoSaverToDisk = new VideoSaverToDisk(_fileSystemManipulatorMock.Object);
         }
 
-        [Fact]
-        public async Task SavesStreamContentsToFileWithLabelAsFilename()
+        [Theory]
+        [InlineData(new byte[] { 1, 2, 3 })]
+        [InlineData(new byte[] { 4, 5, 6 })]
+        public async Task SavesStreamContentsToFileWithLabelAsFilename(byte[] bytes)
         {
-            byte[] bytes = { 33, 44, 55 };
-            MockWriteStream fileStream = new MockWriteStream(bytes.Length);
             Stream videoStream = new MemoryStream(bytes);
-            _fileSystemManipulatorMock.Setup(manipulator => manipulator.OpenFile("Hello"))
-                                      .Returns(fileStream);
+            MockWriteStream fileStream = new MockWriteStream(bytes.Length);
+            SetupFileStreamForVideoLabel(fileStream, "VideoLabel");
 
-            await _videoSaverToDisk.SaveVideo("Hello", videoStream);
+            await _videoSaverToDisk.SaveVideo("VideoLabel", videoStream);
 
             Assert.Equal(bytes, fileStream.Bytes);
         }
 
         [Fact]
-        public async Task DisposesFileStreamAfterWriting()
+        public async Task DisposesFileStream()
         {
-            byte[] bytes = { 33, 44, 55 };
-            MockWriteStream fileStream = new MockWriteStream(bytes.Length);
-            Stream videoStream = new MemoryStream(bytes);
-            _fileSystemManipulatorMock.Setup(manipulator => manipulator.OpenFile("Hello"))
-                                      .Returns(fileStream);
+            MockWriteStream fileStream = new MockWriteStream();
+            SetupFileStreamForVideoLabel(fileStream, "VideoLabel");
 
-            await _videoSaverToDisk.SaveVideo("Hello", videoStream);
+            await _videoSaverToDisk.SaveVideo("VideoLabel", Stream.Null);
 
             Assert.True(fileStream.Disposed, "File stream not disposed");
         }
 
+        private void SetupFileStreamForVideoLabel(Stream stream, string videoLabel)
+        {
+            _fileSystemManipulatorMock.Setup(manipulator => manipulator.OpenFile(videoLabel))
+                                      .Returns(stream);
+        }
+
         private class MockWriteStream : Stream
         {
-            public MockWriteStream(int size)
+            public MockWriteStream(int size = 0)
             {
                 Bytes = new byte[size];
             }
