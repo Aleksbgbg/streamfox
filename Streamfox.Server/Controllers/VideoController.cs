@@ -1,6 +1,7 @@
 ﻿namespace Streamfox.Server.Controllers
 {
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,12 @@
         {
             VideoId videoId = await _videoClerk.StoreVideo(stream);
             return Created($"/videos/{videoId}", new VideoMetadata(videoId));
+        }
+
+        [HttpGet]
+        public OkObjectResult GetVideos()
+        {
+            return Ok(_videoClerk.ListVideos().Select(id => id.Value).ToArray());
         }
 
         private static StreamResult Stream(Stream stream)

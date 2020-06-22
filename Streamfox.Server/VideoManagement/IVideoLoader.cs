@@ -7,5 +7,7 @@
     public interface IVideoLoader
     {
         Optional<Stream> LoadVideo(string label);
+
+        string[] ListLabels();
     }
 }

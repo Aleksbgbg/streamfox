@@ -22,6 +22,11 @@
             return _videoRetrievalClerk.RetrieveVideo(videoId);
         }
 
+        public VideoId[] ListVideos()
+        {
+            return _videoRetrievalClerk.ListVideos();
+        }
+
         public Task<VideoId> StoreVideo(Stream videoStream)
         {
             return _videoStorageClerk.StoreVideo(videoStream);

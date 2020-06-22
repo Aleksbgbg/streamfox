@@ -10,5 +10,7 @@
         Task<VideoId> StoreVideo(Stream videoStream);
 
         Optional<Stream> RetrieveVideo(VideoId videoId);
+
+        VideoId[] ListVideos();
     }
 }

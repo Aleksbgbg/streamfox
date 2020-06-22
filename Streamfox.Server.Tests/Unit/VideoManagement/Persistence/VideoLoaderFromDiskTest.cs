@@ -1,5 +1,6 @@
 ﻿namespace Streamfox.Server.Tests.Unit.VideoManagement.Persistence
 {
+    using System.Collections.Generic;
     using System.IO;
 
     using Moq;
@@ -17,13 +18,20 @@
 
         private readonly VideoLoaderFromDisk _videoLoaderFromDisk;
 
+        private readonly List<string> _files;
+
         public VideoLoaderFromDiskTest()
         {
             _fileSystemCheckerMock = new Mock<IFileSystemChecker>();
+            _fileSystemCheckerMock.Setup(checker => checker.FileExists(It.IsAny<string>()))
+                                  .Returns<string>(name => _files.Contains(name));
+            _fileSystemCheckerMock.Setup(checker => checker.ListFiles())
+                                  .Returns(() => _files.ToArray());
             _fileSystemManipulatorMock = new Mock<IFileSystemManipulator>();
             _videoLoaderFromDisk = new VideoLoaderFromDisk(
                     _fileSystemCheckerMock.Object,
                     _fileSystemManipulatorMock.Object);
+            _files = new List<string>();
         }
 
         [Fact]
@@ -50,20 +58,24 @@
             Assert.False(loadedStream.HasValue, "Video loaded when label does not exist");
         }
 
+        [Fact]
+        public void ListsExistingFilesAsLabels()
+        {
+            SetupFilesExists(@"C:\Files\123456");
+            SetupFilesExists(@"C:\Files\456789");
+
+            string[] labels = _videoLoaderFromDisk.ListLabels();
+
+            Assert.Equal(new[] { "123456", "456789" }, labels);
+        }
+
         private void SetupFilesExists(string label)
         {
-            SetupFileExistence(label, exists: true);
+            _files.Add(label);
         }
 
         private void SetupFileDoesNotExist(string label)
         {
-            SetupFileExistence(label, exists: false);
-        }
-
-        private void SetupFileExistence(string label, bool exists)
-        {
-            _fileSystemCheckerMock.Setup(checker => checker.FileExists(label))
-                                  .Returns(exists);
         }
     }
 }

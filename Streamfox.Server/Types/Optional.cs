@@ -27,4 +27,12 @@
             return new Optional<T>();
         }
     }
+
+    public static class Optional
+    {
+        public static Optional<T> Of<T>(T value)
+        {
+            return Optional<T>.Of(value);
+        }
+    }
 }

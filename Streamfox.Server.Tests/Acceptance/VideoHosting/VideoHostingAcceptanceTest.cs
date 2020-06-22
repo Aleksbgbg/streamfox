@@ -34,5 +34,17 @@
 
             Assert.Equal(videoBytes, downloadedVideoBytes);
         }
+
+        [Fact]
+        public async Task List_Videos()
+        {
+            byte[] videoBytes = await new File("Acceptance/VideoHosting/Video.mp4").ReadBytes();
+
+            VideoId videoId0 = await _applicationHost.Post("/videos", videoBytes);
+            VideoId videoId1 = await _applicationHost.Post("/videos", videoBytes);
+            long[] videoIds = await _applicationHost.Get<long[]>("/videos");
+
+            Assert.Equal(new[] { videoId0.Value, videoId1.Value }, videoIds);
+        }
     }
 }

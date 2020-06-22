@@ -1,6 +1,7 @@
 ﻿namespace Streamfox.Server.VideoManagement.Persistence
 {
     using System.IO;
+    using System.Linq;
 
     using Streamfox.Server.Types;
 
@@ -10,7 +11,8 @@
 
         private readonly IFileSystemManipulator _fileSystemManipulator;
 
-        public VideoLoaderFromDisk(IFileSystemChecker fileSystemChecker, IFileSystemManipulator fileSystemManipulator)
+        public VideoLoaderFromDisk(
+                IFileSystemChecker fileSystemChecker, IFileSystemManipulator fileSystemManipulator)
         {
             _fileSystemChecker = fileSystemChecker;
             _fileSystemManipulator = fileSystemManipulator;
@@ -20,10 +22,15 @@
         {
             if (_fileSystemChecker.FileExists(label))
             {
-                return Optional<Stream>.Of(_fileSystemManipulator.OpenFile(label));
+                return Optional.Of(_fileSystemManipulator.OpenFile(label));
             }
 
             return Optional<Stream>.Empty();
+        }
+
+        public string[] ListLabels()
+        {
+            return _fileSystemChecker.ListFiles().Select(Path.GetFileName).ToArray();
         }
     }
 }

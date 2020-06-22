@@ -14,6 +14,11 @@
             return File.Exists(PathToFile(name));
         }
 
+        public string[] ListFiles()
+        {
+            return Directory.GetFiles(DirectoryPath);
+        }
+
         public Stream OpenFile(string name)
         {
             if (FileExists(name))

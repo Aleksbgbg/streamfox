@@ -1,6 +1,7 @@
 ﻿namespace Streamfox.Server.VideoManagement
 {
     using System.IO;
+    using System.Linq;
 
     using Streamfox.Server.Types;
 
@@ -16,6 +17,14 @@
         public Optional<Stream> RetrieveVideo(VideoId videoId)
         {
             return _videoLoader.LoadVideo(videoId.ToString());
+        }
+
+        public VideoId[] ListVideos()
+        {
+            return _videoLoader.ListLabels()
+                               .Select(long.Parse)
+                               .Select(id => new VideoId(id))
+                               .ToArray();
         }
     }
 }

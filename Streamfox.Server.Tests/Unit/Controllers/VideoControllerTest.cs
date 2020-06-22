@@ -86,5 +86,19 @@
 
             Assert.IsType<NotFoundResult>(result);
         }
+
+        [Fact]
+        public void GetVideosReturnsListOfIds()
+        {
+            _videoClerkMock.Setup(clerk => clerk.ListVideos())
+                           .Returns(new[] { new VideoId(100), new VideoId(200) });
+
+            OkObjectResult result = _videoController.GetVideos();
+
+            long[] resultValue = result.Value as long[];
+            Assert.IsType<long[]>(resultValue);
+            Assert.Equal(100, resultValue[0]);
+            Assert.Equal(200, resultValue[1]);
+        }
     }
 }

@@ -30,6 +30,16 @@
             return bytes;
         }
 
+        public async Task<T> Get<T>(string endpoint)
+        {
+            HttpClient httpClient = _webApplicationFactory.CreateClient();
+
+            HttpResponseMessage response = await httpClient.GetAsync(endpoint);
+            string content = await response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<T>(content);
+        }
+
         public async Task<VideoId> Post(string endpoint, byte[] content)
         {
             HttpClient httpClient = _webApplicationFactory.CreateClient();

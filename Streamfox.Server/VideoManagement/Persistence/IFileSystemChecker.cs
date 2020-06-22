@@ -3,5 +3,7 @@
     public interface IFileSystemChecker
     {
         bool FileExists(string name);
+
+        string[] ListFiles();
     }
 }

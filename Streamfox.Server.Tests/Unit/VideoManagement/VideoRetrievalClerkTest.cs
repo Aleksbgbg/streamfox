@@ -1,6 +1,7 @@
 ﻿namespace Streamfox.Server.Tests.Unit.VideoManagement
 {
     using System.IO;
+    using System.Linq;
 
     using Moq;
 
@@ -34,6 +35,24 @@
             Optional<Stream> videoStreamResult = _videoRetrievalClerk.RetrieveVideo(videoId);
 
             Assert.Same(videoStream, videoStreamResult);
+        }
+
+        [Theory]
+        [InlineData("123", "456")]
+        [InlineData("456", "789")]
+        public void ListsVideoIdsFromVideoLoaderLabels(string a, string b)
+        {
+            _videoLoaderMock.Setup(loader => loader.ListLabels())
+                            .Returns(new[] { a, b });
+
+            VideoId[] videos = _videoRetrievalClerk.ListVideos();
+
+            Assert.Equal(ToVideoIds(a, b), videos);
+        }
+
+        private static VideoId[] ToVideoIds(params string[] labels)
+        {
+            return labels.Select(long.Parse).Select(id => new VideoId(id)).ToArray();
         }
     }
 }
