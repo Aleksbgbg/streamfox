@@ -12,5 +12,7 @@
         Optional<Stream> RetrieveVideo(VideoId videoId);
 
         VideoId[] ListVideos();
+
+        Optional<Stream> RetrieveThumbnail(VideoId videoId);
     }
 }

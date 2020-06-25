@@ -3,6 +3,7 @@ namespace Streamfox.Server
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
 
     using Streamfox.Server.Controllers.Formatters;
 
@@ -22,6 +23,15 @@ namespace Streamfox.Server
         {
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
+
+            app.UseSpa(
+                    spa =>
+                    {
+                        if (env.IsDevelopment())
+                        {
+                            spa.UseProxyToSpaDevelopmentServer("http://localhost:8080/");
+                        }
+                    });
         }
     }
 }

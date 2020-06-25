@@ -6,6 +6,7 @@
     using Moq;
 
     using Streamfox.Server.VideoManagement;
+    using Streamfox.Server.VideoManagement.Processing;
 
     using Xunit;
 
@@ -15,15 +16,19 @@
 
         private readonly Mock<IVideoSaver> _videoSaverMock;
 
+        private readonly Mock<IVideoSnapshotter> _videoSnapshotterMock;
+
         private readonly VideoStorageClerk _videoStorageClerk;
 
         public VideoStorageClerkTest()
         {
             _videoIdGenerator = new Mock<IVideoIdGenerator>();
             _videoSaverMock = new Mock<IVideoSaver>();
+            _videoSnapshotterMock = new Mock<IVideoSnapshotter>();
             _videoStorageClerk = new VideoStorageClerk(
                     _videoIdGenerator.Object,
-                    _videoSaverMock.Object);
+                    _videoSaverMock.Object,
+                    _videoSnapshotterMock.Object);
         }
 
         [Theory]
@@ -43,12 +48,33 @@
         [InlineData(456)]
         public async Task SavesVideoUsingIdAsLabel(long videoIdValue)
         {
-            Stream videoStream = TestUtils.MockStream();
             SetupVideoIdOnGeneration(videoIdValue);
+
+            await _videoStorageClerk.StoreVideo(TestUtils.MockStream());
+
+            _videoSaverMock.Verify(
+                    saver => saver.SaveVideo(
+                            videoIdValue.ToString(),
+                            It.IsAny<Stream>(),
+                            It.IsAny<Stream>()));
+        }
+
+        [Fact]
+        public async Task SavesVideoSnapshotAsThumbnail()
+        {
+            Stream videoStream = TestUtils.MockStream();
+            Stream snapshotStream = TestUtils.MockStream();
+            _videoSnapshotterMock
+                    .Setup(snapshotter => snapshotter.ProduceVideoSnapshot(videoStream))
+                    .Returns(Task.FromResult(snapshotStream));
 
             await _videoStorageClerk.StoreVideo(videoStream);
 
-            _videoSaverMock.Verify(saver => saver.SaveVideo(videoIdValue.ToString(), videoStream));
+            _videoSaverMock.Verify(
+                    saver => saver.SaveVideo(
+                            It.IsAny<string>(),
+                            videoStream,
+                            snapshotStream));
         }
 
         private void SetupVideoIdOnGeneration(long videoIdValue)

@@ -5,6 +5,8 @@
     using Microsoft.AspNetCore.Mvc.Formatters;
     using Microsoft.Net.Http.Headers;
 
+    using Streamfox.Server.Utilities;
+
     public class RawByteStreamBodyFormatter : InputFormatter
     {
         public RawByteStreamBodyFormatter()
@@ -12,9 +14,11 @@
             SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/octet-stream"));
         }
 
-        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+        public override async Task<InputFormatterResult> ReadRequestBodyAsync(
+                InputFormatterContext context)
         {
-            return InputFormatterResult.SuccessAsync(context.HttpContext.Request.Body);
+            return await InputFormatterResult.SuccessAsync(
+                    await Streams.CloneToMemory(context.HttpContext.Request.Body));
         }
     }
 }

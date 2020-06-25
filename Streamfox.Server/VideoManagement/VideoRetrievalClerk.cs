@@ -26,5 +26,10 @@
                                .Select(id => new VideoId(id))
                                .ToArray();
         }
+
+        public Optional<Stream> RetrieveThumbnail(VideoId videoId)
+        {
+            return _videoLoader.LoadThumbnail(videoId.ToString());
+        }
     }
 }

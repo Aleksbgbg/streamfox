@@ -2,8 +2,8 @@
 {
     using System.IO;
 
-    public interface IFileSystemManipulator
+    public interface IFileReader
     {
-        Stream OpenFile(string name);
+        public Stream OpenRead(string name);
     }
 }

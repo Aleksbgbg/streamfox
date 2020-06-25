@@ -27,6 +27,11 @@
             return _videoRetrievalClerk.ListVideos();
         }
 
+        public Optional<Stream> RetrieveThumbnail(VideoId videoId)
+        {
+            return _videoRetrievalClerk.RetrieveThumbnail(videoId);
+        }
+
         public Task<VideoId> StoreVideo(Stream videoStream)
         {
             return _videoStorageClerk.StoreVideo(videoStream);

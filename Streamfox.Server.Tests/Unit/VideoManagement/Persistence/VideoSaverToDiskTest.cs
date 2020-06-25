@@ -12,45 +12,85 @@
 
     public class VideoSaverToDiskTest
     {
-        private readonly Mock<IFileSystemManipulator> _fileSystemManipulatorMock;
+        private readonly Mock<IVideoFileWriter> _videoFileWriterMock;
+
+        private readonly Mock<IThumbnailFileWriter> _thumbnailFileWriterMock;
 
         private readonly VideoSaverToDisk _videoSaverToDisk;
 
         public VideoSaverToDiskTest()
         {
-            _fileSystemManipulatorMock = new Mock<IFileSystemManipulator>();
-            _videoSaverToDisk = new VideoSaverToDisk(_fileSystemManipulatorMock.Object);
+            _videoFileWriterMock = new Mock<IVideoFileWriter>();
+            _videoFileWriterMock.Setup(writer => writer.OpenWrite(It.IsAny<string>()))
+                                .Returns(Stream.Null);
+            _thumbnailFileWriterMock = new Mock<IThumbnailFileWriter>();
+            _thumbnailFileWriterMock.Setup(writer => writer.OpenWrite(It.IsAny<string>()))
+                                .Returns(Stream.Null);
+            _videoSaverToDisk = new VideoSaverToDisk(
+                    _videoFileWriterMock.Object,
+                    _thumbnailFileWriterMock.Object);
         }
 
         [Theory]
         [InlineData(new byte[] { 1, 2, 3 })]
         [InlineData(new byte[] { 4, 5, 6 })]
-        public async Task SavesStreamContentsToFileWithLabelAsFilename(byte[] bytes)
+        public async Task SavesVideoStreamToFileWithLabelAsFilename(byte[] bytes)
         {
             Stream videoStream = new MemoryStream(bytes);
             MockWriteStream fileStream = new MockWriteStream(bytes.Length);
-            SetupFileStreamForVideoLabel(fileStream, "VideoLabel");
+            SetupVideoStreamForLabel(fileStream, "VideoLabel");
 
-            await _videoSaverToDisk.SaveVideo("VideoLabel", videoStream);
+            await _videoSaverToDisk.SaveVideo("VideoLabel", videoStream, Stream.Null);
+
+            Assert.Equal(bytes, fileStream.Bytes);
+        }
+
+        [Theory]
+        [InlineData(new byte[] { 1, 2, 3 })]
+        [InlineData(new byte[] { 4, 5, 6 })]
+        public async Task SavesThumbnailStreamToFileWithLabelAsFilename(byte[] bytes)
+        {
+            Stream thumbnailStream = new MemoryStream(bytes);
+            MockWriteStream fileStream = new MockWriteStream(bytes.Length);
+            SetupThumbnailStreamForLabel(fileStream, "VideoLabel");
+
+            await _videoSaverToDisk.SaveVideo("VideoLabel", Stream.Null, thumbnailStream);
 
             Assert.Equal(bytes, fileStream.Bytes);
         }
 
         [Fact]
-        public async Task DisposesFileStream()
+        public async Task DisposesWrittenVideoFileStream()
         {
-            MockWriteStream fileStream = new MockWriteStream();
-            SetupFileStreamForVideoLabel(fileStream, "VideoLabel");
+            MockWriteStream videoStream = new MockWriteStream();
+            SetupVideoStreamForLabel(videoStream, "VideoLabel");
 
-            await _videoSaverToDisk.SaveVideo("VideoLabel", Stream.Null);
+            await _videoSaverToDisk.SaveVideo("VideoLabel", Stream.Null, Stream.Null);
 
-            Assert.True(fileStream.Disposed, "File stream not disposed");
+            Assert.True(videoStream.Disposed, "File stream not disposed");
         }
 
-        private void SetupFileStreamForVideoLabel(Stream stream, string videoLabel)
+        [Fact]
+        public async Task DisposesWrittenThumbnailFileStream()
         {
-            _fileSystemManipulatorMock.Setup(manipulator => manipulator.OpenFile(videoLabel))
-                                      .Returns(stream);
+            MockWriteStream thumbnailStream = new MockWriteStream();
+            SetupThumbnailStreamForLabel(thumbnailStream, "VideoLabel");
+
+            await _videoSaverToDisk.SaveVideo("VideoLabel", Stream.Null, Stream.Null);
+
+            Assert.True(thumbnailStream.Disposed, "File stream not disposed");
+        }
+
+        private void SetupVideoStreamForLabel(Stream stream, string videoLabel)
+        {
+            _videoFileWriterMock.Setup(writer => writer.OpenWrite(videoLabel))
+                                .Returns(stream);
+        }
+
+        private void SetupThumbnailStreamForLabel(Stream stream, string videoLabel)
+        {
+            _thumbnailFileWriterMock.Setup(writer => writer.OpenWrite(videoLabel))
+                                    .Returns(stream);
         }
 
         private class MockWriteStream : Stream

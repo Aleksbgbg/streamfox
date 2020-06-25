@@ -67,7 +67,7 @@
         public void GetExistingVideoReturnsVideoStream(VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
-                           .Returns(Optional<Stream>.Of(videoStream));
+                           .Returns(Optional.Of(videoStream));
 
             StreamResult result = _videoController.GetVideo(videoId) as StreamResult;
 
@@ -99,6 +99,31 @@
             Assert.IsType<long[]>(resultValue);
             Assert.Equal(100, resultValue[0]);
             Assert.Equal(200, resultValue[1]);
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public void GetExistingThumbnailReturnsImageStream(VideoId videoId, Stream imageStream)
+        {
+            _videoClerkMock.Setup(clerk => clerk.RetrieveThumbnail(videoId))
+                           .Returns(Optional.Of(imageStream));
+
+            StreamResult result = _videoController.GetThumbnail(videoId) as StreamResult;
+
+            Assert.IsType<StreamResult>(result);
+            Assert.Equal(imageStream, result.Stream);
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public void GetMissingThumbnailReturnsNotFound(VideoId videoId, Stream _)
+        {
+            _videoClerkMock.Setup(clerk => clerk.RetrieveThumbnail(videoId))
+                           .Returns(Optional<Stream>.Empty());
+
+            IActionResult result = _videoController.GetThumbnail(videoId);
+
+            Assert.IsType<NotFoundResult>(result);
         }
     }
 }

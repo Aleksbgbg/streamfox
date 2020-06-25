@@ -4,14 +4,20 @@
 
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoManagement.Persistence;
+    using Streamfox.Server.VideoManagement.Processing;
 
     public static class BootstrappingExtensions
     {
         public static IServiceCollection AddVideoHosting(this IServiceCollection services)
         {
-            services.AddTransient<VideoDirectoryHandler>();
-            services.AddTransient<IFileSystemChecker>(factory => factory.GetService<VideoDirectoryHandler>());
-            services.AddTransient<IFileSystemManipulator>(factory => factory.GetService<VideoDirectoryHandler>());
+            services.AddTransient<IVideoSnapshotter, VideoSnapshotter>();
+            services.AddTransient(factory => new ThumbnailFileHandler(new DirectoryHandler("Thumbnails")));
+            services.AddTransient(factory => new VideoFileHandler(new DirectoryHandler("Videos")));
+            services.AddTransient<IThumbnailFileReader>(factory => factory.GetService<ThumbnailFileHandler>());
+            services.AddTransient<IThumbnailFileWriter>(factory => factory.GetService<ThumbnailFileHandler>());
+            services.AddTransient<IVideoFileContainer>(factory => factory.GetService<VideoFileHandler>());
+            services.AddTransient<IVideoFileReader>(factory => factory.GetService<VideoFileHandler>());
+            services.AddTransient<IVideoFileWriter>(factory => factory.GetService<VideoFileHandler>());
             services.AddTransient<IVideoLoader, VideoLoaderFromDisk>();
             services.AddTransient<VideoRetrievalClerk>();
             services.AddTransient<IVideoSaver, VideoSaverToDisk>();

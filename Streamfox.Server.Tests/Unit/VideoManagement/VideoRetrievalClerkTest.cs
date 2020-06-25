@@ -25,10 +25,10 @@
         [Theory]
         [InlineData(123)]
         [InlineData(456)]
-        public void RetrievesVideoByUsingIdAsLabel(long videoIdValue)
+        public void RetrievesVideoUsingIdAsLabel(long videoIdValue)
         {
             VideoId videoId = new VideoId(videoIdValue);
-            Optional<Stream> videoStream = Optional<Stream>.Of(TestUtils.MockStream());
+            Optional<Stream> videoStream = Optional.Of(TestUtils.MockStream());
             _videoLoaderMock.Setup(loader => loader.LoadVideo(videoId.ToString()))
                             .Returns(videoStream);
 
@@ -48,6 +48,21 @@
             VideoId[] videos = _videoRetrievalClerk.ListVideos();
 
             Assert.Equal(ToVideoIds(a, b), videos);
+        }
+
+        [Theory]
+        [InlineData(123)]
+        [InlineData(456)]
+        public void RetrievesThumbnailUsingIdAsLabel(long videoIdValue)
+        {
+            VideoId videoId = new VideoId(videoIdValue);
+            Optional<Stream> videoStream = Optional.Of(TestUtils.MockStream());
+            _videoLoaderMock.Setup(loader => loader.LoadThumbnail(videoId.ToString()))
+                            .Returns(videoStream);
+
+            Optional<Stream> videoStreamResult = _videoRetrievalClerk.RetrieveThumbnail(videoId);
+
+            Assert.Same(videoStream, videoStreamResult);
         }
 
         private static VideoId[] ToVideoIds(params string[] labels)

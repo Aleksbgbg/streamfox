@@ -1,9 +1,9 @@
 ﻿namespace Streamfox.Server.VideoManagement.Persistence
 {
-    public interface IFileSystemChecker
+    public interface IFileContainer
     {
-        bool FileExists(string name);
-
         string[] ListFiles();
+
+        bool FileExists(string name);
     }
 }

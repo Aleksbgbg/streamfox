@@ -5,18 +5,26 @@
 
     public class VideoSaverToDisk : IVideoSaver
     {
-        private readonly IFileSystemManipulator _fileSystemManipulator;
+        private readonly IVideoFileWriter _videoFileWriter;
 
-        public VideoSaverToDisk(IFileSystemManipulator fileSystemManipulator)
+        private readonly IThumbnailFileWriter _thumbnailFileWriter;
+
+        public VideoSaverToDisk(IVideoFileWriter videoFileWriter, IThumbnailFileWriter thumbnailFileWriter)
         {
-            _fileSystemManipulator = fileSystemManipulator;
+            _videoFileWriter = videoFileWriter;
+            _thumbnailFileWriter = thumbnailFileWriter;
         }
 
-        public async Task SaveVideo(string label, Stream stream)
+        public async Task SaveVideo(string label, Stream video, Stream thumbnail)
         {
-            using (Stream fileStream = _fileSystemManipulator.OpenFile(label))
+            await using (Stream videoFileStream = _videoFileWriter.OpenWrite(label))
             {
-                await stream.CopyToAsync(fileStream);
+                await video.CopyToAsync(videoFileStream);
+            }
+
+            await using (Stream thumbnailFileStream = _thumbnailFileWriter.OpenWrite(label))
+            {
+                await thumbnail.CopyToAsync(thumbnailFileStream);
             }
         }
     }

@@ -12,9 +12,11 @@
 
     public class VideoLoaderFromDiskTest
     {
-        private readonly Mock<IFileSystemChecker> _fileSystemCheckerMock;
+        private readonly Mock<IVideoFileContainer> _videoFileContainerMock;
 
-        private readonly Mock<IFileSystemManipulator> _fileSystemManipulatorMock;
+        private readonly Mock<IVideoFileReader> _videoFileReaderMock;
+
+        private readonly Mock<IThumbnailFileReader> _thumbnailFileReaderMock;
 
         private readonly VideoLoaderFromDisk _videoLoaderFromDisk;
 
@@ -22,15 +24,17 @@
 
         public VideoLoaderFromDiskTest()
         {
-            _fileSystemCheckerMock = new Mock<IFileSystemChecker>();
-            _fileSystemCheckerMock.Setup(checker => checker.FileExists(It.IsAny<string>()))
-                                  .Returns<string>(name => _files.Contains(name));
-            _fileSystemCheckerMock.Setup(checker => checker.ListFiles())
-                                  .Returns(() => _files.ToArray());
-            _fileSystemManipulatorMock = new Mock<IFileSystemManipulator>();
+            _videoFileContainerMock = new Mock<IVideoFileContainer>();
+            _videoFileContainerMock.Setup(container => container.FileExists(It.IsAny<string>()))
+                                   .Returns<string>(name => _files.Contains(name));
+            _videoFileContainerMock.Setup(container => container.ListFiles())
+                                   .Returns(() => _files.ToArray());
+            _videoFileReaderMock = new Mock<IVideoFileReader>();
+            _thumbnailFileReaderMock = new Mock<IThumbnailFileReader>();
             _videoLoaderFromDisk = new VideoLoaderFromDisk(
-                    _fileSystemCheckerMock.Object,
-                    _fileSystemManipulatorMock.Object);
+                    _videoFileContainerMock.Object,
+                    _videoFileReaderMock.Object,
+                    _thumbnailFileReaderMock.Object);
             _files = new List<string>();
         }
 
@@ -39,8 +43,8 @@
         {
             SetupFilesExists("ExistingLabel");
             Stream fileStream = new MemoryStream(new byte[] { 33, 44, 55 });
-            _fileSystemManipulatorMock.Setup(manipulator => manipulator.OpenFile("ExistingLabel"))
-                                      .Returns(fileStream);
+            _videoFileReaderMock.Setup(reader => reader.OpenRead("ExistingLabel"))
+                                .Returns(fileStream);
 
             Optional<Stream> loadedStream = _videoLoaderFromDisk.LoadVideo("ExistingLabel");
 
@@ -51,8 +55,6 @@
         [Fact]
         public void ReturnsEmptyWhenLabelDoesNotExist()
         {
-            SetupFileDoesNotExist("NonExistingLabel");
-
             Optional<Stream> loadedStream = _videoLoaderFromDisk.LoadVideo("NonExistingLabel");
 
             Assert.False(loadedStream.HasValue, "Video loaded when label does not exist");
@@ -72,10 +74,6 @@
         private void SetupFilesExists(string label)
         {
             _files.Add(label);
-        }
-
-        private void SetupFileDoesNotExist(string label)
-        {
         }
     }
 }

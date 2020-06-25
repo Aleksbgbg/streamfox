@@ -9,5 +9,7 @@
         Optional<Stream> LoadVideo(string label);
 
         string[] ListLabels();
+
+        Optional<Stream> LoadThumbnail(string label);
     }
 }

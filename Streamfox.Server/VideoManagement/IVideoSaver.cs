@@ -5,6 +5,6 @@
 
     public interface IVideoSaver
     {
-        Task SaveVideo(string label, Stream stream);
+        Task SaveVideo(string label, Stream video, Stream thumbnail);
     }
 }
