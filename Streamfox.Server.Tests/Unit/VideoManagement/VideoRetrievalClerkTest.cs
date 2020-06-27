@@ -34,7 +34,7 @@
 
             Optional<Stream> videoStreamResult = _videoRetrievalClerk.RetrieveVideo(videoId);
 
-            Assert.Same(videoStream, videoStreamResult);
+            Assert.Same(videoStream.Value, videoStreamResult.Value);
         }
 
         [Theory]
@@ -62,7 +62,7 @@
 
             Optional<Stream> videoStreamResult = _videoRetrievalClerk.RetrieveThumbnail(videoId);
 
-            Assert.Same(videoStream, videoStreamResult);
+            Assert.Same(videoStream.Value, videoStreamResult.Value);
         }
 
         private static VideoId[] ToVideoIds(params string[] labels)
