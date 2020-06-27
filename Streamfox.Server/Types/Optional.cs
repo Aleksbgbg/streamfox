@@ -1,12 +1,7 @@
 ﻿namespace Streamfox.Server.Types
 {
-    public class Optional<T>
+    public readonly struct Optional<T>
     {
-        private Optional()
-        {
-            HasValue = false;
-        }
-
         private Optional(T value)
         {
             HasValue = true;

@@ -36,10 +36,16 @@
         }
 
         [HttpPost]
-        public async Task<CreatedResult> PostVideo([FromBody] Stream stream)
+        public async Task<IActionResult> PostVideo([FromBody] Stream stream)
         {
-            VideoId videoId = await _videoClerk.StoreVideo(stream);
-            return Created($"/videos/{videoId}", new VideoMetadata(videoId));
+            Optional<VideoId> videoId = await _videoClerk.StoreVideo(stream);
+
+            if (videoId.HasValue)
+            {
+                return Created($"/videos/{videoId.Value}", new VideoMetadata(videoId.Value));
+            }
+
+            return BadRequest();
         }
 
         [HttpGet]

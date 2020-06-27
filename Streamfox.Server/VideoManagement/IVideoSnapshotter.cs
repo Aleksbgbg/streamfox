@@ -3,8 +3,10 @@
     using System.IO;
     using System.Threading.Tasks;
 
+    using Streamfox.Server.Types;
+
     public interface IVideoSnapshotter
     {
-        Task<Stream> ProduceVideoSnapshot(Stream video);
+        Task<Optional<Stream>> ProduceVideoSnapshot(Stream video);
     }
 }

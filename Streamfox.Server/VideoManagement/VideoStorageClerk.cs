@@ -3,6 +3,7 @@
     using System.IO;
     using System.Threading.Tasks;
 
+    using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement.Processing;
 
     public class VideoStorageClerk
@@ -22,14 +23,19 @@
             _videoSnapshotter = videoSnapshotter;
         }
 
-        public async Task<VideoId> StoreVideo(Stream videoStream)
+        public async Task<Optional<VideoId>> StoreVideo(Stream videoStream)
         {
             VideoId videoId = _videoIdGenerator.GenerateVideoId();
-            Stream snapshot = await _videoSnapshotter.ProduceVideoSnapshot(videoStream);
+            Optional<Stream> snapshot = await _videoSnapshotter.ProduceVideoSnapshot(videoStream);
 
-            await _videoSaver.SaveVideo(videoId.ToString(), videoStream, snapshot);
+            if (!snapshot.HasValue)
+            {
+                return Optional<VideoId>.Empty();
+            }
 
-            return videoId;
+            await _videoSaver.SaveVideo(videoId.ToString(), videoStream, snapshot.Value);
+
+            return Optional.Of(videoId);
         }
     }
 }

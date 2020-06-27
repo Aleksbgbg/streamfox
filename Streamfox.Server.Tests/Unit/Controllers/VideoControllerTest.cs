@@ -40,9 +40,9 @@
                 VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
-                           .Returns(Task.FromResult(videoId));
+                           .Returns(Task.FromResult(Optional.Of(videoId)));
 
-            CreatedResult result = await _videoController.PostVideo(videoStream);
+            CreatedResult result = await _videoController.PostVideo(videoStream) as CreatedResult;
 
             Assert.Equal($"/videos/{videoId}", result.Location);
         }
@@ -53,13 +53,25 @@
                 VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
-                           .Returns(Task.FromResult(videoId));
+                           .Returns(Task.FromResult(Optional.Of(videoId)));
 
-            CreatedResult result = await _videoController.PostVideo(videoStream);
+            CreatedResult result = await _videoController.PostVideo(videoStream) as CreatedResult;
 
             VideoMetadata videoMetadata = result.Value as VideoMetadata;
             Assert.IsType<VideoMetadata>(videoMetadata);
             Assert.Equal(videoId.ToString(), videoMetadata.VideoId);
+        }
+
+        [Fact]
+        public async Task PostVideoWithEmptyIdReturnsBadRequest()
+        {
+            Stream videoStream = TestUtils.MockStream();
+            _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
+                           .Returns(Task.FromResult(Optional<VideoId>.Empty()));
+
+            IActionResult result = await _videoController.PostVideo(videoStream);
+
+            Assert.IsType<BadRequestResult>(result);
         }
 
         [Theory]

@@ -32,7 +32,7 @@
             return _videoRetrievalClerk.RetrieveThumbnail(videoId);
         }
 
-        public Task<VideoId> StoreVideo(Stream videoStream)
+        public Task<Optional<VideoId>> StoreVideo(Stream videoStream)
         {
             return _videoStorageClerk.StoreVideo(videoStream);
         }

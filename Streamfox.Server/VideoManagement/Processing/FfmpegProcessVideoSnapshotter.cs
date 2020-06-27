@@ -4,13 +4,15 @@
     using System.IO;
     using System.Threading.Tasks;
 
+    using Streamfox.Server.Types;
+
     public class FfmpegProcessVideoSnapshotter : IVideoSnapshotter
     {
-        private const int BufferSize = 81_920;
-
-        public async Task<Stream> ProduceVideoSnapshot(Stream video)
+        public async Task<Optional<Stream>> ProduceVideoSnapshot(Stream video)
         {
             video.Position = 0;
+
+            MemoryStream outputStream = new MemoryStream();
 
             Process process = Process.Start(
                     new ProcessStartInfo("ffmpeg", "-i pipe: -vframes 1 -q:v 2 pipe:.jpg")
@@ -20,32 +22,43 @@
                         RedirectStandardError = true
                     });
 
-            await using (process.StandardInput.BaseStream)
-            {
-                int iterations = ((int)(video.Length / BufferSize)) / 100;
+            Task inputTask = Task.Run(
+                    async () =>
+                    {
+                        await using (process.StandardInput.BaseStream)
+                        {
+                            try
+                            {
+                                await video.CopyToAsync(process.StandardInput.BaseStream);
+                            }
+                            catch (IOException)
+                            {
+                            }
+                        }
+                    });
 
-                for (int index = 0; index < iterations; ++index)
-                {
-                    byte[] buffer = new byte[BufferSize];
+            Task outputTask = Task.Run(
+                    async () =>
+                    {
+                        await using (process.StandardOutput.BaseStream)
+                        {
+                            await process.StandardOutput.BaseStream.CopyToAsync(outputStream);
+                        }
+                    });
 
-                    int read = video.Read(buffer);
-                    process.StandardInput.BaseStream.Write(buffer, 0, read);
-                }
-            }
-
-            MemoryStream outputStream = new MemoryStream();
-
-            await using (process.StandardOutput.BaseStream)
-            {
-                await process.StandardOutput.BaseStream.CopyToAsync(outputStream);
-            }
+            await Task.WhenAll(inputTask, outputTask);
 
             process.WaitForExit();
 
             video.Position = 0;
             outputStream.Position = 0;
 
-            return outputStream;
+            if (outputStream.Length == 0)
+            {
+                return Optional<Stream>.Empty();
+            }
+
+            return Optional.Of((Stream)outputStream);
         }
     }
 }

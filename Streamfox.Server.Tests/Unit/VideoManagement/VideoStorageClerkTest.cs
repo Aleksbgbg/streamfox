@@ -5,6 +5,7 @@
 
     using Moq;
 
+    using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoManagement.Processing;
 
@@ -29,6 +30,11 @@
                     _videoIdGenerator.Object,
                     _videoSaverMock.Object,
                     _videoSnapshotterMock.Object);
+
+            Stream snapshotStream = TestUtils.MockStream();
+            _videoSnapshotterMock
+                    .Setup(snapshotter => snapshotter.ProduceVideoSnapshot(It.IsAny<Stream>()))
+                    .Returns(Task.FromResult(Optional.Of(snapshotStream)));
         }
 
         [Theory]
@@ -38,9 +44,9 @@
         {
             SetupVideoIdOnGeneration(videoIdValue);
 
-            VideoId videoId = await _videoStorageClerk.StoreVideo(TestUtils.MockStream());
+            Optional<VideoId> videoId = await _videoStorageClerk.StoreVideo(TestUtils.MockStream());
 
-            Assert.Equal(videoIdValue, videoId.Value);
+            Assert.Equal(videoIdValue, videoId.Value.Value);
         }
 
         [Theory]
@@ -66,7 +72,7 @@
             Stream snapshotStream = TestUtils.MockStream();
             _videoSnapshotterMock
                     .Setup(snapshotter => snapshotter.ProduceVideoSnapshot(videoStream))
-                    .Returns(Task.FromResult(snapshotStream));
+                    .Returns(Task.FromResult(Optional.Of(snapshotStream)));
 
             await _videoStorageClerk.StoreVideo(videoStream);
 
@@ -75,6 +81,19 @@
                             It.IsAny<string>(),
                             videoStream,
                             snapshotStream));
+        }
+
+        [Fact]
+        public async Task ReturnsEmptyWhenNoSnapshot()
+        {
+            Stream videoStream = TestUtils.MockStream();
+            _videoSnapshotterMock
+                    .Setup(snapshotter => snapshotter.ProduceVideoSnapshot(videoStream))
+                    .Returns(Task.FromResult(Optional<Stream>.Empty()));
+
+            Optional<VideoId> videoId = await _videoStorageClerk.StoreVideo(videoStream);
+
+            Assert.False(videoId.HasValue);
         }
 
         private void SetupVideoIdOnGeneration(long videoIdValue)

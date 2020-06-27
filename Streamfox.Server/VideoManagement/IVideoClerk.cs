@@ -7,7 +7,7 @@
 
     public interface IVideoClerk
     {
-        Task<VideoId> StoreVideo(Stream videoStream);
+        Task<Optional<VideoId>> StoreVideo(Stream videoStream);
 
         Optional<Stream> RetrieveVideo(VideoId videoId);
 
