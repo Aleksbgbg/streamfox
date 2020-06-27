@@ -1,7 +1,6 @@
 ﻿namespace Streamfox.Server.Controllers
 {
     using System.IO;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc;
@@ -12,7 +11,7 @@
     using Streamfox.Server.VideoManagement;
 
     [ApiController]
-    [Route("videos")]
+    [Route("api/videos")]
     public class VideoController : ControllerBase
     {
         private readonly IVideoClerk _videoClerk;
@@ -42,7 +41,9 @@
 
             if (videoId.HasValue)
             {
-                return Created($"/videos/{videoId.Value}", new VideoMetadata(videoId.Value));
+                return Created(
+                        Url.Action(nameof(GetVideo), "Video", new { videoId = videoId.Value }),
+                        new VideoMetadata(videoId.Value));
             }
 
             return BadRequest();

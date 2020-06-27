@@ -1,9 +1,13 @@
+import { EndpointResolver } from "@/endpoints/endpoint-resolver";
 import axios from "axios";
 
 export class Communicator {
+  private readonly _endpointResolver: EndpointResolver;
+
   private readonly _root: string;
 
-  public constructor(root: string) {
+  public constructor(endpointResolver: EndpointResolver, root: string) {
+    this._endpointResolver = endpointResolver;
     this._root = root;
   }
 
@@ -18,6 +22,6 @@ export class Communicator {
   }
 
   private formatUrl(path: string): string {
-    return this._root + path;
+    return this._endpointResolver.resolve(this._root + "/" + path);
   }
 }

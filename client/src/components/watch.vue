@@ -8,10 +8,22 @@
       preload="auto"
       data-setup="{}"
     )
-      source(:src="`/videos/${$route.params.id}`" type="video/mp4")
+      source(:src="videoUrl" type="video/mp4")
     div.bg-theme-light.p-5
       h2.font-semibold.text-lg {{ $route.params.id }}
 </template>
+
+<script>
+import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
+
+export default {
+  computed: {
+    videoUrl() {
+      return endpointResolver.resolve(`/videos/${this.$route.params.id}`);
+    }
+  }
+};
+</script>
 
 <style lang="stylus" scoped>
 .max-res-720p
