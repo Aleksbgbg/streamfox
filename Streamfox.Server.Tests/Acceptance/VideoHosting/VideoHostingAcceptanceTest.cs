@@ -2,10 +2,12 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc.Testing;
 
+    using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.VideoManagement;
 
     using Xunit;
@@ -28,7 +30,7 @@
         [Fact]
         public async Task UploadVideo_ThenDownload_ExpectExactCopyDownloaded()
         {
-            byte[] videoBytes = await ReadTestFile("Video2.mp4");
+            byte[] videoBytes = await ReadTestFile("Video.mp4");
 
             VideoId videoId = await _applicationHost.Post("/videos", videoBytes);
             byte[] downloadedVideoBytes = await _applicationHost.Get($"/videos/{videoId}");
@@ -43,9 +45,9 @@
 
             VideoId videoId0 = await _applicationHost.Post("/videos", videoBytes);
             VideoId videoId1 = await _applicationHost.Post("/videos", videoBytes);
-            long[] videoIds = await _applicationHost.Get<long[]>("/videos");
+            VideoList videoList = await _applicationHost.Get<VideoList>("/videos");
 
-            Assert.Equal(new[] { videoId0.Value, videoId1.Value }, videoIds);
+            Assert.Equal(VideoIdsToStrings(videoId0, videoId1), videoList.VideoIds);
         }
 
         [Fact]
@@ -64,6 +66,11 @@
         private static Task<byte[]> ReadTestFile(string name)
         {
             return new File($"Acceptance/VideoHosting/{name}").ReadBytes();
+        }
+
+        private string[] VideoIdsToStrings(params VideoId[] videoIds)
+        {
+            return videoIds.Select(id => id.Value.ToString()).ToArray();
         }
     }
 }

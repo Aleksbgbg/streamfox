@@ -95,10 +95,10 @@
 
             OkObjectResult result = _videoController.GetVideos();
 
-            long[] resultValue = result.Value as long[];
-            Assert.IsType<long[]>(resultValue);
-            Assert.Equal(100, resultValue[0]);
-            Assert.Equal(200, resultValue[1]);
+            VideoList resultValue = result.Value as VideoList;
+            Assert.NotNull(resultValue);
+            Assert.Equal("100", resultValue.VideoIds[0]);
+            Assert.Equal("200", resultValue.VideoIds[1]);
         }
 
         [Theory]

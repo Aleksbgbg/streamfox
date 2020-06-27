@@ -45,7 +45,7 @@
         [HttpGet]
         public OkObjectResult GetVideos()
         {
-            return Ok(_videoClerk.ListVideos().Select(id => id.Value.ToString()).ToArray());
+            return Ok(new VideoList(_videoClerk.ListVideos()));
         }
 
         [HttpGet("{videoId}/thumbnail")]

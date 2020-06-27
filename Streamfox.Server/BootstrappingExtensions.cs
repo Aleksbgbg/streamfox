@@ -10,7 +10,7 @@
     {
         public static IServiceCollection AddVideoHosting(this IServiceCollection services)
         {
-            services.AddTransient<IVideoSnapshotter, VideoSnapshotter>();
+            services.AddTransient<IVideoSnapshotter, FfmpegProcessVideoSnapshotter>();
             services.AddTransient(factory => new ThumbnailFileHandler(new DirectoryHandler("Thumbnails")));
             services.AddTransient(factory => new VideoFileHandler(new DirectoryHandler("Videos")));
             services.AddTransient<IThumbnailFileReader>(factory => factory.GetService<ThumbnailFileHandler>());
