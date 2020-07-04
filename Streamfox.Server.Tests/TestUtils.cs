@@ -16,10 +16,15 @@
             return new Mock<Stream>().Object;
         }
 
-        public static byte[] ReadStreamBytes(Stream stream)
+        public static string ReadStream(Stream stream)
         {
             stream.Position = 0;
-            return Encoding.ASCII.GetBytes(new StreamReader(stream).ReadToEnd());
+            return new StreamReader(stream).ReadToEnd();
+        }
+
+        public static byte[] ReadStreamBytes(Stream stream)
+        {
+            return Encoding.ASCII.GetBytes(ReadStream(stream));
         }
 
         public static InputFormatterContext InputFormatterContextFor(HttpContext httpContext)
