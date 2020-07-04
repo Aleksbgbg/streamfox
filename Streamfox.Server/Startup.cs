@@ -10,8 +10,12 @@ namespace Streamfox.Server
 
     public class Startup
     {
+        private const string SpaStaticFilesPath = "client";
+
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSpaStaticFiles(
+                    configuration => configuration.RootPath = SpaStaticFilesPath);
             services.AddControllers(
                     options =>
                     {
@@ -24,6 +28,8 @@ namespace Streamfox.Server
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSpaStaticFiles();
+
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 
@@ -32,6 +38,8 @@ namespace Streamfox.Server
             app.UseSpa(
                     spa =>
                     {
+                        spa.Options.SourcePath = SpaStaticFilesPath;
+
                         if (env.IsDevelopment())
                         {
                             spa.UseProxyToSpaDevelopmentServer("http://localhost:8080/");
