@@ -63,6 +63,7 @@
 
             if (stream.HasValue)
             {
+                Response.ContentType = "image/jpeg";
                 return Stream(stream.Value);
             }
 
