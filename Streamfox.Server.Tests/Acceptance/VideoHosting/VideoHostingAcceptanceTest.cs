@@ -32,8 +32,8 @@
         {
             byte[] videoBytes = await ReadTestFile("Video.mp4");
 
-            VideoId videoId = await _applicationHost.Post("/videos", videoBytes);
-            byte[] downloadedVideoBytes = await _applicationHost.Get($"/videos/{videoId}");
+            VideoId videoId = await _applicationHost.Post("/api/videos", videoBytes);
+            byte[] downloadedVideoBytes = await _applicationHost.Get($"/api/videos/{videoId}");
 
             Assert.Equal(videoBytes, downloadedVideoBytes);
         }
@@ -43,9 +43,9 @@
         {
             byte[] videoBytes = await ReadTestFile("Video.mp4");
 
-            VideoId videoId0 = await _applicationHost.Post("/videos", videoBytes);
-            VideoId videoId1 = await _applicationHost.Post("/videos", videoBytes);
-            VideoList videoList = await _applicationHost.Get<VideoList>("/videos");
+            VideoId videoId0 = await _applicationHost.Post("/api/videos", videoBytes);
+            VideoId videoId1 = await _applicationHost.Post("/api/videos", videoBytes);
+            VideoList videoList = await _applicationHost.Get<VideoList>("/api/videos");
 
             Assert.Equal(VideoIdsToStrings(videoId0, videoId1), videoList.VideoIds);
         }
@@ -56,9 +56,9 @@
             byte[] videoBytes = await ReadTestFile("Video.mp4");
             byte[] thumbnailBytes = await ReadTestFile("VideoThumbnail.jpg");
 
-            VideoId videoId = await _applicationHost.Post("/videos", videoBytes);
+            VideoId videoId = await _applicationHost.Post("/api/videos", videoBytes);
             byte[] downloadedThumbnailBytes =
-                    await _applicationHost.Get($"/videos/{videoId}/thumbnail");
+                    await _applicationHost.Get($"/api/videos/{videoId}/thumbnail");
 
             Assert.Equal(thumbnailBytes, downloadedThumbnailBytes);
         }
