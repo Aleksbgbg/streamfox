@@ -28,6 +28,7 @@
 
             if (stream.HasValue)
             {
+                Response.ContentType = "video/mp4";
                 return Stream(stream.Value);
             }
 
