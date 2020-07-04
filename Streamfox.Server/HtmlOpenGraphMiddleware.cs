@@ -22,13 +22,15 @@
 
             if (match.Success)
             {
-                Stream body = InjectCustomBodyStream(context);
+                Stream originalBody = InjectCustomBodyStreamAndReturnOriginalBody(context);
 
                 await _next(context);
 
                 context.Response.Body = await InjectMetaTagsAfterHead(
-                        body,
+                        context.Response.Body,
                         FormatInjectableMetaTags(FindVideoId(match)));
+                context.Response.ContentLength = context.Response.Body.Length;
+                await ReturnBody(context.Response, originalBody);
             }
             else
             {
@@ -46,11 +48,9 @@
             return regexMatch.Groups["videoId"].Value;
         }
 
-        private static Stream InjectCustomBodyStream(HttpContext context)
+        private static Stream InjectCustomBodyStreamAndReturnOriginalBody(HttpContext context)
         {
-            MemoryStream body = new MemoryStream();
-            context.Response.Body = body;
-            return body;
+            return ReplaceBody(context.Response);
         }
 
         private static string FormatInjectableMetaTags(string videoId)
@@ -96,10 +96,7 @@
 
                     while (totalRead < body.Length)
                     {
-                        int currentRead = await bodyReader.ReadBlockAsync(
-                                buffer,
-                                0,
-                                buffer.Length);
+                        int currentRead = await bodyReader.ReadBlockAsync(buffer, 0, buffer.Length);
                         totalRead += currentRead;
                         await injectedStreamWriter.WriteAsync(buffer, 0, currentRead);
                     }
@@ -145,6 +142,20 @@
         private static char ReadChar(Stream stream)
         {
             return (char)stream.ReadByte();
+        }
+
+        private static Stream ReplaceBody(HttpResponse response)
+        {
+            Stream originalBody = response.Body;
+            response.Body = new MemoryStream();
+            return originalBody;
+        }
+
+        private static async Task ReturnBody(HttpResponse response, Stream originBody)
+        {
+            response.Body.Seek(0, SeekOrigin.Begin);
+            await response.Body.CopyToAsync(originBody);
+            response.Body = originBody;
         }
     }
 }
