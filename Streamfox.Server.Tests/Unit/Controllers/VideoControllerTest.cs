@@ -36,7 +36,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task PostVideoCreatesVideoUrlsBasedOnVideoId(
+        public async Task PostVideo_CreatesVideoUrlsFromVideoId(
                 VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
@@ -49,7 +49,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task PostVideoReturnsVideoMetadataInResponse(
+        public async Task PostVideo_ReturnsVideoMetadataInResponse(
                 VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
@@ -63,7 +63,7 @@
         }
 
         [Fact]
-        public async Task PostVideoWithEmptyIdReturnsBadRequest()
+        public async Task PostVideo_EmptyId_ReturnsBadRequest()
         {
             Stream videoStream = TestUtils.MockStream();
             _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
@@ -76,7 +76,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public void GetExistingVideoReturnsVideoStream(VideoId videoId, Stream videoStream)
+        public void GetVideo_ExistingVideo_ReturnsVideoStream(VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
                            .Returns(Optional.Of(videoStream));
@@ -89,7 +89,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public void GetMissingVideoReturnsNotFound(VideoId videoId, Stream _)
+        public void GetVideo_MissingVideo_ReturnsNotFound(VideoId videoId, Stream _)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
                            .Returns(Optional<Stream>.Empty());
@@ -100,7 +100,7 @@
         }
 
         [Fact]
-        public void GetVideosReturnsListOfIds()
+        public void GetVideos_ReturnsListOfIds()
         {
             _videoClerkMock.Setup(clerk => clerk.ListVideos())
                            .Returns(new[] { new VideoId(100), new VideoId(200) });
@@ -115,7 +115,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public void GetExistingThumbnailReturnsImageStream(VideoId videoId, Stream imageStream)
+        public void GetThumbnail_ExistingThumbnail_ReturnsImageStream(VideoId videoId, Stream imageStream)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveThumbnail(videoId))
                            .Returns(Optional.Of(imageStream));
@@ -128,7 +128,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public void GetMissingThumbnailReturnsNotFound(VideoId videoId, Stream _)
+        public void GetThumbnail_MissingThumbnail_ReturnsNotFound(VideoId videoId, Stream _)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveThumbnail(videoId))
                            .Returns(Optional<Stream>.Empty());

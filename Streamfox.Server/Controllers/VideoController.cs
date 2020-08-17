@@ -21,20 +21,6 @@
             _videoClerk = videoClerk;
         }
 
-        [HttpGet("{videoId}")]
-        public IActionResult GetVideo(VideoId videoId)
-        {
-            Optional<Stream> stream = _videoClerk.RetrieveVideo(videoId);
-
-            if (stream.HasValue)
-            {
-                Response.ContentType = "video/mp4";
-                return Stream(stream.Value);
-            }
-
-            return NotFound();
-        }
-
         [HttpPost]
         public async Task<IActionResult> PostVideo([FromBody] Stream stream)
         {
@@ -48,6 +34,20 @@
             }
 
             return BadRequest();
+        }
+
+        [HttpGet("{videoId}")]
+        public IActionResult GetVideo(VideoId videoId)
+        {
+            Optional<Stream> stream = _videoClerk.RetrieveVideo(videoId);
+
+            if (stream.HasValue)
+            {
+                Response.ContentType = "video/mp2t";
+                return Stream(stream.Value);
+            }
+
+            return NotFound();
         }
 
         [HttpGet]
