@@ -2,9 +2,9 @@
 {
     using Microsoft.Extensions.DependencyInjection;
 
+    using Streamfox.Server.Persistence;
+    using Streamfox.Server.Processing;
     using Streamfox.Server.VideoManagement;
-    using Streamfox.Server.VideoManagement.Persistence;
-    using Streamfox.Server.VideoManagement.Processing;
 
     public static class BootstrappingExtensions
     {

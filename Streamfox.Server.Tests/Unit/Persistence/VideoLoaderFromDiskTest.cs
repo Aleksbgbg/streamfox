@@ -1,12 +1,12 @@
-﻿namespace Streamfox.Server.Tests.Unit.VideoManagement.Persistence
+﻿namespace Streamfox.Server.Tests.Unit.Persistence
 {
     using System.Collections.Generic;
     using System.IO;
 
     using Moq;
 
+    using Streamfox.Server.Persistence;
     using Streamfox.Server.Types;
-    using Streamfox.Server.VideoManagement.Persistence;
 
     using Xunit;
 

@@ -1,6 +1,8 @@
-﻿namespace Streamfox.Server.VideoManagement.Persistence
+﻿namespace Streamfox.Server.Persistence
 {
     using IdGen;
+
+    using Streamfox.Server.VideoManagement;
 
     public class SnowflakeVideoIdGenerator : IVideoIdGenerator
     {

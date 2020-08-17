@@ -1,9 +1,10 @@
-﻿namespace Streamfox.Server.VideoManagement.Persistence
+﻿namespace Streamfox.Server.Persistence
 {
     using System.IO;
     using System.Linq;
 
     using Streamfox.Server.Types;
+    using Streamfox.Server.VideoManagement;
 
     public class VideoLoaderFromDisk : IVideoLoader
     {

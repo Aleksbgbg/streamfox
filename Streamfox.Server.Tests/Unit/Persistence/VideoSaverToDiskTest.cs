@@ -1,4 +1,4 @@
-﻿namespace Streamfox.Server.Tests.Unit.VideoManagement.Persistence
+﻿namespace Streamfox.Server.Tests.Unit.Persistence
 {
     using System;
     using System.IO;
@@ -6,7 +6,7 @@
 
     using Moq;
 
-    using Streamfox.Server.VideoManagement.Persistence;
+    using Streamfox.Server.Persistence;
 
     using Xunit;
 

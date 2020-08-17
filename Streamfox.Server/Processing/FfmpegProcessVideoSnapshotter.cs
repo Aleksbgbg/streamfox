@@ -1,10 +1,11 @@
-﻿namespace Streamfox.Server.VideoManagement.Processing
+﻿namespace Streamfox.Server.Processing
 {
     using System.Diagnostics;
     using System.IO;
     using System.Threading.Tasks;
 
     using Streamfox.Server.Types;
+    using Streamfox.Server.VideoManagement;
 
     public class FfmpegProcessVideoSnapshotter : IVideoSnapshotter
     {

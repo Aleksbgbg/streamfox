@@ -1,4 +1,4 @@
-﻿namespace Streamfox.Server.VideoManagement.Persistence
+﻿namespace Streamfox.Server.Persistence
 {
     public interface IVideoFileContainer : IFileContainer
     {

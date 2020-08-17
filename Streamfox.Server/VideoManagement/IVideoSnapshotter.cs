@@ -1,4 +1,4 @@
-﻿namespace Streamfox.Server.VideoManagement.Processing
+﻿namespace Streamfox.Server.VideoManagement
 {
     using System.IO;
     using System.Threading.Tasks;

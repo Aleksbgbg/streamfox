@@ -7,7 +7,6 @@
 
     using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
-    using Streamfox.Server.VideoManagement.Processing;
 
     using Xunit;
 

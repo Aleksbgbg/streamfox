@@ -1,7 +1,9 @@
-﻿namespace Streamfox.Server.VideoManagement.Persistence
+﻿namespace Streamfox.Server.Persistence
 {
     using System.IO;
     using System.Threading.Tasks;
+
+    using Streamfox.Server.VideoManagement;
 
     public class VideoSaverToDisk : IVideoSaver
     {
