@@ -12,7 +12,7 @@
             {
                 StartInfo = new ProcessStartInfo(
                         "ffmpeg",
-                        $"-i \"{videoPath}\" -vframes 1 -q:v 2 -f singlejpeg \"{thumbnailPath}\"")
+                        $"-i \"{videoPath}\" -vframes 1 -q:v 5 -vf scale=-1:225 -f singlejpeg \"{thumbnailPath}\"")
             };
 
             TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
