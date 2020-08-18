@@ -10,7 +10,8 @@ div
 
 <script>
 import WatchLinkComponent from "@/components/home/watch-link.vue";
-import { thumbnailRetriever, videoLister } from "@/bootstrapper/video-endpoint";
+import { videoLister } from "@/bootstrapper/video-endpoint";
+import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
 
 export default {
   components: {
@@ -27,7 +28,7 @@ export default {
     for (const videoId of videoList.videoIds.reverse()) {
       this.videos.push({
         id: videoId,
-        thumbnail: await thumbnailRetriever.retrieveThumbnail(videoId)
+        thumbnail: await endpointResolver.resolve(`/videos/${videoId}/thumbnail`)
       });
     }
   }
