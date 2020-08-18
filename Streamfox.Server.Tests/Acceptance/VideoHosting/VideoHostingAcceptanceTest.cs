@@ -25,6 +25,8 @@
         {
             Directory.Delete("Videos", recursive: true);
             Directory.Delete("Thumbnails", recursive: true);
+            Assert.Empty(Directory.GetFiles("Intermediate"));
+            Directory.Delete("Intermediate", recursive: true);
         }
 
         [Fact]

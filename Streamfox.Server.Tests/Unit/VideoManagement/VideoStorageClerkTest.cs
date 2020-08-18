@@ -1,5 +1,6 @@
 ﻿namespace Streamfox.Server.Tests.Unit.VideoManagement
 {
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
 
@@ -14,27 +15,30 @@
     {
         private readonly Mock<IVideoIdGenerator> _videoIdGenerator;
 
-        private readonly Mock<IVideoSaver> _videoSaverMock;
-
-        private readonly Mock<IVideoSnapshotter> _videoSnapshotterMock;
+        private readonly Mock<IVideoProcessor> _videoProcessorMock;
 
         private readonly VideoStorageClerk _videoStorageClerk;
 
         public VideoStorageClerkTest()
         {
             _videoIdGenerator = new Mock<IVideoIdGenerator>();
-            _videoSaverMock = new Mock<IVideoSaver>();
-            _videoSnapshotterMock = new Mock<IVideoSnapshotter>();
+            _videoProcessorMock = new Mock<IVideoProcessor>();
             _videoStorageClerk = new VideoStorageClerk(
                     _videoIdGenerator.Object,
-                    _videoSaverMock.Object,
-                    _videoSnapshotterMock.Object);
+                    _videoProcessorMock.Object);
 
-            Stream snapshotStream = TestUtils.MockStream();
-            _videoSnapshotterMock
-                    .Setup(snapshotter => snapshotter.ProduceVideoSnapshot(It.IsAny<Stream>()))
-                    .Returns(Task.FromResult(Optional.Of(snapshotStream)));
+            _videoProcessorMock.Setup(
+                                       processor => processor.ProcessVideo(
+                                               It.IsAny<VideoId>(),
+                                               It.IsAny<Stream>()))
+                               .Returns(Task.FromResult(true));
         }
+
+        public static IEnumerable<object[]> Streams => new[]
+        {
+            new[] { TestUtils.MockStream() },
+            new[] { TestUtils.MockStream() }
+        };
 
         [Theory]
         [InlineData(123)]
@@ -51,44 +55,37 @@
         [Theory]
         [InlineData(123)]
         [InlineData(456)]
-        public async Task SavesVideoUsingIdAsLabel(long videoIdValue)
+        public async Task ProcessesVideoId(long videoIdValue)
         {
             SetupVideoIdOnGeneration(videoIdValue);
 
             await _videoStorageClerk.StoreVideo(TestUtils.MockStream());
 
-            _videoSaverMock.Verify(
-                    saver => saver.SaveVideo(
-                            videoIdValue.ToString(),
-                            It.IsAny<Stream>(),
+            _videoProcessorMock.Verify(
+                    processor => processor.ProcessVideo(
+                            new VideoId(videoIdValue),
                             It.IsAny<Stream>()));
         }
 
-        [Fact]
-        public async Task SavesVideoSnapshotAsThumbnail()
+        [Theory]
+        [MemberData(nameof(Streams))]
+        public async Task ProcessesVideoStream(Stream stream)
         {
-            Stream videoStream = TestUtils.MockStream();
-            Stream snapshotStream = TestUtils.MockStream();
-            _videoSnapshotterMock
-                    .Setup(snapshotter => snapshotter.ProduceVideoSnapshot(videoStream))
-                    .Returns(Task.FromResult(Optional.Of(snapshotStream)));
+            SetupVideoIdOnGeneration(0);
 
-            await _videoStorageClerk.StoreVideo(videoStream);
+            await _videoStorageClerk.StoreVideo(stream);
 
-            _videoSaverMock.Verify(
-                    saver => saver.SaveVideo(
-                            It.IsAny<string>(),
-                            videoStream,
-                            snapshotStream));
+            _videoProcessorMock.Verify(
+                    processor => processor.ProcessVideo(It.IsAny<VideoId>(), stream));
         }
 
         [Fact]
-        public async Task ReturnsEmptyWhenNoSnapshot()
+        public async Task ReturnsEmptyWhenProcessingUnsuccessful()
         {
             Stream videoStream = TestUtils.MockStream();
-            _videoSnapshotterMock
-                    .Setup(snapshotter => snapshotter.ProduceVideoSnapshot(videoStream))
-                    .Returns(Task.FromResult(Optional<Stream>.Empty()));
+            _videoProcessorMock
+                    .Setup(processor => processor.ProcessVideo(new VideoId(0), videoStream))
+                    .Returns(Task.FromResult(false));
 
             Optional<VideoId> videoId = await _videoStorageClerk.StoreVideo(videoStream);
 

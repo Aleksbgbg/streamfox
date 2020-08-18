@@ -13,6 +13,11 @@
             Directory.CreateDirectory(_directoryPath);
         }
 
+        public void Delete(string name)
+        {
+            File.Delete(PathToFile(name));
+        }
+
         public bool FileExists(string name)
         {
             return File.Exists(PathToFile(name));
@@ -35,7 +40,7 @@
             return File.Create(PathToFile(name));
         }
 
-        private string PathToFile(string name)
+        public string PathToFile(string name)
         {
             return Path.Combine(_directoryPath, name);
         }

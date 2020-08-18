@@ -9,32 +9,26 @@
     {
         private readonly IVideoIdGenerator _videoIdGenerator;
 
-        private readonly IVideoSaver _videoSaver;
+        private readonly IVideoProcessor _videoProcessor;
 
-        private readonly IVideoSnapshotter _videoSnapshotter;
-
-        public VideoStorageClerk(
-                IVideoIdGenerator videoIdGenerator, IVideoSaver videoSaver,
-                IVideoSnapshotter videoSnapshotter)
+        public VideoStorageClerk(IVideoIdGenerator videoIdGenerator, IVideoProcessor videoProcessor)
         {
             _videoIdGenerator = videoIdGenerator;
-            _videoSaver = videoSaver;
-            _videoSnapshotter = videoSnapshotter;
+            _videoProcessor = videoProcessor;
         }
 
         public async Task<Optional<VideoId>> StoreVideo(Stream videoStream)
         {
             VideoId videoId = _videoIdGenerator.GenerateVideoId();
-            Optional<Stream> snapshot = await _videoSnapshotter.ProduceVideoSnapshot(videoStream);
 
-            if (!snapshot.HasValue)
+            bool processSuccessful = await _videoProcessor.ProcessVideo(videoId, videoStream);
+
+            if (processSuccessful)
             {
-                return Optional<VideoId>.Empty();
+                return Optional.Of(videoId);
             }
 
-            await _videoSaver.SaveVideo(videoId.ToString(), videoStream, snapshot.Value);
-
-            return Optional.Of(videoId);
+            return Optional<VideoId>.Empty();
         }
     }
 }
