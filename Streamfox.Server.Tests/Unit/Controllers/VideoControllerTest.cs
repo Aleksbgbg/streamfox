@@ -36,26 +36,13 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task PostVideo_CreatesVideoUrlsFromVideoId(
-                VideoId videoId, Stream videoStream)
-        {
-            _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
-                           .Returns(Task.FromResult(Optional.Of(videoId)));
-
-            CreatedResult result = await _videoController.PostVideo(videoStream) as CreatedResult;
-
-            Assert.Equal($"/videos/{videoId}", result.Location);
-        }
-
-        [Theory]
-        [MemberData(nameof(VideoCases))]
         public async Task PostVideo_ReturnsVideoMetadataInResponse(
                 VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.StoreVideo(videoStream))
                            .Returns(Task.FromResult(Optional.Of(videoId)));
 
-            CreatedResult result = await _videoController.PostVideo(videoStream) as CreatedResult;
+            var result = await _videoController.PostVideo(videoStream) as OkObjectResult;
 
             VideoMetadata videoMetadata = result.Value as VideoMetadata;
             Assert.IsType<VideoMetadata>(videoMetadata);
@@ -89,6 +76,19 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
+        public void GetVideo_ExistingVideo_Mp4ContentType(VideoId videoId, Stream videoStream)
+        {
+            _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
+                           .Returns(Optional.Of(videoStream));
+
+            StreamResult result = _videoController.GetVideo(videoId) as StreamResult;
+
+            Assert.IsType<StreamResult>(result);
+            Assert.Equal("video/mp4", result.ContentType);
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
         public void GetVideo_MissingVideo_ReturnsNotFound(VideoId videoId, Stream _)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
@@ -115,7 +115,8 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public void GetThumbnail_ExistingThumbnail_ReturnsImageStream(VideoId videoId, Stream imageStream)
+        public void GetThumbnail_ExistingThumbnail_ReturnsImageStream(
+                VideoId videoId, Stream imageStream)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveThumbnail(videoId))
                            .Returns(Optional.Of(imageStream));
@@ -124,6 +125,20 @@
 
             Assert.IsType<StreamResult>(result);
             Assert.Equal(imageStream, result.Stream);
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public void GetThumbnail_ExistingThumbnail_JpegContentType(
+                VideoId videoId, Stream imageStream)
+        {
+            _videoClerkMock.Setup(clerk => clerk.RetrieveThumbnail(videoId))
+                           .Returns(Optional.Of(imageStream));
+
+            StreamResult result = _videoController.GetThumbnail(videoId) as StreamResult;
+
+            Assert.IsType<StreamResult>(result);
+            Assert.Equal("image/jpeg", result.ContentType);
         }
 
         [Theory]

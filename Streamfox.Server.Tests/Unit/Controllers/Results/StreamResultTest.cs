@@ -18,7 +18,7 @@
         [Fact]
         public async Task WritesStreamContentsToResponse()
         {
-            StreamResult result = new StreamResult(new MemoryStream(StringToBytes("abc")));
+            StreamResult result = new StreamResult(new MemoryStream(StringToBytes("abc")), "video/mp4");
             ActionContext actionContext = PrepareActionContext();
 
             await result.ExecuteResultAsync(actionContext);
@@ -28,6 +28,17 @@
             Assert.Equal((byte)'a', (byte)body.ReadByte());
             Assert.Equal((byte)'b', (byte)body.ReadByte());
             Assert.Equal((byte)'c', (byte)body.ReadByte());
+        }
+
+        [Fact]
+        public async Task WritesContentTypeToResponse()
+        {
+            StreamResult result = new StreamResult(new MemoryStream(StringToBytes("abc")), "video/lmao420");
+            ActionContext actionContext = PrepareActionContext();
+
+            await result.ExecuteResultAsync(actionContext);
+
+            Assert.Equal("video/lmao420", actionContext.HttpContext.Response.ContentType);
         }
 
         private static byte[] StringToBytes(string value)

@@ -28,9 +28,7 @@
 
             if (videoId.HasValue)
             {
-                return Created(
-                        Url.Action(nameof(GetVideo), "Video", new { videoId = videoId.Value }),
-                        new VideoMetadata(videoId.Value));
+                return Ok(new VideoMetadata(videoId.Value));
             }
 
             return BadRequest();
@@ -43,8 +41,7 @@
 
             if (stream.HasValue)
             {
-                Response.ContentType = "video/mp2t";
-                return Stream(stream.Value);
+                return Stream(stream.Value, "video/mp4");
             }
 
             return NotFound();
@@ -63,16 +60,15 @@
 
             if (stream.HasValue)
             {
-                Response.ContentType = "image/jpeg";
-                return Stream(stream.Value);
+                return Stream(stream.Value, "image/jpeg");
             }
 
             return NotFound();
         }
 
-        private static StreamResult Stream(Stream stream)
+        private static StreamResult Stream(Stream stream, string contentType)
         {
-            return new StreamResult(stream);
+            return new StreamResult(stream, contentType);
         }
     }
 }
