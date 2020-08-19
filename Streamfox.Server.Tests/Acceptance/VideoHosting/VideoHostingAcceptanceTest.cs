@@ -12,7 +12,8 @@
 
     using Xunit;
 
-    public class VideoHostingAcceptanceTest : IClassFixture<WebApplicationFactory<Startup>>, IDisposable
+    public class VideoHostingAcceptanceTest : IClassFixture<WebApplicationFactory<Startup>>,
+                                              IDisposable
     {
         private readonly ApplicationHost _applicationHost;
 
@@ -65,14 +66,51 @@
             Assert.Equal(thumbnailBytes, downloadedThumbnailBytes);
         }
 
+        [Fact]
+        public async Task UploadVideo_ThenStream_ExpectAccurateRangeStreaming()
+        {
+            const string streamRangeFirst5Mib = "bytes=0-";
+            const string streamRangeNext5Mib = "bytes=5242880-";
+            const string streamRangeEndOfVideo = "bytes=48568606-";
+            byte[] videoBytes = await ReadTestFile("Video.mp4");
+
+            VideoId videoId = await _applicationHost.Post("/api/videos", videoBytes);
+            PartialResponse initial5MibStream = await GetVideoRange(videoId, streamRangeFirst5Mib);
+            PartialResponse next5MibStream = await GetVideoRange(videoId, streamRangeNext5Mib);
+            PartialResponse last1MibStream = await GetVideoRange(videoId, streamRangeEndOfVideo);
+
+            Assert.Equal(5242880, initial5MibStream.ContentLength);
+            Assert.Equal(0, initial5MibStream.Start);
+            Assert.Equal(5242879, initial5MibStream.End);
+            Assert.Equal(videoBytes.Length, initial5MibStream.TotalSize);
+            Assert.Equal(TestUtils.CutBuffer(videoBytes, 0, 5242880), initial5MibStream.Bytes);
+
+            Assert.Equal(5242880, next5MibStream.ContentLength);
+            Assert.Equal(5242880, next5MibStream.Start);
+            Assert.Equal(10485759, next5MibStream.End);
+            Assert.Equal(videoBytes.Length, next5MibStream.TotalSize);
+            Assert.Equal(TestUtils.CutBuffer(videoBytes, 5242880, 10485760), next5MibStream.Bytes);
+
+            Assert.Equal(1048576, last1MibStream.ContentLength);
+            Assert.Equal(48568606, last1MibStream.Start);
+            Assert.Equal(videoBytes.Length - 1, last1MibStream.End);
+            Assert.Equal(videoBytes.Length, last1MibStream.TotalSize);
+            Assert.Equal(TestUtils.CutBuffer(videoBytes, 48568606, videoBytes.Length), last1MibStream.Bytes);
+        }
+
         private static Task<byte[]> ReadTestFile(string name)
         {
             return new File($"Acceptance/VideoHosting/{name}").ReadBytes();
         }
 
-        private string[] VideoIdsToStrings(params VideoId[] videoIds)
+        private static string[] VideoIdsToStrings(params VideoId[] videoIds)
         {
             return videoIds.Select(id => id.Value.ToString()).ToArray();
+        }
+
+        private Task<PartialResponse> GetVideoRange(VideoId videoId, string range)
+        {
+            return _applicationHost.GetRange($"/api/videos/{videoId}", range);
         }
     }
 }

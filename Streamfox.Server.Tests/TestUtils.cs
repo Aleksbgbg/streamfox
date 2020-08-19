@@ -1,5 +1,6 @@
 ﻿namespace Streamfox.Server.Tests
 {
+    using System;
     using System.IO;
     using System.Text;
 
@@ -43,6 +44,21 @@
                                              modelState: new ModelStateDictionary(),
                                              modelMetadata,
                                              readerFactory: (_, __) => TextReader.Null);
+        }
+
+
+        public static byte[] CutBuffer(byte[] buffer, int size)
+        {
+            byte[] newBuffer = new byte[size];
+            Array.Copy(buffer, newBuffer, newBuffer.Length);
+            return newBuffer;
+        }
+
+        public static byte[] CutBuffer(byte[] buffer, int start, int end)
+        {
+            byte[] newBuffer = new byte[end - start];
+            Array.Copy(buffer, start, newBuffer, 0, newBuffer.Length);
+            return newBuffer;
         }
     }
 }

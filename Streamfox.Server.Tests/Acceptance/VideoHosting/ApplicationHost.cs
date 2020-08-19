@@ -30,6 +30,20 @@
             return bytes;
         }
 
+        public async Task<PartialResponse> GetRange(
+                string endpoint, string range)
+        {
+            HttpClient httpClient = _webApplicationFactory.CreateClient();
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            request.Headers.Add("Range", range);
+
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+            byte[] bytes = await response.Content.ReadAsByteArrayAsync();
+
+            return PartialResponse.Parse(response.Content.Headers, bytes);
+        }
+
         public async Task<T> Get<T>(string endpoint)
         {
             HttpClient httpClient = _webApplicationFactory.CreateClient();
@@ -49,12 +63,14 @@
             {
                 Content = byteArrayContent
             };
-            byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            byteArrayContent.Headers.ContentType =
+                    new MediaTypeHeaderValue("application/octet-stream");
 
             HttpResponseMessage response = await httpClient.SendAsync(request);
             string responseString = await response.Content.ReadAsStringAsync();
 
-            VideoMetadata videoMetadata = JsonConvert.DeserializeObject<VideoMetadata>(responseString);
+            VideoMetadata videoMetadata =
+                    JsonConvert.DeserializeObject<VideoMetadata>(responseString);
 
             return new VideoId(long.Parse(videoMetadata.VideoId));
         }
