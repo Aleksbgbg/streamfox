@@ -84,7 +84,7 @@
 
         private static async Task<Stream> InjectMetaTagsAfterHead(Stream body, string metaTags)
         {
-            SearchStream(body, "<head>");
+            SearchStream(body, "<title>Streamfox</title>");
             int metaTagsInjectPosition = (int)body.Position;
             body.Position = 0;
 
