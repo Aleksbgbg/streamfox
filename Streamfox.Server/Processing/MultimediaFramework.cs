@@ -1,9 +1,9 @@
-﻿namespace Streamfox.Server.VideoProcessing
+﻿namespace Streamfox.Server.Processing
 {
     using System.Threading.Tasks;
 
-    using Streamfox.Server.Processing;
     using Streamfox.Server.VideoManagement;
+    using Streamfox.Server.VideoProcessing;
 
     public class MultimediaFramework : IMultimediaFramework
     {
