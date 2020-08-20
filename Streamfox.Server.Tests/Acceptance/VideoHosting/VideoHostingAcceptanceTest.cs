@@ -42,6 +42,18 @@
         }
 
         [Fact]
+        public async Task UploadH265Video_ThenDownload_ExpectVp9CopyDownloaded()
+        {
+            byte[] h265VideoBytes = await ReadTestFile("Video-h265.mp4");
+            byte[] vp9VideoBytes = await ReadTestFile("Video-vp9.webm");
+
+            VideoId videoId = await _applicationHost.Post("/api/videos", h265VideoBytes);
+            byte[] downloadedVideoBytes = await _applicationHost.Get($"/api/videos/{videoId}");
+
+            Assert.Equal(vp9VideoBytes, downloadedVideoBytes);
+        }
+
+        [Fact]
         public async Task UploadVideo_ListVideos_HasNewUploadedVideos()
         {
             byte[] videoBytes = await ReadTestFile("Video.mp4");

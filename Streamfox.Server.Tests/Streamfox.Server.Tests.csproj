@@ -15,6 +15,12 @@
     <ProjectReference Include="..\Streamfox.Server\Streamfox.Server.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Acceptance\VideoHosting\Video-h265.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Acceptance\VideoHosting\Video-vp9.webm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Acceptance\VideoHosting\Video.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
