@@ -11,6 +11,7 @@
     using Streamfox.Server.Controllers;
     using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.Controllers.Results;
+    using Streamfox.Server.Processing;
     using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
 
@@ -44,9 +45,9 @@
 
             var result = await _videoController.PostVideo(videoStream) as OkObjectResult;
 
-            VideoMetadata videoMetadata = result.Value as VideoMetadata;
-            Assert.IsType<VideoMetadata>(videoMetadata);
-            Assert.Equal(videoId.ToString(), videoMetadata.VideoId);
+            VideoIdResponse videoIdResponse = result.Value as VideoIdResponse;
+            Assert.IsType<VideoIdResponse>(videoIdResponse);
+            Assert.Equal(videoId.ToString(), videoIdResponse.VideoId);
         }
 
         [Fact]
@@ -63,38 +64,41 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public void GetVideo_ExistingVideo_ReturnsVideoStream(VideoId videoId, Stream videoStream)
+        public async Task GetVideo_ExistingVideo_ReturnsVideoStream(VideoId videoId, Stream videoStream)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
-                           .Returns(Optional.Of(videoStream));
+                           .Returns(WrapStream(videoStream));
 
-            StreamResult result = _videoController.GetVideo(videoId) as StreamResult;
+            StreamResult result = await _videoController.GetVideo(videoId) as StreamResult;
 
             Assert.IsType<StreamResult>(result);
             Assert.Equal(videoStream, result.Stream);
         }
 
         [Theory]
-        [MemberData(nameof(VideoCases))]
-        public void GetVideo_ExistingVideo_Mp4ContentType(VideoId videoId, Stream videoStream)
+        [InlineData(VideoFormat.Mp4, "video/mp4")]
+        [InlineData(VideoFormat.Webm, "video/webm")]
+        public async Task GetVideo_ExistingVideo_CorrectContentType(
+                VideoFormat format, string contentType)
         {
+            VideoId videoId = new VideoId(123);
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
-                           .Returns(Optional.Of(videoStream));
+                           .Returns(WrapStream(TestUtils.MockStream(), format));
 
-            StreamResult result = _videoController.GetVideo(videoId) as StreamResult;
+            StreamResult result = await _videoController.GetVideo(videoId) as StreamResult;
 
             Assert.IsType<StreamResult>(result);
-            Assert.Equal("video/mp4", result.ContentType);
+            Assert.Equal(contentType, result.ContentType);
         }
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public void GetVideo_MissingVideo_ReturnsNotFound(VideoId videoId, Stream _)
+        public async Task GetVideo_MissingVideo_ReturnsNotFound(VideoId videoId, Stream _)
         {
             _videoClerkMock.Setup(clerk => clerk.RetrieveVideo(videoId))
-                           .Returns(Optional<Stream>.Empty());
+                           .Returns(Task.FromResult(Optional<StoredVideo>.Empty()));
 
-            IActionResult result = _videoController.GetVideo(videoId);
+            IActionResult result = await _videoController.GetVideo(videoId);
 
             Assert.IsType<NotFoundResult>(result);
         }
@@ -151,6 +155,20 @@
             IActionResult result = _videoController.GetThumbnail(videoId);
 
             Assert.IsType<NotFoundResult>(result);
+        }
+
+        private static Task<Optional<StoredVideo>> WrapStream(Stream stream)
+        {
+            return Task.FromResult(Optional.Of(new StoredVideo(new VideoMetadata(), stream)));
+        }
+
+        private static Task<Optional<StoredVideo>> WrapStream(Stream stream, VideoFormat format)
+        {
+            return Task.FromResult(
+                    Optional.Of(
+                            new StoredVideo(
+                                    new VideoMetadata(VideoCodec.Invalid, format),
+                                    stream)));
         }
     }
 }

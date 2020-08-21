@@ -2,13 +2,13 @@
 {
     using Streamfox.Server.VideoManagement;
 
-    public class VideoMetadata
+    public class VideoIdResponse
     {
-        public VideoMetadata()
+        public VideoIdResponse()
         {
         }
 
-        public VideoMetadata(VideoId videoId)
+        public VideoIdResponse(VideoId videoId)
         {
             VideoId = videoId.ToString();
         }

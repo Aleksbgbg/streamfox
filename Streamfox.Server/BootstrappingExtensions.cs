@@ -14,7 +14,12 @@
             var intermediateHandler = new DirectoryHandler("Intermediate");
             var thumbnailHandler = new DirectoryHandler("Thumbnails");
             var videoHandler = new DirectoryHandler("Videos");
+            var metadataHandler = new DirectoryHandler("Metadata");
 
+            services.AddTransient<IMetadataRetriever>(
+                    factory => new FromDiskMetadataRetriever(metadataHandler));
+            services.AddTransient<IMetadataSaver>(
+                    factory => new ToDiskMetadataSaver(metadataHandler));
             services.AddTransient(factory => new ThumbnailFileHandler(thumbnailHandler));
             services.AddTransient(factory => new VideoFileHandler(videoHandler));
             services.AddTransient<IThumbnailFileReader>(factory => factory.GetService<ThumbnailFileHandler>());

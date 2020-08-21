@@ -23,6 +23,8 @@
 
         private readonly Mock<IExistenceChecker> _existenceChecker;
 
+        private readonly Mock<IMetadataSaver> _metadataSaver;
+
         public VideoProcessorTest()
         {
             _ffmpeg = new Mock<IFfmpeg>();
@@ -30,10 +32,12 @@
             MultimediaFramework multimediaFramework =
                     new MultimediaFramework(_fakeFileSystem, _ffmpeg.Object);
             _existenceChecker = new Mock<IExistenceChecker>();
+            _metadataSaver = new Mock<IMetadataSaver>();
             _videoProcessor = new VideoProcessor(
                     _fakeFileSystem,
                     multimediaFramework,
-                    _existenceChecker.Object);
+                    _existenceChecker.Object,
+                    _metadataSaver.Object);
         }
 
         public static IEnumerable<object[]> VideoCases => new[]
@@ -139,6 +143,36 @@
 
             _ffmpeg.Verify(
                     ffmpeg => ffmpeg.ConvertToMp4($"intermediate-{videoId}", $"video-{videoId}"));
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public async Task SavesVideoMetadata_Mp4(VideoId videoId)
+        {
+            SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Mp4);
+            Stream videoStream = TestUtils.MockStream();
+
+            await _videoProcessor.ProcessVideo(videoId, videoStream);
+
+            _metadataSaver.Verify(
+                    saver => saver.SaveMetadata(
+                            videoId,
+                            new VideoMetadata(VideoCodec.H264, VideoFormat.Mp4)));
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public async Task SavesVideoMetadata_Webm(VideoId videoId)
+        {
+            SetupVideoMetadata(videoId, VideoCodec.Vp9, VideoFormat.Webm);
+            Stream videoStream = TestUtils.MockStream();
+
+            await _videoProcessor.ProcessVideo(videoId, videoStream);
+
+            _metadataSaver.Verify(
+                    saver => saver.SaveMetadata(
+                            videoId,
+                            new VideoMetadata(VideoCodec.Vp9, VideoFormat.Webm)));
         }
 
         [Theory]

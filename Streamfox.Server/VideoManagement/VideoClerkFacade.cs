@@ -17,7 +17,7 @@
             _videoStorageClerk = videoStorageClerk;
         }
 
-        public Optional<Stream> RetrieveVideo(VideoId videoId)
+        public Task<Optional<StoredVideo>> RetrieveVideo(VideoId videoId)
         {
             return _videoRetrievalClerk.RetrieveVideo(videoId);
         }

@@ -7,6 +7,7 @@
 
     using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.Controllers.Results;
+    using Streamfox.Server.Processing;
     using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
 
@@ -28,20 +29,22 @@
 
             if (videoId.HasValue)
             {
-                return Ok(new VideoMetadata(videoId.Value));
+                return Ok(new VideoIdResponse(videoId.Value));
             }
 
             return BadRequest();
         }
 
         [HttpGet("{videoId}")]
-        public IActionResult GetVideo(VideoId videoId)
+        public async Task<IActionResult> GetVideo(VideoId videoId)
         {
-            Optional<Stream> stream = _videoClerk.RetrieveVideo(videoId);
+            Optional<StoredVideo> optionalStoredVideo = await _videoClerk.RetrieveVideo(videoId);
 
-            if (stream.HasValue)
+            if (optionalStoredVideo.HasValue)
             {
-                return Stream(stream.Value, "video/mp4");
+                StoredVideo storedVideo = optionalStoredVideo.Value;
+                return Stream(storedVideo.VideoStream,
+                        storedVideo.VideoMetadata.VideoFormat == VideoFormat.Webm ? "video/webm" : "video/mp4");
             }
 
             return NotFound();

@@ -25,7 +25,7 @@
             await _ffmpeg.ExtractThumbnail(sourceVideoPath, thumbnailPath);
         }
 
-        public async Task ExtractVideoAndCoerceToSupportedFormats(VideoId videoId)
+        public async Task<VideoMetadata> ExtractVideoAndCoerceToSupportedFormats(VideoId videoId)
         {
             string sourcePath = _pathResolver.ResolveIntermediateVideoPath(videoId);
             string outputPath = _pathResolver.ResolveVideoPath(videoId);
@@ -43,11 +43,15 @@
                      videoMetadata.VideoFormat == VideoFormat.Other)
             {
                 await _ffmpeg.ConvertToMp4(sourcePath, outputPath);
+                videoMetadata = new VideoMetadata(VideoCodec.H264, VideoFormat.Mp4);
             }
             else if (videoMetadata.VideoCodec != VideoCodec.Invalid)
             {
                 await _ffmpeg.ConvertToVp9Webm(sourcePath, outputPath);
+                videoMetadata = new VideoMetadata(VideoCodec.Vp9, VideoFormat.Webm);
             }
+
+            return videoMetadata;
         }
     }
 }

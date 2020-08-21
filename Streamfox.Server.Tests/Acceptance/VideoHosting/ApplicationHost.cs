@@ -1,5 +1,6 @@
 ﻿namespace Streamfox.Server.Tests.Acceptance.VideoHosting
 {
+    using System.Linq;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
@@ -20,7 +21,7 @@
             _webApplicationFactory = webApplicationFactory;
         }
 
-        public async Task<byte[]> Get(string endpoint)
+        public async Task<byte[]> GetBytes(string endpoint)
         {
             HttpClient httpClient = _webApplicationFactory.CreateClient();
 
@@ -30,8 +31,17 @@
             return bytes;
         }
 
-        public async Task<PartialResponse> GetRange(
-                string endpoint, string range)
+        public async Task<BytesResponse> GetBytesAndContentType(string endpoint)
+        {
+            HttpClient httpClient = _webApplicationFactory.CreateClient();
+
+            HttpResponseMessage response = await httpClient.GetAsync(endpoint);
+            byte[] bytes = await response.Content.ReadAsByteArrayAsync();
+
+            return new BytesResponse(bytes, response.Content.Headers.ContentType.MediaType);
+        }
+
+        public async Task<PartialResponse> GetRange(string endpoint, string range)
         {
             HttpClient httpClient = _webApplicationFactory.CreateClient();
 
@@ -69,10 +79,10 @@
             HttpResponseMessage response = await httpClient.SendAsync(request);
             string responseString = await response.Content.ReadAsStringAsync();
 
-            VideoMetadata videoMetadata =
-                    JsonConvert.DeserializeObject<VideoMetadata>(responseString);
+            VideoIdResponse videoIdResponse =
+                    JsonConvert.DeserializeObject<VideoIdResponse>(responseString);
 
-            return new VideoId(long.Parse(videoMetadata.VideoId));
+            return new VideoId(long.Parse(videoIdResponse.VideoId));
         }
     }
 }
