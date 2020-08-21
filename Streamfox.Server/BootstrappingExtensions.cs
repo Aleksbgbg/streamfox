@@ -31,6 +31,7 @@
                             intermediateHandler,
                             thumbnailHandler,
                             videoHandler));
+            services.AddTransient<IProcessRunner, ProcessRunner>();
             services.AddTransient<IFfmpeg, Ffmpeg>();
             services.AddTransient<IVideoProcessor, VideoProcessor>();
             services.AddTransient<IVideoIdGenerator, SnowflakeVideoIdGenerator>();

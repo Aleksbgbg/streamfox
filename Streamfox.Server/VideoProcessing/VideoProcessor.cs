@@ -27,7 +27,7 @@
             await _intermediateVideoWriter.SaveVideo(videoId, videoStream);
 
             await _multimediaFramework.ExtractVideoThumbnail(videoId);
-            await _multimediaFramework.ExtractVideo(videoId);
+            await _multimediaFramework.ExtractVideoAndCoerceToSupportedFormats(videoId);
 
             _intermediateVideoWriter.DeleteVideo(videoId);
 

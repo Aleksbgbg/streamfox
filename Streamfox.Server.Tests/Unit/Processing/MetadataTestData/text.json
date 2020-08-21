@@ -1,0 +1,55 @@
+{
+    "streams": [
+        {
+            "index": 0,
+            "codec_name": "ansi",
+            "codec_long_name": "ASCII/ANSI art",
+            "codec_type": "video",
+            "codec_time_base": "1/25",
+            "codec_tag_string": "[0][0][0][0]",
+            "codec_tag": "0x0000",
+            "width": 640,
+            "height": 400,
+            "coded_width": 640,
+            "coded_height": 400,
+            "closed_captions": 0,
+            "has_b_frames": 0,
+            "pix_fmt": "pal8",
+            "level": -99,
+            "refs": 1,
+            "r_frame_rate": "25/1",
+            "avg_frame_rate": "25/1",
+            "time_base": "1/25",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "duration_ts": 5,
+            "duration": "0.200000",
+            "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+            }
+        }
+    ],
+    "format": {
+        "filename": "streams.txt",
+        "nb_streams": 1,
+        "nb_programs": 0,
+        "format_name": "tty",
+        "format_long_name": "Tele-typewriter",
+        "start_time": "0.000000",
+        "duration": "0.200000",
+        "size": "1059",
+        "bit_rate": "42360",
+        "probe_score": 99
+    }
+}

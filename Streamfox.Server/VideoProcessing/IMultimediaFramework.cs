@@ -8,6 +8,6 @@
     {
         Task ExtractVideoThumbnail(VideoId videoId);
 
-        Task ExtractVideo(VideoId videoId);
+        Task ExtractVideoAndCoerceToSupportedFormats(VideoId videoId);
     }
 }
