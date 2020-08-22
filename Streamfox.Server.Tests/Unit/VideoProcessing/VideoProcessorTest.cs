@@ -147,7 +147,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task CopiesVideoToOutputWhenH264Webm(VideoId videoId)
+        public async Task ConvertsVideoToMp4WhenH264Webm(VideoId videoId)
         {
             SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Webm);
             Stream videoStream = TestUtils.MockStream();
@@ -155,7 +155,7 @@
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
             _ffmpeg.Verify(
-                    ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
+                    ffmpeg => ffmpeg.ConvertToMp4($"intermediate-{videoId}", $"video-{videoId}"));
         }
 
         [Theory]
