@@ -21,11 +21,10 @@
             services.AddTransient<IMetadataSaver>(
                     factory => new ToDiskMetadataSaver(metadataHandler));
             services.AddTransient(factory => new ThumbnailFileHandler(thumbnailHandler));
-            services.AddTransient(factory => new VideoFileHandler(metadataHandler));
             services.AddTransient<IThumbnailFileReader>(factory => factory.GetService<ThumbnailFileHandler>());
             services.AddTransient<IThumbnailFileWriter>(factory => factory.GetService<ThumbnailFileHandler>());
-            services.AddTransient<IVideoFileContainer>(factory => factory.GetService<VideoFileHandler>());
-            services.AddTransient<IVideoFileReader>(factory => factory.GetService<VideoFileHandler>());
+            services.AddTransient<IVideoFileContainer>(factory => new VideoFileHandler(metadataHandler));
+            services.AddTransient<IVideoFileReader>(factory => new VideoFileHandler(videoHandler));
             services.AddTransient<IVideoLoader, VideoLoaderFromDisk>();
             services.AddTransient<VideoRetrievalClerk>();
             services.AddTransient<IExistenceChecker>(factory => new ExistenceChecker(thumbnailHandler, videoHandler));
