@@ -1,6 +1,7 @@
 ﻿namespace Streamfox.Server.Processing
 {
     using System.Diagnostics;
+    using System.IO;
     using System.Threading.Tasks;
 
     public class ProcessRunner : IProcessRunner
@@ -11,7 +12,7 @@
             {
                 StartInfo = new ProcessStartInfo("ffmpeg", args),
                 EnableRaisingEvents = true
-            }.RunAsTask();
+            }.StartAsync();
         }
 
         public async Task<string> RunFfprobe(string args)
@@ -25,12 +26,23 @@
                 EnableRaisingEvents = true
             };
 
-            await process.RunAsTask(1000);
+            MemoryStream output = new MemoryStream();
 
-            using (process.StandardOutput)
-            {
-                return await process.StandardOutput.ReadToEndAsync();
-            }
+            Task runProcess = process.StartAsync();
+            Task readOutput = Task.Run(
+                    async () =>
+                    {
+                        using (process.StandardOutput)
+                        {
+                            await process.StandardOutput.BaseStream.CopyToAsync(output);
+                        }
+                    });
+
+            await Task.WhenAll(runProcess, readOutput);
+
+            output.Position = 0;
+            using StreamReader outputReader = new StreamReader(output);
+            return await outputReader.ReadToEndAsync();
         }
     }
 }

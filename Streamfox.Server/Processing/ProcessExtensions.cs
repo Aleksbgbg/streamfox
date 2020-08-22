@@ -6,7 +6,7 @@
 
     public static class ProcessExtensions
     {
-        public static Task<int> RunAsTask(this Process process, int timeout = -1)
+        public static Task<int> StartAsync(this Process process, int timeout = -1)
         {
             TaskCompletionSource<int> taskCompletionSource = new TaskCompletionSource<int>();
 

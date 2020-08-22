@@ -27,7 +27,7 @@
 
             _processRunner.Verify(
                     runner => runner.RunFfmpeg(
-                            "-i \"video\" -vframes 1 -q:v 5 -vf scale=-1:225 -f singlejpeg \"thumbnail\""));
+                            "-i \"video\" -vframes 1 -q:v 2 -vf scale=-1:225 -f singlejpeg \"thumbnail\""));
         }
 
         [Fact]
@@ -36,7 +36,7 @@
             await _ffmpeg.ConvertToVp9Webm("video", "output");
 
             _processRunner.Verify(
-                    runner => runner.RunFfmpeg("-i \"video\" -c:v vp9 -f webm \"output\""));
+                    runner => runner.RunFfmpeg("-i \"video\" -c:v vp9 -crf 30 -b:v 0 -f webm \"output\""));
         }
 
         [Fact]

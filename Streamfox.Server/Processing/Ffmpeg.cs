@@ -18,7 +18,7 @@
         public async Task ExtractThumbnail(string videoPath, string thumbnailPath)
         {
             await _processRunner.RunFfmpeg(
-                    $"-i \"{videoPath}\" -vframes 1 -q:v 5 -vf scale=-1:225 -f singlejpeg \"{thumbnailPath}\"");
+                    $"-i \"{videoPath}\" -vframes 1 -q:v 2 -vf scale=-1:225 -f singlejpeg \"{thumbnailPath}\"");
         }
 
         public async Task<VideoMetadata> GrabVideoMetadata(string videoPath)
@@ -91,7 +91,11 @@
         public async Task ConvertToVp9Webm(string sourcePath, string outputPath)
         {
             await _processRunner.RunFfmpeg(
-                    $"-i \"{sourcePath}\" -c:v vp9 -f webm \"{outputPath}\"");
+                    $"-i \"{sourcePath}\" -c:v vp9 -crf 30 -b:v 0 -f webm \"{outputPath}\"");
+            //await _processRunner.RunFfmpeg(
+            //                $"-i \"{sourcePath}\" -c:v vp9 -b:v 0 -crf 30 -pass 1 -an -f null /dev/null");
+            //await _processRunner.RunFfmpeg(
+            //                $"-i \"{sourcePath}\" -c:v vp9 -b:v 0 -crf 30 -pass 2 -c:a libopus -f webm \"{outputPath}\"");
         }
 
         public async Task ConvertToMp4(string sourcePath, string outputPath)

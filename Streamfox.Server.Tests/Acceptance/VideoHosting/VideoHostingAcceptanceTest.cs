@@ -55,7 +55,7 @@
                     ((double)CountMatchingBytes(vp9VideoBytes, response.Bytes) /
                      vp9VideoBytes.Length) *
                     100d;
-            Assert.True(matchingPercent > 99.99d);
+            Assert.True(matchingPercent > 99.99d, $"Matched only {matchingPercent}%");
             Assert.Equal("video/webm", response.ContentType);
         }
 
@@ -140,7 +140,7 @@
         {
             int matches = 0;
 
-            for (int i = 0; i < a.Length; i++)
+            for (int i = 0; i < Math.Min(a.Length, b.Length); i++)
             {
                 byte expected = a[i];
                 byte actual = b[i];
