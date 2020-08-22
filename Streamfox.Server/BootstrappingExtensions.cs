@@ -17,26 +17,31 @@
             var metadataHandler = new DirectoryHandler("Metadata");
 
             services.AddTransient<IMetadataRetriever>(
-                    factory => new FromDiskMetadataRetriever(metadataHandler));
+                    factory => new DiskMetadataStore(metadataHandler));
             services.AddTransient<IMetadataSaver>(
-                    factory => new ToDiskMetadataSaver(metadataHandler));
+                    factory => new DiskMetadataStore(metadataHandler));
             services.AddTransient(factory => new ThumbnailFileHandler(thumbnailHandler));
-            services.AddTransient<IThumbnailFileReader>(factory => factory.GetService<ThumbnailFileHandler>());
-            services.AddTransient<IThumbnailFileWriter>(factory => factory.GetService<ThumbnailFileHandler>());
-            services.AddTransient<IVideoFileContainer>(factory => new VideoFileHandler(metadataHandler));
+            services.AddTransient<IThumbnailFileReader>(
+                    factory => factory.GetService<ThumbnailFileHandler>());
+            services.AddTransient<IThumbnailFileWriter>(
+                    factory => factory.GetService<ThumbnailFileHandler>());
+            services.AddTransient<IVideoFileContainer>(
+                    factory => new VideoFileHandler(metadataHandler));
             services.AddTransient<IVideoFileReader>(factory => new VideoFileHandler(videoHandler));
             services.AddTransient<IVideoLoader, VideoLoaderFromDisk>();
             services.AddTransient<VideoRetrievalClerk>();
-            services.AddTransient<IExistenceChecker>(factory => new ExistenceChecker(thumbnailHandler, videoHandler));
-            services.AddTransient<IIntermediateVideoWriter>(factory => new IntermediateVideoWriter(intermediateHandler));
-            services.AddTransient<IMultimediaFramework, MultimediaFramework>();
+            services.AddTransient<IExistenceChecker>(
+                    factory => new ExistenceChecker(thumbnailHandler, videoHandler));
+            services.AddTransient<IIntermediateVideoWriter>(
+                    factory => new IntermediateVideoWriter(intermediateHandler));
+            services.AddTransient<IMultimediaProcessor, MultimediaProcessor>();
             services.AddTransient<IPathResolver>(
                     factory => new PathResolver(
                             intermediateHandler,
                             thumbnailHandler,
                             videoHandler));
-            services.AddTransient<IProcessRunner, ProcessRunner>();
-            services.AddTransient<IFfmpeg, Ffmpeg>();
+            services.AddTransient<IFfmpegProcessRunner, FfmpegProcessRunner>();
+            services.AddTransient<IVideoOperationRunner, FfmpegProcessVideoOperationRunner>();
             services.AddTransient<IVideoProcessor, VideoProcessor>();
             services.AddTransient<IVideoIdGenerator, SnowflakeVideoIdGenerator>();
             services.AddTransient<VideoStorageClerk>();

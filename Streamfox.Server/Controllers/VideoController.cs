@@ -53,7 +53,7 @@
         [HttpGet]
         public OkObjectResult GetVideos()
         {
-            return Ok(new VideoList(_videoClerk.ListVideos()));
+            return Ok(new VideoListResponse(_videoClerk.ListVideos()));
         }
 
         [HttpGet("{videoId}/thumbnail")]

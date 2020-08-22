@@ -9,11 +9,11 @@
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoProcessing;
 
-    public class ToDiskMetadataSaver : IMetadataSaver
+    public class DiskMetadataStore : IMetadataSaver, IMetadataRetriever
     {
         private readonly DirectoryHandler _metadataHandler;
 
-        public ToDiskMetadataSaver(DirectoryHandler metadataHandler)
+        public DiskMetadataStore(DirectoryHandler metadataHandler)
         {
             _metadataHandler = metadataHandler;
         }
@@ -23,6 +23,14 @@
             await using StreamWriter streamWriter =
                     new StreamWriter(_metadataHandler.OpenWrite(videoId.ToString()));
             await streamWriter.WriteAsync(JsonConvert.SerializeObject(videoMetadata));
+        }
+
+        public async Task<VideoMetadata> RetrieveMetadata(VideoId videoId)
+        {
+            using StreamReader streamReader =
+                    new StreamReader(_metadataHandler.OpenRead(videoId.ToString()));
+            return JsonConvert.DeserializeObject<VideoMetadata>(
+                    await streamReader.ReadToEndAsync());
         }
     }
 }

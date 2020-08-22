@@ -66,9 +66,9 @@
 
             VideoId videoId0 = await _applicationHost.Post("/api/videos", videoBytes);
             VideoId videoId1 = await _applicationHost.Post("/api/videos", videoBytes);
-            VideoList videoList = await _applicationHost.Get<VideoList>("/api/videos");
+            VideoListResponse videoListResponse = await _applicationHost.Get<VideoListResponse>("/api/videos");
 
-            Assert.Equal(VideoIdsToStrings(videoId0, videoId1), videoList.VideoIds);
+            Assert.Equal(VideoIdsToStrings(videoId0, videoId1), videoListResponse.VideoIds);
         }
 
         [Fact]

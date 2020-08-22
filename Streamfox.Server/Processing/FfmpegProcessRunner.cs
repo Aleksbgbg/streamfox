@@ -4,7 +4,7 @@
     using System.IO;
     using System.Threading.Tasks;
 
-    public class ProcessRunner : IProcessRunner
+    public class FfmpegProcessRunner : IFfmpegProcessRunner
     {
         public Task RunFfmpeg(string args)
         {

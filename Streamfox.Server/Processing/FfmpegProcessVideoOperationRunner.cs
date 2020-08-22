@@ -6,24 +6,24 @@
 
     using Newtonsoft.Json;
 
-    public class Ffmpeg : IFfmpeg
+    public class FfmpegProcessVideoOperationRunner : IVideoOperationRunner
     {
-        private readonly IProcessRunner _processRunner;
+        private readonly IFfmpegProcessRunner _ffmpegProcessRunner;
 
-        public Ffmpeg(IProcessRunner processRunner)
+        public FfmpegProcessVideoOperationRunner(IFfmpegProcessRunner ffmpegProcessRunner)
         {
-            _processRunner = processRunner;
+            _ffmpegProcessRunner = ffmpegProcessRunner;
         }
 
         public async Task ExtractThumbnail(string videoPath, string thumbnailPath)
         {
-            await _processRunner.RunFfmpeg(
+            await _ffmpegProcessRunner.RunFfmpeg(
                     $"-i \"{videoPath}\" -vframes 1 -q:v 2 -vf scale=-1:225 -f singlejpeg \"{thumbnailPath}\"");
         }
 
         public async Task<VideoMetadata> GrabVideoMetadata(string videoPath)
         {
-            string result = await _processRunner.RunFfprobe(
+            string result = await _ffmpegProcessRunner.RunFfprobe(
                     $"-v quiet -show_streams -show_format -print_format json \"{videoPath}\"");
 
             FfmpegVideoMetadata ffmpegVideoMetadata =
@@ -90,18 +90,8 @@
 
         public async Task ConvertToVp9Webm(string sourcePath, string outputPath)
         {
-            await _processRunner.RunFfmpeg(
+            await _ffmpegProcessRunner.RunFfmpeg(
                     $"-i \"{sourcePath}\" -c:v vp9 -crf 30 -b:v 0 -f webm \"{outputPath}\"");
-            //await _processRunner.RunFfmpeg(
-            //                $"-i \"{sourcePath}\" -c:v vp9 -b:v 0 -crf 30 -pass 1 -an -f null /dev/null");
-            //await _processRunner.RunFfmpeg(
-            //                $"-i \"{sourcePath}\" -c:v vp9 -b:v 0 -crf 30 -pass 2 -c:a libopus -f webm \"{outputPath}\"");
-        }
-
-        public async Task ConvertToMp4(string sourcePath, string outputPath)
-        {
-            await _processRunner.RunFfmpeg(
-                    $"-i \"{sourcePath}\" -c:v copy -f mp4 \"{outputPath}\"");
         }
 
         public Task NoOpCopy(string sourcePath, string outputPath)

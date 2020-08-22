@@ -17,7 +17,7 @@
     {
         private readonly VideoProcessor _videoProcessor;
 
-        private readonly Mock<IFfmpeg> _ffmpeg;
+        private readonly Mock<IVideoOperationRunner> _videoOperationRunner;
 
         private readonly FakeFileSystem _fakeFileSystem;
 
@@ -27,15 +27,16 @@
 
         public VideoProcessorTest()
         {
-            _ffmpeg = new Mock<IFfmpeg>();
+            _videoOperationRunner = new Mock<IVideoOperationRunner>();
             _fakeFileSystem = new FakeFileSystem();
-            MultimediaFramework multimediaFramework =
-                    new MultimediaFramework(_fakeFileSystem, _ffmpeg.Object);
+            MultimediaProcessor multimediaProcessor = new MultimediaProcessor(
+                    _fakeFileSystem,
+                    _videoOperationRunner.Object);
             _existenceChecker = new Mock<IExistenceChecker>();
             _metadataSaver = new Mock<IMetadataSaver>();
             _videoProcessor = new VideoProcessor(
                     _fakeFileSystem,
-                    multimediaFramework,
+                    multimediaProcessor,
                     _existenceChecker.Object,
                     _metadataSaver.Object);
         }
@@ -54,7 +55,7 @@
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _ffmpeg.Verify(
+            _videoOperationRunner.Verify(
                     ffmpeg => ffmpeg.ExtractThumbnail(
                             $"intermediate-{videoId}",
                             $"thumbnail-{videoId}"));
@@ -90,7 +91,8 @@
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _ffmpeg.Verify(ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
+            _videoOperationRunner.Verify(
+                    ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
         }
 
         [Theory]
@@ -102,7 +104,8 @@
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _ffmpeg.Verify(ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
+            _videoOperationRunner.Verify(
+                    ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
         }
 
         [Theory]
@@ -114,7 +117,7 @@
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _ffmpeg.Verify(
+            _videoOperationRunner.Verify(
                     ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"),
                     Times.Never);
         }
@@ -128,8 +131,10 @@
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _ffmpeg.Verify(
-                    ffmpeg => ffmpeg.ConvertToVp9Webm($"intermediate-{videoId}", $"video-{videoId}"));
+            _videoOperationRunner.Verify(
+                    ffmpeg => ffmpeg.ConvertToVp9Webm(
+                            $"intermediate-{videoId}",
+                            $"video-{videoId}"));
         }
 
         [Theory]
@@ -141,8 +146,10 @@
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _ffmpeg.Verify(
-                    ffmpeg => ffmpeg.ConvertToVp9Webm($"intermediate-{videoId}", $"video-{videoId}"));
+            _videoOperationRunner.Verify(
+                    ffmpeg => ffmpeg.ConvertToVp9Webm(
+                            $"intermediate-{videoId}",
+                            $"video-{videoId}"));
         }
 
         [Theory]
@@ -154,8 +161,10 @@
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _ffmpeg.Verify(
-                    ffmpeg => ffmpeg.ConvertToVp9Webm($"intermediate-{videoId}", $"video-{videoId}"));
+            _videoOperationRunner.Verify(
+                    ffmpeg => ffmpeg.ConvertToVp9Webm(
+                            $"intermediate-{videoId}",
+                            $"video-{videoId}"));
         }
 
         [Theory]
@@ -171,6 +180,23 @@
                     saver => saver.SaveMetadata(
                             videoId,
                             new VideoMetadata(VideoCodec.H264, VideoFormat.Mp4)));
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public async Task UploadFailed_DoesntSaveVideoMetadata(VideoId videoId)
+        {
+            _existenceChecker.Setup(checker => checker.ThumbnailExists(videoId)).Returns(false);
+            SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Mp4);
+            Stream videoStream = TestUtils.MockStream();
+
+            await _videoProcessor.ProcessVideo(videoId, videoStream);
+
+            _metadataSaver.Verify(
+                    saver => saver.SaveMetadata(
+                            videoId,
+                            new VideoMetadata(VideoCodec.H264, VideoFormat.Mp4)),
+                    Times.Never);
         }
 
         [Theory]
@@ -239,8 +265,9 @@
         private void SetupVideoMetadata(
                 VideoId videoId, VideoCodec videoCodec, VideoFormat videoFormat)
         {
-            _ffmpeg.Setup(ffmpeg => ffmpeg.GrabVideoMetadata($"intermediate-{videoId}"))
-                   .Returns(Task.FromResult(new VideoMetadata(videoCodec, videoFormat)));
+            _videoOperationRunner
+                    .Setup(ffmpeg => ffmpeg.GrabVideoMetadata($"intermediate-{videoId}"))
+                    .Returns(Task.FromResult(new VideoMetadata(videoCodec, videoFormat)));
         }
 
         private void SetupThumbnailExists(VideoId videoId)

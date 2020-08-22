@@ -4,13 +4,13 @@
 
     using Streamfox.Server.VideoManagement;
 
-    public class VideoList
+    public class VideoListResponse
     {
-        public VideoList()
+        public VideoListResponse()
         {
         }
 
-        public VideoList(VideoId[] videoIds)
+        public VideoListResponse(VideoId[] videoIds)
         {
             VideoIds = videoIds.Select(id => id.Value.ToString()).ToArray();
         }

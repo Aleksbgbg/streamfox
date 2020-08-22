@@ -111,7 +111,7 @@
 
             OkObjectResult result = _videoController.GetVideos();
 
-            VideoList resultValue = result.Value as VideoList;
+            VideoListResponse resultValue = result.Value as VideoListResponse;
             Assert.NotNull(resultValue);
             Assert.Equal("100", resultValue.VideoIds[0]);
             Assert.Equal("200", resultValue.VideoIds[1]);

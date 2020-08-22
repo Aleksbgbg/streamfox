@@ -10,7 +10,7 @@
     {
         private readonly IIntermediateVideoWriter _intermediateVideoWriter;
 
-        private readonly IMultimediaFramework _multimediaFramework;
+        private readonly IMultimediaProcessor _multimediaProcessor;
 
         private readonly IExistenceChecker _existenceChecker;
 
@@ -18,11 +18,11 @@
 
         public VideoProcessor(
                 IIntermediateVideoWriter intermediateVideoWriter,
-                IMultimediaFramework multimediaFramework, IExistenceChecker existenceChecker,
+                IMultimediaProcessor multimediaProcessor, IExistenceChecker existenceChecker,
                 IMetadataSaver metadataSaver)
         {
             _intermediateVideoWriter = intermediateVideoWriter;
-            _multimediaFramework = multimediaFramework;
+            _multimediaProcessor = multimediaProcessor;
             _existenceChecker = existenceChecker;
             _metadataSaver = metadataSaver;
         }
@@ -31,15 +31,21 @@
         {
             await _intermediateVideoWriter.SaveVideo(videoId, videoStream);
 
-            await _multimediaFramework.ExtractVideoThumbnail(videoId);
+            await _multimediaProcessor.ExtractVideoThumbnail(videoId);
             VideoMetadata videoMetadata =
-                    await _multimediaFramework.ExtractVideoAndCoerceToSupportedFormats(videoId);
-            await _metadataSaver.SaveMetadata(videoId, videoMetadata);
+                    await _multimediaProcessor.ExtractVideoAndCoerceToSupportedFormats(videoId);
+
+            bool processingSuccessful = _existenceChecker.ThumbnailExists(videoId) &&
+                                        _existenceChecker.VideoExists(videoId);
+
+            if (processingSuccessful)
+            {
+                await _metadataSaver.SaveMetadata(videoId, videoMetadata);
+            }
 
             _intermediateVideoWriter.DeleteVideo(videoId);
 
-            return _existenceChecker.ThumbnailExists(videoId) &&
-                   _existenceChecker.VideoExists(videoId);
+            return processingSuccessful;
         }
     }
 }

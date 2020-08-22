@@ -2,7 +2,7 @@
 {
     using System.Threading.Tasks;
 
-    public interface IProcessRunner
+    public interface IFfmpegProcessRunner
     {
         Task RunFfmpeg(string args);
 
