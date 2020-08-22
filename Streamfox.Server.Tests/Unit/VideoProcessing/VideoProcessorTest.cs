@@ -134,7 +134,7 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task ConvertsVideoToMp4WhenH264OtherFormat(VideoId videoId)
+        public async Task ConvertsVideoToVp9WhenH264OtherFormat(VideoId videoId)
         {
             SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Other);
             Stream videoStream = TestUtils.MockStream();
@@ -142,12 +142,12 @@
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
             _ffmpeg.Verify(
-                    ffmpeg => ffmpeg.ConvertToMp4($"intermediate-{videoId}", $"video-{videoId}"));
+                    ffmpeg => ffmpeg.ConvertToVp9Webm($"intermediate-{videoId}", $"video-{videoId}"));
         }
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task ConvertsVideoToMp4WhenH264Webm(VideoId videoId)
+        public async Task ConvertsVideoToVp9WhenH264Webm(VideoId videoId)
         {
             SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Webm);
             Stream videoStream = TestUtils.MockStream();
@@ -155,7 +155,7 @@
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
             _ffmpeg.Verify(
-                    ffmpeg => ffmpeg.ConvertToMp4($"intermediate-{videoId}", $"video-{videoId}"));
+                    ffmpeg => ffmpeg.ConvertToVp9Webm($"intermediate-{videoId}", $"video-{videoId}"));
         }
 
         [Theory]

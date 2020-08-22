@@ -39,14 +39,6 @@
             {
                 await _ffmpeg.NoOpCopy(sourcePath, outputPath);
             }
-            else if ((videoMetadata.VideoCodec == VideoCodec.H264 &&
-                      videoMetadata.VideoFormat == VideoFormat.Other) ||
-                     (videoMetadata.VideoCodec == VideoCodec.H264 &&
-                      videoMetadata.VideoFormat == VideoFormat.Webm))
-            {
-                await _ffmpeg.ConvertToMp4(sourcePath, outputPath);
-                videoMetadata = new VideoMetadata(VideoCodec.H264, VideoFormat.Mp4);
-            }
             else if (videoMetadata.VideoCodec != VideoCodec.Invalid)
             {
                 await _ffmpeg.ConvertToVp9Webm(sourcePath, outputPath);
