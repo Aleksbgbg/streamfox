@@ -35,7 +35,9 @@
             if ((videoMetadata.VideoCodec == VideoCodec.Vp9 &&
                  videoMetadata.VideoFormat == VideoFormat.Webm) ||
                 (videoMetadata.VideoCodec == VideoCodec.H264 &&
-                 videoMetadata.VideoFormat == VideoFormat.Mp4))
+                 videoMetadata.VideoFormat == VideoFormat.Mp4) ||
+                (videoMetadata.VideoCodec == VideoCodec.H264 &&
+                 videoMetadata.VideoFormat == VideoFormat.Webm))
             {
                 await _ffmpeg.NoOpCopy(sourcePath, outputPath);
             }
