@@ -11,7 +11,7 @@ export default {
     videoUrl: String
   },
   mounted() {
-    videojs(this.$refs.player, {
+    const player = videojs(this.$refs.player, {
       autoplay: true,
       controls: true,
       loop: true,
@@ -19,6 +19,7 @@ export default {
       responsive: true,
       fill: true
     });
+    player.volume(0.5);
   }
 };
 </script>
