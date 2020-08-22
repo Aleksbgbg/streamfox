@@ -21,7 +21,7 @@
             services.AddTransient<IMetadataSaver>(
                     factory => new ToDiskMetadataSaver(metadataHandler));
             services.AddTransient(factory => new ThumbnailFileHandler(thumbnailHandler));
-            services.AddTransient(factory => new VideoFileHandler(videoHandler));
+            services.AddTransient(factory => new VideoFileHandler(metadataHandler));
             services.AddTransient<IThumbnailFileReader>(factory => factory.GetService<ThumbnailFileHandler>());
             services.AddTransient<IThumbnailFileWriter>(factory => factory.GetService<ThumbnailFileHandler>());
             services.AddTransient<IVideoFileContainer>(factory => factory.GetService<VideoFileHandler>());

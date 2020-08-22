@@ -62,8 +62,6 @@
         [Fact]
         public async Task UploadVideo_ListVideos_HasNewUploadedVideos()
         {
-            Directory.Delete("Videos", recursive: true);
-            Directory.Delete("Thumbnails", recursive: true);
             byte[] videoBytes = await ReadTestFile("Video.mp4");
 
             VideoId videoId0 = await _applicationHost.Post("/api/videos", videoBytes);
