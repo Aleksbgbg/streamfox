@@ -5,23 +5,19 @@
 
     public static class ProcessExtensions
     {
-        public static Task<int> StartAsync(this Process process)
+        public static async Task<int> StartAsync(this Process process)
         {
-            TaskCompletionSource<int> taskCompletionSource = new TaskCompletionSource<int>();
-
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, e) =>
+            using (process)
             {
-                if (!taskCompletionSource.Task.IsCompleted)
-                {
-                    taskCompletionSource.SetResult(process.ExitCode);
-                    process.Dispose();
-                }
-            };
+                TaskCompletionSource<int> taskCompletionSource = new TaskCompletionSource<int>();
 
-            process.Start();
+                process.EnableRaisingEvents = true;
+                process.Exited += (sender, e) => taskCompletionSource.SetResult(process.ExitCode);
 
-            return taskCompletionSource.Task;
+                process.Start();
+
+                return await taskCompletionSource.Task;
+            }
         }
     }
 }
