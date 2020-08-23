@@ -7,28 +7,28 @@
 
     public class MultimediaProcessor : IMultimediaProcessor
     {
-        private readonly IPathResolver _pathResolver;
+        private readonly IVideoComponentPathResolver _videoComponentPathResolver;
 
         private readonly IVideoOperationRunner _videoOperationRunner;
 
-        public MultimediaProcessor(IPathResolver pathResolver, IVideoOperationRunner videoOperationRunner)
+        public MultimediaProcessor(IVideoComponentPathResolver videoComponentPathResolver, IVideoOperationRunner videoOperationRunner)
         {
-            _pathResolver = pathResolver;
+            _videoComponentPathResolver = videoComponentPathResolver;
             _videoOperationRunner = videoOperationRunner;
         }
 
         public async Task ExtractVideoThumbnail(VideoId videoId)
         {
-            string sourceVideoPath = _pathResolver.ResolveIntermediateVideoPath(videoId);
-            string thumbnailPath = _pathResolver.ResolveThumbnailPath(videoId);
+            string sourceVideoPath = _videoComponentPathResolver.ResolveIntermediateVideoPath(videoId);
+            string thumbnailPath = _videoComponentPathResolver.ResolveThumbnailPath(videoId);
 
             await _videoOperationRunner.ExtractThumbnail(sourceVideoPath, thumbnailPath);
         }
 
         public async Task<VideoMetadata> ExtractVideoAndCoerceToSupportedFormats(VideoId videoId)
         {
-            string sourcePath = _pathResolver.ResolveIntermediateVideoPath(videoId);
-            string outputPath = _pathResolver.ResolveVideoPath(videoId);
+            string sourcePath = _videoComponentPathResolver.ResolveIntermediateVideoPath(videoId);
+            string outputPath = _videoComponentPathResolver.ResolveVideoPath(videoId);
 
             VideoMetadata videoMetadata = await _videoOperationRunner.GrabVideoMetadata(sourcePath);
 

@@ -12,18 +12,18 @@
 
         private readonly IMultimediaProcessor _multimediaProcessor;
 
-        private readonly IExistenceChecker _existenceChecker;
+        private readonly IVideoComponentExistenceChecker _videoComponentExistenceChecker;
 
         private readonly IMetadataSaver _metadataSaver;
 
         public VideoProcessor(
                 IIntermediateVideoWriter intermediateVideoWriter,
-                IMultimediaProcessor multimediaProcessor, IExistenceChecker existenceChecker,
+                IMultimediaProcessor multimediaProcessor, IVideoComponentExistenceChecker videoComponentExistenceChecker,
                 IMetadataSaver metadataSaver)
         {
             _intermediateVideoWriter = intermediateVideoWriter;
             _multimediaProcessor = multimediaProcessor;
-            _existenceChecker = existenceChecker;
+            _videoComponentExistenceChecker = videoComponentExistenceChecker;
             _metadataSaver = metadataSaver;
         }
 
@@ -35,8 +35,8 @@
             VideoMetadata videoMetadata =
                     await _multimediaProcessor.ExtractVideoAndCoerceToSupportedFormats(videoId);
 
-            bool processingSuccessful = _existenceChecker.ThumbnailExists(videoId) &&
-                                        _existenceChecker.VideoExists(videoId);
+            bool processingSuccessful = _videoComponentExistenceChecker.ThumbnailExists(videoId) &&
+                                        _videoComponentExistenceChecker.VideoExists(videoId);
 
             if (processingSuccessful)
             {

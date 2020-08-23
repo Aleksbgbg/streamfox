@@ -3,27 +3,30 @@
     using System.IO;
     using System.Threading.Tasks;
 
+    using Streamfox.Server.Persistence.Operations;
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoProcessing;
 
     public class IntermediateVideoWriter : IIntermediateVideoWriter
     {
-        private readonly DirectoryHandler _intermediateHandler;
+        private readonly IFileStreamWriter _fileStreamWriter;
 
-        public IntermediateVideoWriter(DirectoryHandler intermediateHandler)
+        private readonly IFileDeleter _fileDeleter;
+
+        public IntermediateVideoWriter(IFileStreamWriter fileStreamWriter, IFileDeleter fileDeleter)
         {
-            _intermediateHandler = intermediateHandler;
+            _fileStreamWriter = fileStreamWriter;
+            _fileDeleter = fileDeleter;
         }
 
         public async Task SaveVideo(VideoId videoId, Stream videoStream)
         {
-            await using Stream fileStream = _intermediateHandler.OpenWrite(videoId.ToString());
-            await videoStream.CopyToAsync(fileStream);
+            await _fileStreamWriter.WriteStream(videoId.ToString(), videoStream);
         }
 
         public void DeleteVideo(VideoId videoId)
         {
-            _intermediateHandler.Delete(videoId.ToString());
+            _fileDeleter.Delete(videoId.ToString());
         }
     }
 }

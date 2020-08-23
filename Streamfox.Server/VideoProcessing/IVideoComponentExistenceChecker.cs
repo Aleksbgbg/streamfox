@@ -2,7 +2,7 @@
 {
     using Streamfox.Server.VideoManagement;
 
-    public interface IExistenceChecker
+    public interface IVideoComponentExistenceChecker
     {
         bool ThumbnailExists(VideoId videoId);
 

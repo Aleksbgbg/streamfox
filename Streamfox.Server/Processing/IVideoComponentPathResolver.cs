@@ -1,8 +1,8 @@
-﻿namespace Streamfox.Server.VideoProcessing
+﻿namespace Streamfox.Server.Processing
 {
     using Streamfox.Server.VideoManagement;
 
-    public interface IPathResolver
+    public interface IVideoComponentPathResolver
     {
         string ResolveIntermediateVideoPath(VideoId videoId);
 

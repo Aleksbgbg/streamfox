@@ -21,7 +21,7 @@
 
         private readonly FakeFileSystem _fakeFileSystem;
 
-        private readonly Mock<IExistenceChecker> _existenceChecker;
+        private readonly Mock<IVideoComponentExistenceChecker> _existenceChecker;
 
         private readonly Mock<IMetadataSaver> _metadataSaver;
 
@@ -32,7 +32,7 @@
             MultimediaProcessor multimediaProcessor = new MultimediaProcessor(
                     _fakeFileSystem,
                     _videoOperationRunner.Object);
-            _existenceChecker = new Mock<IExistenceChecker>();
+            _existenceChecker = new Mock<IVideoComponentExistenceChecker>();
             _metadataSaver = new Mock<IMetadataSaver>();
             _videoProcessor = new VideoProcessor(
                     _fakeFileSystem,
@@ -290,7 +290,7 @@
             _existenceChecker.Setup(checker => checker.VideoExists(videoId)).Returns(false);
         }
 
-        private class FakeFileSystem : IIntermediateVideoWriter, IPathResolver
+        private class FakeFileSystem : IIntermediateVideoWriter, IVideoComponentPathResolver
         {
             private VideoId _savedVideoId;
 
