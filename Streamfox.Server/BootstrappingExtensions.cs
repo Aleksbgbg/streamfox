@@ -5,6 +5,7 @@
     using Streamfox.Server.Persistence;
     using Streamfox.Server.Persistence.Operations;
     using Streamfox.Server.Processing;
+    using Streamfox.Server.Processing.Ffmpeg;
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoProcessing;
 

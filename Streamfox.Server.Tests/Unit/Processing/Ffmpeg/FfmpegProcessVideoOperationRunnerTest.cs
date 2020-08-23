@@ -1,20 +1,21 @@
-﻿namespace Streamfox.Server.Tests.Unit.Processing
+﻿namespace Streamfox.Server.Tests.Unit.Processing.Ffmpeg
 {
     using System.Threading.Tasks;
 
     using Moq;
 
     using Streamfox.Server.Processing;
+    using Streamfox.Server.Processing.Ffmpeg;
 
     using Xunit;
 
-    public class FfmpegTest
+    public class FfmpegProcessVideoOperationRunnerTest
     {
         private readonly Mock<IFfmpegProcessRunner> _processRunner;
 
         private readonly FfmpegProcessVideoOperationRunner _ffmpegProcessVideoOperationRunner;
 
-        public FfmpegTest()
+        public FfmpegProcessVideoOperationRunnerTest()
         {
             _processRunner = new Mock<IFfmpegProcessRunner>();
             _ffmpegProcessVideoOperationRunner = new FfmpegProcessVideoOperationRunner(_processRunner.Object);

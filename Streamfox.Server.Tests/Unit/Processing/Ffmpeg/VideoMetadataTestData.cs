@@ -1,4 +1,4 @@
-﻿namespace Streamfox.Server.Tests.Unit.Processing
+﻿namespace Streamfox.Server.Tests.Unit.Processing.Ffmpeg
 {
     using System.Collections;
     using System.Collections.Generic;
@@ -27,7 +27,7 @@
 
         private static string ReadVideoMetadataFile(string name)
         {
-            return File.ReadAllText($"Unit/Processing/MetadataTestData/{name}.json");
+            return File.ReadAllText($"Unit/Processing/Ffmpeg/MetadataTestData/{name}.json");
         }
     }
 }

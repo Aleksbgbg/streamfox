@@ -27,28 +27,28 @@
     <None Update="Acceptance\VideoHosting\VideoThumbnail.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\audio.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\audio.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\h264-notmp4.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\h264-notmp4.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\h264.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\h264.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\h265.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\h265.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\jpeg.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\jpeg.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\not-parseable.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\not-parseable.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\text.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\text.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\MetadataTestData\vp9.json">
+    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\vp9.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
