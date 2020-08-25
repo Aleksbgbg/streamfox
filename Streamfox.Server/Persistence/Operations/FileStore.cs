@@ -4,8 +4,8 @@
     using System.IO;
     using System.Threading.Tasks;
 
-    public class FileStore : IFileDeleter, IFileExistenceChecker, IFileLister, IFileReader,
-                             IFileReadOpener, IFileStreamWriter, IFileWriter, IPathResolver
+    public class FileStore : IFileDeleter, IFileExistenceChecker, IFileLister, IFilePathResolver,
+                             IFileReader, IFileReadOpener, IFileStreamWriter, IFileWriter
     {
         private readonly string _directoryPath;
 

@@ -1,6 +1,6 @@
 ﻿namespace Streamfox.Server.Persistence.Operations
 {
-    public interface IPathResolver
+    public interface IFilePathResolver
     {
         string Resolve(string name);
     }

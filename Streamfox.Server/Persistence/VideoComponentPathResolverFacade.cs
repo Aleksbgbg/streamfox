@@ -6,34 +6,34 @@
 
     public class VideoComponentPathResolverFacade : IVideoComponentPathResolver
     {
-        private readonly IPathResolver _intermediateVideoPathResolver;
+        private readonly IFilePathResolver _intermediateVideoFilePathResolver;
 
-        private readonly IPathResolver _thumbnailPathResolver;
+        private readonly IFilePathResolver _thumbnailFilePathResolver;
 
-        private readonly IPathResolver _videoPathResolver;
+        private readonly IFilePathResolver _videoFilePathResolver;
 
         public VideoComponentPathResolverFacade(
-                IPathResolver intermediateVideoPathResolver, IPathResolver thumbnailPathResolver,
-                IPathResolver videoPathResolver)
+                IFilePathResolver intermediateVideoFilePathResolver, IFilePathResolver thumbnailFilePathResolver,
+                IFilePathResolver videoFilePathResolver)
         {
-            _intermediateVideoPathResolver = intermediateVideoPathResolver;
-            _thumbnailPathResolver = thumbnailPathResolver;
-            _videoPathResolver = videoPathResolver;
+            _intermediateVideoFilePathResolver = intermediateVideoFilePathResolver;
+            _thumbnailFilePathResolver = thumbnailFilePathResolver;
+            _videoFilePathResolver = videoFilePathResolver;
         }
 
         public string ResolveIntermediateVideoPath(VideoId videoId)
         {
-            return _intermediateVideoPathResolver.Resolve(videoId.ToString());
+            return _intermediateVideoFilePathResolver.Resolve(videoId.ToString());
         }
 
         public string ResolveThumbnailPath(VideoId videoId)
         {
-            return _thumbnailPathResolver.Resolve(videoId.ToString());
+            return _thumbnailFilePathResolver.Resolve(videoId.ToString());
         }
 
         public string ResolveVideoPath(VideoId videoId)
         {
-            return _videoPathResolver.Resolve(videoId.ToString());
+            return _videoFilePathResolver.Resolve(videoId.ToString());
         }
     }
 }

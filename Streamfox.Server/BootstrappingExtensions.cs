@@ -50,9 +50,9 @@
                             thumbnailFileExistenceChecker: thumbnailFileStore));
             services.AddTransient<IVideoComponentPathResolver>(
                     factory => new VideoComponentPathResolverFacade(
-                            intermediateVideoPathResolver: intermediateFileStore,
-                            thumbnailPathResolver: thumbnailFileStore,
-                            videoPathResolver: videoFileStore));
+                            intermediateVideoFilePathResolver: intermediateFileStore,
+                            thumbnailFilePathResolver: thumbnailFileStore,
+                            videoFilePathResolver: videoFileStore));
             services.AddTransient<IVideoIdGenerator, SnowflakeVideoIdGenerator>();
 
             services.AddTransient<IMultimediaProcessor, MultimediaProcessor>();
