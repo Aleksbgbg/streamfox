@@ -13,6 +13,11 @@ const routes: Array<RouteConfig> = [
     path: "/watch/:id",
     name: "watch",
     component: () => import("@/components/watch.vue")
+  },
+  {
+    path: "/upload",
+    name: "upload",
+    component: () => import("@/components/upload/index.vue")
   }
 ];
 
