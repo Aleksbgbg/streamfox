@@ -1,5 +1,5 @@
 <template lang="pug">
-div(@loaded="loaded")
+div
   form.hidden
     input(type="file" ref="fileInput" @change="fileSelected")
   .flex.justify-center
