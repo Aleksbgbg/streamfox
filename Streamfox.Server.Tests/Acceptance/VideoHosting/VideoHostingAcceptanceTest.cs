@@ -36,7 +36,8 @@
             byte[] videoBytes = await ReadTestFile("Video.mp4");
 
             VideoId videoId = await _applicationHost.Post("/api/videos", videoBytes);
-            BytesResponse response = await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
+            BytesResponse response =
+                    await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
 
             Assert.Equal(videoBytes, response.Bytes);
             Assert.Equal("video/mp4", response.ContentType);
@@ -49,12 +50,25 @@
             byte[] vp9VideoBytes = await ReadTestFile("Video-vp9.webm");
 
             VideoId videoId = await _applicationHost.Post("/api/videos", h265VideoBytes);
-            BytesResponse response = await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
+            var progress1 =
+                    await _applicationHost.Get<ConversionProgressResponse>(
+                            $"/api/videos/${videoId}/progress");
+            await Task.Delay(5_000);
+            var progress2 =
+                    await _applicationHost.Get<ConversionProgressResponse>(
+                            $"/api/videos/${videoId}/progress");
+            await Task.Delay(20_000);
+            var progress3 =
+                    await _applicationHost.Get<ConversionProgressResponse>(
+                            $"/api/videos/${videoId}/progress");
+            BytesResponse response =
+                    await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
 
-            double matchingPercent =
-                    ((double)CountMatchingBytes(vp9VideoBytes, response.Bytes) /
-                     vp9VideoBytes.Length) *
-                    100d;
+            Assert.True(progress2.CurrentFrame > progress1.CurrentFrame, "No progress in 5 seconds");
+            Assert.True(progress3.IsCompleted, "Conversion did not complete before downloading video");
+            double matchingPercent = ((double)CountMatchingBytes(vp9VideoBytes, response.Bytes) /
+                                      vp9VideoBytes.Length) *
+                                     100d;
             Assert.True(matchingPercent > 99.99d, $"Matched only {matchingPercent}%");
             Assert.Equal("video/webm", response.ContentType);
         }
@@ -66,7 +80,8 @@
 
             VideoId videoId0 = await _applicationHost.Post("/api/videos", videoBytes);
             VideoId videoId1 = await _applicationHost.Post("/api/videos", videoBytes);
-            VideoListResponse videoListResponse = await _applicationHost.Get<VideoListResponse>("/api/videos");
+            VideoListResponse videoListResponse =
+                    await _applicationHost.Get<VideoListResponse>("/api/videos");
 
             Assert.Equal(VideoIdsToStrings(videoId0, videoId1), videoListResponse.VideoIds);
         }
