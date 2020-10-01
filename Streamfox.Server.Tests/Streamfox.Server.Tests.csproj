@@ -15,40 +15,40 @@
     <ProjectReference Include="..\Streamfox.Server\Streamfox.Server.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Acceptance\VideoHosting\Video-h265.mp4">
+    <None Update="TestFiles\FullLengthVideos\Video-h265.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Acceptance\VideoHosting\Video-vp9.webm">
+    <None Update="TestFiles\FullLengthVideos\Video-vp9.webm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Acceptance\VideoHosting\Video.mp4">
+    <None Update="TestFiles\FullLengthVideos\Video.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Acceptance\VideoHosting\VideoThumbnail.jpg">
+    <None Update="TestFiles\FullLengthVideos\VideoThumbnail.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\audio.json">
+    <None Update="TestFiles\VideoMetadataExamples\audio.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\h264-notmp4.json">
+    <None Update="TestFiles\VideoMetadataExamples\h264-notmp4.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\h264.json">
+    <None Update="TestFiles\VideoMetadataExamples\h264.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\h265.json">
+    <None Update="TestFiles\VideoMetadataExamples\h265.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\jpeg.json">
+    <None Update="TestFiles\VideoMetadataExamples\jpeg.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\not-parseable.json">
+    <None Update="TestFiles\VideoMetadataExamples\not-parseable.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\text.json">
+    <None Update="TestFiles\VideoMetadataExamples\text.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Unit\Processing\Ffmpeg\MetadataTestData\vp9.json">
+    <None Update="TestFiles\VideoMetadataExamples\vp9.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

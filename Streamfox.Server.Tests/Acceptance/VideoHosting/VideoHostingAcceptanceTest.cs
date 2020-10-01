@@ -1,7 +1,6 @@
 ﻿namespace Streamfox.Server.Tests.Acceptance.VideoHosting
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -136,7 +135,7 @@
 
         private static Task<byte[]> ReadTestFile(string name)
         {
-            return new File($"Acceptance/VideoHosting/{name}").ReadBytes();
+            return TestFileReader.ReadBytesAsync("FullLengthVideos", name);
         }
 
         private static string[] VideoIdsToStrings(params VideoId[] videoIds)

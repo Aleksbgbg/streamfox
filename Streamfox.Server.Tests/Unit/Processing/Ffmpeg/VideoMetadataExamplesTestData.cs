@@ -2,11 +2,10 @@
 {
     using System.Collections;
     using System.Collections.Generic;
-    using System.IO;
 
     using Streamfox.Server.Processing;
 
-    public class VideoMetadataTestData : IEnumerable<object[]>
+    public class VideoMetadataExamplesTestData : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
@@ -27,7 +26,7 @@
 
         private static string ReadVideoMetadataFile(string name)
         {
-            return File.ReadAllText($"Unit/Processing/Ffmpeg/MetadataTestData/{name}.json");
+            return TestFileReader.ReadString("VideoMetadataExamples", $"{name}.json");
         }
     }
 }

@@ -41,7 +41,7 @@
         }
 
         [Theory]
-        [ClassData(typeof(VideoMetadataTestData))]
+        [ClassData(typeof(VideoMetadataExamplesTestData))]
         public async Task GrabVideoCodec_DetectsCodecsAccurately(
                 string ffprobeResult, VideoMetadata expectedMetadata)
         {
