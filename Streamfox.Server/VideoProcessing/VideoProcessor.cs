@@ -10,42 +10,68 @@
     {
         private readonly IIntermediateVideoWriter _intermediateVideoWriter;
 
-        private readonly IMultimediaProcessor _multimediaProcessor;
-
         private readonly IVideoComponentExistenceChecker _videoComponentExistenceChecker;
 
         private readonly IMetadataSaver _metadataSaver;
 
+        private readonly IVideoComponentPathResolver _videoComponentPathResolver;
+
+        private readonly IVideoOperationRunner _videoOperationRunner;
+
+        private readonly IVideoConverter _videoConverter;
+
         public VideoProcessor(
                 IIntermediateVideoWriter intermediateVideoWriter,
-                IMultimediaProcessor multimediaProcessor, IVideoComponentExistenceChecker videoComponentExistenceChecker,
-                IMetadataSaver metadataSaver)
+                IVideoComponentExistenceChecker videoComponentExistenceChecker,
+                IMetadataSaver metadataSaver,
+                IVideoComponentPathResolver videoComponentPathResolver,
+                IVideoOperationRunner videoOperationRunner, IVideoConverter videoConverter)
         {
             _intermediateVideoWriter = intermediateVideoWriter;
-            _multimediaProcessor = multimediaProcessor;
             _videoComponentExistenceChecker = videoComponentExistenceChecker;
             _metadataSaver = metadataSaver;
+            _videoComponentPathResolver = videoComponentPathResolver;
+            _videoOperationRunner = videoOperationRunner;
+            _videoConverter = videoConverter;
         }
 
         public async Task<bool> ProcessVideo(VideoId videoId, Stream videoStream)
         {
             await _intermediateVideoWriter.SaveVideo(videoId, videoStream);
 
-            await _multimediaProcessor.ExtractVideoThumbnail(videoId);
-            VideoMetadata videoMetadata =
-                    await _multimediaProcessor.ExtractVideoAndCoerceToSupportedFormats(videoId);
+            string sourcePath = _videoComponentPathResolver.ResolveIntermediateVideoPath(videoId);
+            string outputPath = _videoComponentPathResolver.ResolveVideoPath(videoId);
+            string thumbnailPath = _videoComponentPathResolver.ResolveThumbnailPath(videoId);
 
-            bool processingSuccessful = _videoComponentExistenceChecker.ThumbnailExists(videoId) &&
-                                        _videoComponentExistenceChecker.VideoExists(videoId);
+            await _videoOperationRunner.ExtractThumbnail(sourcePath, thumbnailPath);
 
-            if (processingSuccessful)
+            bool thumbnailExists = _videoComponentExistenceChecker.ThumbnailExists(videoId);
+
+            if (!thumbnailExists)
             {
-                await _metadataSaver.SaveMetadata(videoId, videoMetadata);
+                _intermediateVideoWriter.DeleteVideo(videoId);
+                return false;
             }
 
-            _intermediateVideoWriter.DeleteVideo(videoId);
+            VideoMetadata videoMetadata = await _videoOperationRunner.GrabVideoMetadata(sourcePath);
 
-            return processingSuccessful;
+            if ((videoMetadata.VideoCodec == VideoCodec.Vp9 &&
+                 videoMetadata.VideoFormat == VideoFormat.Webm) ||
+                (videoMetadata.VideoCodec == VideoCodec.H264 &&
+                 videoMetadata.VideoFormat == VideoFormat.Mp4))
+            {
+                await _videoOperationRunner.NoOpCopy(sourcePath, outputPath);
+            }
+            else if (videoMetadata.VideoCodec != VideoCodec.Invalid)
+            {
+                _videoConverter.RunConversionTask(
+                        _videoOperationRunner.ConvertToVp9Webm(sourcePath, outputPath));
+                videoMetadata = new VideoMetadata(VideoCodec.Vp9, VideoFormat.Webm);
+            }
+
+            await _metadataSaver.SaveMetadata(videoId, videoMetadata);
+
+            return true;
         }
     }
 }

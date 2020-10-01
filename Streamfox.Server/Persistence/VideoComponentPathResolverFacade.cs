@@ -1,8 +1,8 @@
 ﻿namespace Streamfox.Server.Persistence
 {
     using Streamfox.Server.Persistence.Operations;
-    using Streamfox.Server.Processing;
     using Streamfox.Server.VideoManagement;
+    using Streamfox.Server.VideoProcessing;
 
     public class VideoComponentPathResolverFacade : IVideoComponentPathResolver
     {

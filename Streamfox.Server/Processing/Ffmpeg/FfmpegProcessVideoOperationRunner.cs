@@ -6,6 +6,8 @@
 
     using Newtonsoft.Json;
 
+    using Streamfox.Server.VideoProcessing;
+
     public class FfmpegProcessVideoOperationRunner : IVideoOperationRunner
     {
         private readonly IFfmpegProcessRunner _ffmpegProcessRunner;

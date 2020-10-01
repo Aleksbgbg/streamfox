@@ -1,6 +1,8 @@
-﻿namespace Streamfox.Server.Processing
+﻿namespace Streamfox.Server.VideoProcessing
 {
     using System.Threading.Tasks;
+
+    using Streamfox.Server.Processing;
 
     public interface IVideoOperationRunner
     {

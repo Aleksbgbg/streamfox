@@ -55,7 +55,10 @@
                             videoFilePathResolver: videoFileStore));
             services.AddTransient<IVideoIdGenerator, SnowflakeVideoIdGenerator>();
 
-            services.AddTransient<IMultimediaProcessor, MultimediaProcessor>();
+            services.AddSingleton<VideoConversionQueue>();
+            services.AddHostedService<BackgroundVideoConverter>();
+            services.AddSingleton<IVideoConverter>(factory => factory.GetService<VideoConversionQueue>());
+
             services.AddTransient<IFfmpegProcessRunner, FfmpegProcessRunner>();
             services.AddTransient<IVideoOperationRunner, FfmpegProcessVideoOperationRunner>();
             services.AddTransient<IVideoProcessor, VideoProcessor>();

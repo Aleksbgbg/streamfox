@@ -25,20 +25,22 @@
 
         private readonly Mock<IMetadataSaver> _metadataSaver;
 
+        private readonly Mock<IVideoConverter> _videoConverter;
+
         public VideoProcessorTest()
         {
             _videoOperationRunner = new Mock<IVideoOperationRunner>();
             _fakeFileSystem = new FakeFileSystem();
-            MultimediaProcessor multimediaProcessor = new MultimediaProcessor(
-                    _fakeFileSystem,
-                    _videoOperationRunner.Object);
             _existenceChecker = new Mock<IVideoComponentExistenceChecker>();
             _metadataSaver = new Mock<IMetadataSaver>();
+            _videoConverter = new Mock<IVideoConverter>();
             _videoProcessor = new VideoProcessor(
                     _fakeFileSystem,
-                    multimediaProcessor,
                     _existenceChecker.Object,
-                    _metadataSaver.Object);
+                    _metadataSaver.Object,
+                    _fakeFileSystem,
+                    _videoOperationRunner.Object,
+                    _videoConverter.Object);
         }
 
         public static IEnumerable<object[]> VideoCases => new[]
@@ -46,6 +48,16 @@
             new object[] { new VideoId(100) },
             new object[] { new VideoId(200) }
         };
+
+        [Fact]
+        public async Task SavesVideoStream()
+        {
+            Stream videoStream = TestUtils.MockStream();
+
+            await _videoProcessor.ProcessVideo(new VideoId(100), videoStream);
+
+            Assert.Same(videoStream, _fakeFileSystem.VideoStream);
+        }
 
         [Theory]
         [MemberData(nameof(VideoCases))]
@@ -56,19 +68,9 @@
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
             _videoOperationRunner.Verify(
-                    ffmpeg => ffmpeg.ExtractThumbnail(
+                    runner => runner.ExtractThumbnail(
                             $"intermediate-{videoId}",
                             $"thumbnail-{videoId}"));
-        }
-
-        [Fact]
-        public async Task SavesVideoStream()
-        {
-            Stream videoStream = TestUtils.MockStream();
-
-            await _videoProcessor.ProcessVideo(new VideoId(100), videoStream);
-
-            Assert.Same(videoStream, _fakeFileSystem.VideoStream);
         }
 
         [Theory]
@@ -84,87 +86,87 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task CopiesVideoToOutputWhenH264Mp4(VideoId videoId)
+        public async Task VideoType_H264Mp4_CopiesVideoToOutput(VideoId videoId)
         {
+            SetupThumbnailExists(videoId);
             SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Mp4);
             Stream videoStream = TestUtils.MockStream();
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
             _videoOperationRunner.Verify(
-                    ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
+                    runner => runner.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
         }
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task CopiesVideoToOutputWhenVp9Webm(VideoId videoId)
+        public async Task VideoType_Vp9Webm_CopiesVideoToOutput(VideoId videoId)
         {
+            SetupThumbnailExists(videoId);
             SetupVideoMetadata(videoId, VideoCodec.Vp9, VideoFormat.Webm);
             Stream videoStream = TestUtils.MockStream();
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
             _videoOperationRunner.Verify(
-                    ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
+                    runner => runner.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"));
         }
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task DoesNotCopyVideoToOutputWhenInvalidCodec(VideoId videoId)
+        public async Task VideoType_OtherCodec_ConvertsToVp9Webm(VideoId videoId)
         {
-            SetupVideoMetadata(videoId, VideoCodec.Invalid, VideoFormat.Other);
-            Stream videoStream = TestUtils.MockStream();
-
-            await _videoProcessor.ProcessVideo(videoId, videoStream);
-
-            _videoOperationRunner.Verify(
-                    ffmpeg => ffmpeg.NoOpCopy($"intermediate-{videoId}", $"video-{videoId}"),
-                    Times.Never);
-        }
-
-        [Theory]
-        [MemberData(nameof(VideoCases))]
-        public async Task ConvertsVideoToVp9WhenOtherCodec(VideoId videoId)
-        {
+            SetupThumbnailExists(videoId);
             SetupVideoMetadata(videoId, VideoCodec.Other, VideoFormat.Mp4);
             Stream videoStream = TestUtils.MockStream();
+            Task conversionTask = Task.FromResult(0xA);
+            _videoOperationRunner.Setup(
+                                         runner => runner.ConvertToVp9Webm(
+                                                 $"intermediate-{videoId}",
+                                                 $"video-{videoId}"))
+                                 .Returns(conversionTask);
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _videoOperationRunner.Verify(
-                    ffmpeg => ffmpeg.ConvertToVp9Webm(
-                            $"intermediate-{videoId}",
-                            $"video-{videoId}"));
+            _videoConverter.Verify(converter => converter.RunConversionTask(conversionTask));
         }
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task ConvertsVideoToVp9WhenH264OtherFormat(VideoId videoId)
+        public async Task VideoType_H264Other_ConvertsToVp9Webm(VideoId videoId)
         {
+            SetupThumbnailExists(videoId);
             SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Other);
             Stream videoStream = TestUtils.MockStream();
+            Task conversionTask = Task.FromResult(0xB);
+            _videoOperationRunner.Setup(
+                                         runner => runner.ConvertToVp9Webm(
+                                                 $"intermediate-{videoId}",
+                                                 $"video-{videoId}"))
+                                 .Returns(conversionTask);
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _videoOperationRunner.Verify(
-                    ffmpeg => ffmpeg.ConvertToVp9Webm(
-                            $"intermediate-{videoId}",
-                            $"video-{videoId}"));
+            _videoConverter.Verify(converter => converter.RunConversionTask(conversionTask));
         }
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task ConvertsVideoToVp9WhenH264Webm(VideoId videoId)
+        public async Task VideoType_H264Webm_ConvertsToVp9Webm(VideoId videoId)
         {
+            SetupThumbnailExists(videoId);
             SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Webm);
             Stream videoStream = TestUtils.MockStream();
+            Task conversionTask = Task.FromResult(0xC);
+            _videoOperationRunner.Setup(
+                                         runner => runner.ConvertToVp9Webm(
+                                                 $"intermediate-{videoId}",
+                                                 $"video-{videoId}"))
+                                 .Returns(conversionTask);
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _videoOperationRunner.Verify(
-                    ffmpeg => ffmpeg.ConvertToVp9Webm(
-                            $"intermediate-{videoId}",
-                            $"video-{videoId}"));
+            _videoConverter.Verify(converter => converter.RunConversionTask(conversionTask));
         }
 
         [Theory]
@@ -206,6 +208,7 @@
         public async Task UploadFailed_DoesntSaveVideoMetadata(VideoId videoId)
         {
             SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Mp4);
+            SetupThumbnailDoesNotExist(videoId);
             Stream videoStream = TestUtils.MockStream();
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
@@ -215,6 +218,37 @@
                             videoId,
                             new VideoMetadata(VideoCodec.H264, VideoFormat.Mp4)),
                     Times.Never);
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public async Task UploadFailed_DoesntRunTasks(VideoId videoId)
+        {
+            SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Mp4);
+            SetupThumbnailDoesNotExist(videoId);
+            Stream videoStream = TestUtils.MockStream();
+
+            await _videoProcessor.ProcessVideo(videoId, videoStream);
+
+            _videoOperationRunner.Verify(
+                    runner => runner.NoOpCopy(It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Never);
+            _videoOperationRunner.Verify(
+                    runner => runner.ConvertToVp9Webm(It.IsAny<string>(), It.IsAny<string>()),
+                    Times.Never);
+        }
+
+        [Theory]
+        [MemberData(nameof(VideoCases))]
+        public async Task UploadFailed_DeletesIntermediateVideo(VideoId videoId)
+        {
+            SetupVideoMetadata(videoId, VideoCodec.H264, VideoFormat.Mp4);
+            SetupThumbnailDoesNotExist(videoId);
+            Stream videoStream = TestUtils.MockStream();
+
+            await _videoProcessor.ProcessVideo(videoId, videoStream);
+
+            Assert.True(_fakeFileSystem.DeletedVideo);
         }
 
         [Theory]
@@ -243,18 +277,6 @@
 
         [Theory]
         [MemberData(nameof(VideoCases))]
-        public async Task ReturnsFailureWhenThumbnailExistsButVideoDoesNot(VideoId videoId)
-        {
-            SetupThumbnailExists(videoId);
-            SetupVideoDoesNotExist(videoId);
-
-            bool success = await _videoProcessor.ProcessVideo(videoId, TestUtils.MockStream());
-
-            Assert.False(success);
-        }
-
-        [Theory]
-        [MemberData(nameof(VideoCases))]
         public async Task ReturnsFailureWhenThumbnailAndVideoDoNotExist(VideoId videoId)
         {
             SetupThumbnailDoesNotExist(videoId);
@@ -269,7 +291,7 @@
                 VideoId videoId, VideoCodec videoCodec, VideoFormat videoFormat)
         {
             _videoOperationRunner
-                    .Setup(ffmpeg => ffmpeg.GrabVideoMetadata($"intermediate-{videoId}"))
+                    .Setup(runner => runner.GrabVideoMetadata($"intermediate-{videoId}"))
                     .Returns(Task.FromResult(new VideoMetadata(videoCodec, videoFormat)));
         }
 

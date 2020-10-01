@@ -1,4 +1,4 @@
-﻿namespace Streamfox.Server.Processing
+﻿namespace Streamfox.Server.VideoProcessing
 {
     using Streamfox.Server.VideoManagement;
 
