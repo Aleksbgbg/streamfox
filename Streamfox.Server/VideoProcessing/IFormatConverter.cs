@@ -4,8 +4,8 @@
 
     using Streamfox.Server.VideoManagement;
 
-    public interface IBackgroundVideoProcessor
+    public interface IFormatConverter
     {
-        Task ProcessVideo(VideoId videoId);
+        Task CoerceVideoToSupportedFormat(VideoId videoId);
     }
 }

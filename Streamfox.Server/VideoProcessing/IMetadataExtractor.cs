@@ -4,8 +4,8 @@
 
     using Streamfox.Server.VideoManagement;
 
-    public interface IBackgroundVideoProcessor
+    public interface IMetadataExtractor
     {
-        Task ProcessVideo(VideoId videoId);
+        Task ExtractVideoMetadata(VideoId videoId);
     }
 }

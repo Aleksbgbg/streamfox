@@ -4,8 +4,8 @@
 
     using Streamfox.Server.VideoManagement;
 
-    public interface IBackgroundVideoProcessor
+    public interface IThumbnailExtractor
     {
-        Task ProcessVideo(VideoId videoId);
+        Task ExtractThumbnail(VideoId videoId);
     }
 }

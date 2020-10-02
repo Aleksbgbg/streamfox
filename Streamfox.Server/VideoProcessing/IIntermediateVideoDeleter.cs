@@ -4,8 +4,8 @@
 
     using Streamfox.Server.VideoManagement;
 
-    public interface IBackgroundVideoProcessor
+    public interface IIntermediateVideoDeleter
     {
-        Task ProcessVideo(VideoId videoId);
+        Task DeleteIntermediateVideo(VideoId videoId);
     }
 }

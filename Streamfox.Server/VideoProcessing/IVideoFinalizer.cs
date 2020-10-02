@@ -4,8 +4,8 @@
 
     using Streamfox.Server.VideoManagement;
 
-    public interface IBackgroundVideoProcessor
+    public interface IVideoFinalizer
     {
-        Task ProcessVideo(VideoId videoId);
+        Task FinalizeVideoProcessing(VideoId videoId);
     }
 }

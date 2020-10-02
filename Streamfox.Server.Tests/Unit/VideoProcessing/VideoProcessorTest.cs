@@ -21,13 +21,19 @@
 
         private readonly Mock<IBackgroundVideoProcessor> _backgroundVideoProcessor;
 
+        private readonly Mock<ITaskRunner> _taskRunner;
+
         public VideoProcessorTest()
         {
             _fakeFileSystem = new FakeFileSystem();
             _videoVerifier = new Mock<IVideoVerifier>();
             _backgroundVideoProcessor = new Mock<IBackgroundVideoProcessor>();
+            _taskRunner = new Mock<ITaskRunner>();
             _videoProcessor = new VideoProcessor(
-                    _fakeFileSystem, _videoVerifier.Object, _backgroundVideoProcessor.Object);
+                    _fakeFileSystem,
+                    _videoVerifier.Object,
+                    _backgroundVideoProcessor.Object,
+                    _taskRunner.Object);
         }
 
         [Fact]
@@ -95,22 +101,23 @@
             VideoId videoId = new VideoId(600);
             Stream videoStream = TestUtils.MockStream();
             SetupValidVideo(videoId);
+            Task backgroundProcessingTask = Task.FromResult(0xA);
+            _backgroundVideoProcessor.Setup(processor => processor.ProcessVideo(videoId))
+                                     .Returns(backgroundProcessingTask);
 
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
-            _backgroundVideoProcessor.Verify(processor => processor.BeginProcessingVideo(videoId));
+            _taskRunner.Verify(runner => runner.RunBackground(backgroundProcessingTask));
         }
 
         private void SetupValidVideo(VideoId videoId)
         {
-            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId))
-                          .Returns(true);
+            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId)).Returns(true);
         }
 
         private void SetupInvalidVideo(VideoId videoId)
         {
-            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId))
-                          .Returns(false);
+            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId)).Returns(false);
         }
 
         private class FakeFileSystem : IIntermediateVideoWriter, IVideoComponentPathResolver

@@ -13,12 +13,16 @@
 
         private readonly IBackgroundVideoProcessor _backgroundVideoProcessor;
 
+        private readonly ITaskRunner _taskRunner;
+
         public VideoProcessor(
-                IIntermediateVideoWriter intermediateVideoWriter, IVideoVerifier videoVerifier, IBackgroundVideoProcessor backgroundVideoProcessor)
+                IIntermediateVideoWriter intermediateVideoWriter, IVideoVerifier videoVerifier,
+                IBackgroundVideoProcessor backgroundVideoProcessor, ITaskRunner taskRunner)
         {
             _intermediateVideoWriter = intermediateVideoWriter;
             _videoVerifier = videoVerifier;
             _backgroundVideoProcessor = backgroundVideoProcessor;
+            _taskRunner = taskRunner;
         }
 
         public async Task<bool> ProcessVideo(VideoId videoId, Stream videoStream)
@@ -27,7 +31,7 @@
 
             if (_videoVerifier.IsValidVideo(videoId))
             {
-                _backgroundVideoProcessor.BeginProcessingVideo(videoId);
+                _taskRunner.RunBackground(_backgroundVideoProcessor.ProcessVideo(videoId));
                 return true;
             }
 
