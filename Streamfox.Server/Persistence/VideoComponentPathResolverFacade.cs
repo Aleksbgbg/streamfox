@@ -4,7 +4,7 @@
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoProcessing;
 
-    public class VideoComponentPathResolverFacade : IVideoComponentPathResolver
+    public class VideoComponentPathResolverFacade : IVideoComponentPathResolver, IIntermediateVideoPathResolver, IThumbnailPathResolver
     {
         private readonly IFilePathResolver _intermediateVideoFilePathResolver;
 

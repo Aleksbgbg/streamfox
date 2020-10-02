@@ -8,7 +8,7 @@
 
     using Streamfox.Server.VideoProcessing;
 
-    public class FfmpegProcessVideoOperationRunner : IVideoOperationRunner
+    public class FfmpegProcessVideoOperationRunner : IVideoOperationRunner, IFileSystemThumbnailExtractor
     {
         private readonly IFfmpegProcessRunner _ffmpegProcessRunner;
 
