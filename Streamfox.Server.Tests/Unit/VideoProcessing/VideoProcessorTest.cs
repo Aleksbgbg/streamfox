@@ -112,12 +112,14 @@
 
         private void SetupValidVideo(VideoId videoId)
         {
-            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId)).Returns(true);
+            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId))
+                          .Returns(Task.FromResult(true));
         }
 
         private void SetupInvalidVideo(VideoId videoId)
         {
-            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId)).Returns(false);
+            _videoVerifier.Setup(verifier => verifier.IsValidVideo(videoId))
+                          .Returns(Task.FromResult(false));
         }
 
         private class FakeFileSystem : IIntermediateVideoWriter, IVideoComponentPathResolver

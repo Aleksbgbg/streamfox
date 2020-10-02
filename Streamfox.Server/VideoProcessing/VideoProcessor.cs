@@ -29,7 +29,7 @@
         {
             await _intermediateVideoWriter.SaveVideo(videoId, videoStream);
 
-            if (_videoVerifier.IsValidVideo(videoId))
+            if (await _videoVerifier.IsValidVideo(videoId))
             {
                 _taskRunner.RunBackground(_backgroundVideoProcessor.ProcessVideo(videoId));
                 return true;

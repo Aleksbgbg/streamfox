@@ -1,9 +1,11 @@
 ﻿namespace Streamfox.Server.VideoProcessing
 {
+    using System.Threading.Tasks;
+
     using Streamfox.Server.VideoManagement;
 
     public interface IVideoVerifier
     {
-        bool IsValidVideo(VideoId videoId);
+        Task<bool> IsValidVideo(VideoId videoId);
     }
 }
