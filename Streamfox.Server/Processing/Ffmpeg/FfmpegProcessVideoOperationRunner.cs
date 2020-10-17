@@ -1,5 +1,6 @@
 ﻿namespace Streamfox.Server.Processing.Ffmpeg
 {
+    using System;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -8,7 +9,7 @@
 
     using Streamfox.Server.VideoProcessing;
 
-    public class FfmpegProcessVideoOperationRunner : IVideoOperationRunner, IFileSystemThumbnailExtractor
+    public class FfmpegProcessVideoOperationRunner : IVideoOperationRunner, IFileSystemThumbnailExtractor, IFramesFetcher
     {
         private readonly IFfmpegProcessRunner _ffmpegProcessRunner;
 
@@ -32,6 +33,36 @@
                     JsonConvert.DeserializeObject<FfmpegVideoMetadata>(ffprobeOutput);
 
             return FfmpegOutputToVideoMetadata(ffmpegVideoMetadata);
+        }
+
+        public async Task<int> FetchVideoFrames(string videoPath)
+        {
+            string ffprobeOutput = await _ffmpegProcessRunner.RunFfprobe(
+                    $"-v quiet -show_streams -show_format -print_format json \"{videoPath}\"");
+
+            FfmpegVideoMetadata ffmpegVideoMetadata =
+                    JsonConvert.DeserializeObject<FfmpegVideoMetadata>(ffprobeOutput);
+
+            VideoMetadata videoMetadata = FfmpegOutputToVideoMetadata(ffmpegVideoMetadata);
+
+            if (videoMetadata.VideoCodec == VideoCodec.Invalid)
+            {
+                return 0;
+            }
+
+            string frames = ffmpegVideoMetadata.Streams[0].Frames;
+
+            if (int.TryParse(frames, out int frameCount))
+            {
+                return frameCount;
+            }
+
+            string averageFrameRate = ffmpegVideoMetadata.Streams[0].AverageFrameRate;
+
+            int averageFrameRateInt = int.Parse(averageFrameRate.Split('/')[0]);
+            double duration = float.Parse(ffmpegVideoMetadata.Format.Duration);
+
+            return (int)Math.Round(averageFrameRateInt * duration);
         }
 
         public async Task ConvertToVp9Webm(string sourcePath, string outputPath)

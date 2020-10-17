@@ -29,6 +29,9 @@
 
         [JsonProperty("nb_frames")]
         public string Frames { get; set; }
+
+        [JsonProperty("avg_frame_rate")]
+        public string AverageFrameRate { get; set; }
     }
 
     public class Format

@@ -18,7 +18,8 @@
         public FfmpegProcessVideoOperationRunnerTest()
         {
             _processRunner = new Mock<IFfmpegProcessRunner>();
-            _ffmpegProcessVideoOperationRunner = new FfmpegProcessVideoOperationRunner(_processRunner.Object);
+            _ffmpegProcessVideoOperationRunner =
+                    new FfmpegProcessVideoOperationRunner(_processRunner.Object);
         }
 
         [Fact]
@@ -37,7 +38,8 @@
             await _ffmpegProcessVideoOperationRunner.ConvertToVp9Webm("video", "output");
 
             _processRunner.Verify(
-                    runner => runner.RunFfmpeg("-i \"video\" -c:v vp9 -crf 30 -b:v 0 -f webm \"output\""));
+                    runner => runner.RunFfmpeg(
+                            "-i \"video\" -c:v vp9 -crf 30 -b:v 0 -f webm \"output\""));
         }
 
         [Theory]
@@ -45,12 +47,29 @@
         public async Task GrabVideoCodec_DetectsCodecsAccurately(
                 string ffprobeResult, VideoMetadata expectedMetadata)
         {
-            _processRunner.Setup(runner => runner.RunFfprobe("-v quiet -show_streams -show_format -print_format json \"video\""))
-                          .Returns(Task.FromResult(ffprobeResult));
+            _processRunner
+                    .Setup(runner => runner.RunFfprobe(
+                                    "-v quiet -show_streams -show_format -print_format json \"video\""))
+                    .ReturnsAsync(ffprobeResult);
 
-            VideoMetadata metadata = await _ffmpegProcessVideoOperationRunner.GrabVideoMetadata("video");
+            VideoMetadata metadata =
+                    await _ffmpegProcessVideoOperationRunner.GrabVideoMetadata("video");
 
             Assert.Equal(expectedMetadata, metadata);
+        }
+
+        [Theory]
+        [ClassData(typeof(VideoFramesTestData))]
+        public async Task FetchVideoFrames(string ffprobeResult, int expectedFrames)
+        {
+            _processRunner
+                    .Setup(runner => runner.RunFfprobe(
+                                    "-v quiet -show_streams -show_format -print_format json \"video\""))
+                    .ReturnsAsync(ffprobeResult);
+
+            int frames = await _ffmpegProcessVideoOperationRunner.FetchVideoFrames("video");
+
+            Assert.Equal(expectedFrames, frames);
         }
     }
 }
