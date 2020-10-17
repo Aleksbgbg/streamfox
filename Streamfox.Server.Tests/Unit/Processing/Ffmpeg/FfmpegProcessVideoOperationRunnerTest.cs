@@ -33,9 +33,9 @@
         }
 
         [Fact]
-        public async Task ConvertToVp9_CallsProcessCorrectly()
+        public async Task CoerceToVp9_CallsProcessCorrectly()
         {
-            await _ffmpegProcessVideoOperationRunner.ConvertToVp9Webm("video", "output");
+            await _ffmpegProcessVideoOperationRunner.CoerceToVp9("video", "output");
 
             _processRunner.Verify(
                     runner => runner.RunFfmpeg(

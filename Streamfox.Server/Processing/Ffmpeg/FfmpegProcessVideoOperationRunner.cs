@@ -9,7 +9,7 @@
 
     using Streamfox.Server.VideoProcessing;
 
-    public class FfmpegProcessVideoOperationRunner : IVideoOperationRunner, IFileSystemThumbnailExtractor, IFramesFetcher
+    public class FfmpegProcessVideoOperationRunner : IVideoCoercer, IFileSystemThumbnailExtractor, IFramesFetcher
     {
         private readonly IFfmpegProcessRunner _ffmpegProcessRunner;
 
@@ -65,16 +65,17 @@
             return (int)Math.Round(averageFrameRateInt * duration);
         }
 
-        public async Task ConvertToVp9Webm(string sourcePath, string outputPath)
+        public async Task<IProgressLogger> CoerceToVp9(string sourcePath, string outputPath)
         {
-            await _ffmpegProcessRunner.RunFfmpeg(
+            return await _ffmpegProcessRunner.RunFfmpeg(
                     $"-i \"{sourcePath}\" -c:v vp9 -crf 30 -b:v 0 -f webm \"{outputPath}\"");
         }
 
-        public Task NoOpCopy(string sourcePath, string outputPath)
+        public Task<IProgressLogger> CopyWithoutCoercing(string sourcePath, string outputPath)
         {
+
             File.Copy(sourcePath, outputPath);
-            return Task.CompletedTask;
+            return Task.FromResult<IProgressLogger>(new EmptyProgressLogger());
         }
 
         private static VideoMetadata FfmpegOutputToVideoMetadata(
@@ -140,6 +141,19 @@
             }
 
             return VideoFormat.Other;
+        }
+
+        private class EmptyProgressLogger : IProgressLogger
+        {
+            public Task<bool> HasMoreProgress()
+            {
+                return Task.FromResult(false);
+            }
+
+            public Task<ProgressReport> GetNextProgress()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

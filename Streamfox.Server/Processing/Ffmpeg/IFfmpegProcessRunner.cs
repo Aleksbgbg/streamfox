@@ -2,9 +2,11 @@
 {
     using System.Threading.Tasks;
 
+    using Streamfox.Server.VideoProcessing;
+
     public interface IFfmpegProcessRunner
     {
-        Task RunFfmpeg(string args);
+        Task<IProgressLogger> RunFfmpeg(string args);
 
         Task<string> RunFfprobe(string args);
     }

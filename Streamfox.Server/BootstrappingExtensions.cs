@@ -60,7 +60,6 @@
             services.AddSingleton<IVideoConverter>(factory => factory.GetService<VideoConversionQueue>());
 
             services.AddTransient<IFfmpegProcessRunner, FfmpegProcessRunner>();
-            services.AddTransient<IVideoOperationRunner, FfmpegProcessVideoOperationRunner>();
             services.AddTransient<IVideoProcessor, VideoProcessor>();
             services.AddTransient<VideoRetrievalClerk>();
             services.AddTransient<VideoStorageClerk>();

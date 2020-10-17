@@ -1,18 +1,46 @@
 ﻿namespace Streamfox.Server.Processing.Ffmpeg
 {
+    using System;
+    using System.Collections.Concurrent;
     using System.Diagnostics;
     using System.IO;
+    using System.Threading;
     using System.Threading.Tasks;
+
+    using Streamfox.Server.VideoProcessing;
 
     public class FfmpegProcessRunner : IFfmpegProcessRunner
     {
-        public Task RunFfmpeg(string args)
+        public async Task<IProgressLogger> RunFfmpeg(string args)
         {
-            return new Process
+            Process process = new Process
             {
-                StartInfo = new ProcessStartInfo("ffmpeg", args),
+                StartInfo = new ProcessStartInfo("ffmpeg", args)
+                {
+                    RedirectStandardOutput = true
+                },
                 EnableRaisingEvents = true
-            }.StartAsync();
+            };
+
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            FfmpegProgressLogger ffmpegProgressLogger = new FfmpegProgressLogger(cancellationTokenSource.Token);
+
+            Task runProcess = process.StartAsync();
+            Task readOutput = Task.Run(
+                    async () =>
+                    {
+                        using (process.StandardOutput)
+                        {
+                            while (!process.StandardOutput.EndOfStream)
+                            {
+                                string line = await process.StandardOutput.ReadLineAsync();
+                            }
+                        }
+
+                        cancellationTokenSource.Cancel();
+                    });
+
+            return (IProgressLogger)ffmpegProgressLogger;
         }
 
         public async Task<string> RunFfprobe(string args)
@@ -43,6 +71,43 @@
             output.Position = 0;
             using StreamReader outputReader = new StreamReader(output);
             return await outputReader.ReadToEndAsync();
+        }
+
+        private class FfmpegProgressLogger : IProgressLogger
+        {
+            private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(0);
+
+            private readonly ConcurrentQueue<ProgressReport> _progressReports =
+                    new ConcurrentQueue<ProgressReport>();
+
+            private readonly CancellationToken _cancellationToken;
+
+            public FfmpegProgressLogger(CancellationToken cancellationToken)
+            {
+                _cancellationToken = cancellationToken;
+            }
+
+            public void AddProgressReport(ProgressReport progressReport)
+            {
+                _progressReports.Enqueue(progressReport);
+                _semaphore.Release();
+            }
+
+            public async Task<bool> HasMoreProgress()
+            {
+                await _semaphore.WaitAsync(_cancellationToken);
+                return !_cancellationToken.IsCancellationRequested;
+            }
+
+            public Task<ProgressReport> GetNextProgress()
+            {
+                if (_progressReports.TryDequeue(out ProgressReport result))
+                {
+                    return Task.FromResult(result);
+                }
+
+                throw new InvalidOperationException("Could not dequeue progress report.");
+            }
         }
     }
 }
