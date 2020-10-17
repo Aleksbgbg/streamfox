@@ -7,6 +7,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Streamfox.Server.Types;
     using Streamfox.Server.VideoProcessing;
 
     public class FfmpegProcessRunner : IFfmpegProcessRunner
@@ -17,7 +18,7 @@
             {
                 StartInfo = new ProcessStartInfo("ffmpeg", args)
                 {
-                    RedirectStandardOutput = true
+                    RedirectStandardError = true
                 },
                 EnableRaisingEvents = true
             };
@@ -25,22 +26,33 @@
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             FfmpegProgressLogger ffmpegProgressLogger = new FfmpegProgressLogger(cancellationTokenSource.Token);
 
-            Task runProcess = process.StartAsync();
-            Task readOutput = Task.Run(
+            Task _ = process.StartAsync();
+            Task __ = Task.Run(
                     async () =>
                     {
-                        using (process.StandardOutput)
+                        using (process.StandardError)
                         {
-                            while (!process.StandardOutput.EndOfStream)
+                            while (!process.StandardError.EndOfStream)
                             {
-                                string line = await process.StandardOutput.ReadLineAsync();
+                                string line = await process.StandardError.ReadLineAsync();
+
+                                Optional<ProgressReport> progressReport =
+                                        ProgressParser.ParseProgress(line);
+
+                                if (progressReport.HasValue)
+                                {
+                                    ffmpegProgressLogger.AddProgressReport(progressReport.Value);
+                                }
                             }
+
+                            ffmpegProgressLogger.AddProgressReport(
+                                    new ProgressReport(int.MaxValue));
                         }
 
                         cancellationTokenSource.Cancel();
                     });
 
-            return (IProgressLogger)ffmpegProgressLogger;
+            return ffmpegProgressLogger;
         }
 
         public async Task<string> RunFfprobe(string args)

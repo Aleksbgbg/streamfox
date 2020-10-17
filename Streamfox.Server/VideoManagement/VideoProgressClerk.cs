@@ -1,13 +1,19 @@
 ﻿namespace Streamfox.Server.VideoManagement
 {
-    using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.Types;
 
     public class VideoProgressClerk
     {
-        public Optional<ConversionProgressResponse> RetrieveConversionProgress(VideoId videoId)
+        private readonly IProgressRetriever _progressRetriever;
+
+        public VideoProgressClerk(IProgressRetriever progressRetriever)
         {
-            return Optional.Of(new ConversionProgressResponse());
+            _progressRetriever = progressRetriever;
+        }
+
+        public Optional<ConversionProgress> RetrieveConversionProgress(VideoId videoId)
+        {
+            return _progressRetriever.RetrieveConversionProgress(videoId);
         }
     }
 }
