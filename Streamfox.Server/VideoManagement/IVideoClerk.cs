@@ -3,6 +3,7 @@
     using System.IO;
     using System.Threading.Tasks;
 
+    using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.Types;
 
     public interface IVideoClerk
@@ -14,5 +15,7 @@
         VideoId[] ListVideos();
 
         Optional<Stream> RetrieveThumbnail(VideoId videoId);
+
+        Optional<ConversionProgressResponse> RetrieveConversionProgress(VideoId videoId);
     }
 }

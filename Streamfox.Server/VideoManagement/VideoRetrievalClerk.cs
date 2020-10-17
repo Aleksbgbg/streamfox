@@ -36,6 +36,7 @@
         {
             return _videoLoader.ListLabels()
                                .Select(long.Parse)
+                               .OrderBy(id => id)
                                .Select(id => new VideoId(id))
                                .ToArray();
         }

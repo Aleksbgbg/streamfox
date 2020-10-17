@@ -3,6 +3,7 @@
     using System.IO;
     using System.Threading.Tasks;
 
+    using Streamfox.Server.Controllers.Responses;
     using Streamfox.Server.Types;
 
     public class VideoClerkFacade : IVideoClerk
@@ -11,10 +12,15 @@
 
         private readonly VideoStorageClerk _videoStorageClerk;
 
-        public VideoClerkFacade(VideoRetrievalClerk videoRetrievalClerk, VideoStorageClerk videoStorageClerk)
+        private readonly VideoProgressClerk _videoProgressClerk;
+
+        public VideoClerkFacade(
+                VideoRetrievalClerk videoRetrievalClerk, VideoStorageClerk videoStorageClerk,
+                VideoProgressClerk videoProgressClerk)
         {
             _videoRetrievalClerk = videoRetrievalClerk;
             _videoStorageClerk = videoStorageClerk;
+            _videoProgressClerk = videoProgressClerk;
         }
 
         public Task<Optional<StoredVideo>> RetrieveVideo(VideoId videoId)
@@ -30,6 +36,11 @@
         public Optional<Stream> RetrieveThumbnail(VideoId videoId)
         {
             return _videoRetrievalClerk.RetrieveThumbnail(videoId);
+        }
+
+        public Optional<ConversionProgressResponse> RetrieveConversionProgress(VideoId videoId)
+        {
+            return _videoProgressClerk.RetrieveConversionProgress(videoId);
         }
 
         public Task<Optional<VideoId>> StoreVideo(Stream videoStream)

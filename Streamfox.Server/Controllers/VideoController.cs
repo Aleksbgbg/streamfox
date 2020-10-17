@@ -43,8 +43,10 @@
             if (optionalStoredVideo.HasValue)
             {
                 StoredVideo storedVideo = optionalStoredVideo.Value;
-                return Stream(storedVideo.VideoStream,
-                        storedVideo.VideoMetadata.VideoFormat == VideoFormat.Webm ? "video/webm" : "video/mp4");
+                return Stream(
+                        storedVideo.VideoStream,
+                        storedVideo.VideoMetadata.VideoFormat == VideoFormat.Webm ? "video/webm"
+                                : "video/mp4");
             }
 
             return NotFound();
@@ -64,6 +66,20 @@
             if (stream.HasValue)
             {
                 return Stream(stream.Value, "image/jpeg");
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet("{videoId}/progress")]
+        public IActionResult GetProgress(VideoId videoId)
+        {
+            Optional<ConversionProgressResponse> progress =
+                    _videoClerk.RetrieveConversionProgress(videoId);
+
+            if (progress.HasValue)
+            {
+                return Ok(progress);
             }
 
             return NotFound();

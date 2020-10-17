@@ -9,7 +9,7 @@
 
     using Streamfox.Server.VideoProcessing;
 
-    public class FfmpegProcessVideoOperationRunner : IVideoCoercer, IFileSystemThumbnailExtractor, IFramesFetcher
+    public class FfmpegProcessVideoOperationRunner : IVideoCoercer, IFileSystemThumbnailExtractor, IFramesFetcher, IVideoMetadataGrabber
     {
         private readonly IFfmpegProcessRunner _ffmpegProcessRunner;
 
@@ -24,7 +24,7 @@
                     $"-i \"{videoPath}\" -vframes 1 -q:v 2 -vf scale=-1:225 -f singlejpeg \"{thumbnailPath}\"");
         }
 
-        public async Task<VideoMetadata> GrabVideoMetadata(string videoPath)
+        public async Task<VideoMetadata> GrabMetadata(string videoPath)
         {
             string ffprobeOutput = await _ffmpegProcessRunner.RunFfprobe(
                     $"-v quiet -show_streams -show_format -print_format json \"{videoPath}\"");

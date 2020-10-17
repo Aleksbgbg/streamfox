@@ -7,7 +7,7 @@
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoProcessing;
 
-    public class IntermediateVideoWriter : IIntermediateVideoWriter
+    public class IntermediateVideoWriter : IIntermediateVideoWriter, IIntermediateVideoDeleter
     {
         private readonly IFileStreamWriter _fileStreamWriter;
 
@@ -27,6 +27,12 @@
         public void DeleteVideo(VideoId videoId)
         {
             _fileDeleter.Delete(videoId.ToString());
+        }
+
+        public Task DeleteIntermediateVideo(VideoId videoId)
+        {
+            DeleteVideo(videoId);
+            return Task.CompletedTask;
         }
     }
 }
