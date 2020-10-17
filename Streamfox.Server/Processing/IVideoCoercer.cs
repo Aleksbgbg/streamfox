@@ -2,10 +2,12 @@
 {
     using System.Threading.Tasks;
 
+    using Streamfox.Server.VideoProcessing;
+
     public interface IVideoCoercer
     {
-        Task CoerceToVp9(string sourcePath, string targetPath);
+        Task<IProgressLogger> CoerceToVp9(string sourcePath, string targetPath);
 
-        Task CopyWithoutCoercing(string sourcePath, string targetPath);
+        Task<IProgressLogger> CopyWithoutCoercing(string sourcePath, string targetPath);
     }
 }

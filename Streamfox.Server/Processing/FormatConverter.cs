@@ -6,7 +6,7 @@
     using Streamfox.Server.VideoManagement;
     using Streamfox.Server.VideoProcessing;
 
-    public class FormatConverter : IFormatConverter
+    public class FormatConverter : IFormatConverterWithLogging
     {
         private readonly IIntermediateVideoPathResolver _intermediateVideoPathResolver;
 
@@ -16,22 +16,33 @@
 
         private readonly IVideoCoercer _videoCoercer;
 
+        private readonly IFramesFetcher _framesFetcher;
+
+        private readonly IVideoProgressStore _videoProgressStore;
+
         public FormatConverter(
                 IIntermediateVideoPathResolver intermediateVideoPathResolver,
                 IVideoPathResolver videoPathResolver, IVideoMetadataGrabber videoMetadataGrabber,
-                IVideoCoercer videoCoercer)
+                IVideoCoercer videoCoercer, IFramesFetcher framesFetcher,
+                IVideoProgressStore videoProgressStore)
         {
             _intermediateVideoPathResolver = intermediateVideoPathResolver;
             _videoPathResolver = videoPathResolver;
             _videoMetadataGrabber = videoMetadataGrabber;
             _videoCoercer = videoCoercer;
+            _framesFetcher = framesFetcher;
+            _videoProgressStore = videoProgressStore;
         }
 
-        public async Task CoerceVideoToSupportedFormat(VideoId videoId)
+        public async Task<IProgressLogger> CoerceVideoToSupportedFormat(VideoId videoId)
         {
             string intermediateVideoPath =
                     _intermediateVideoPathResolver.ResolveIntermediateVideoPath(videoId);
             string outputVideoPath = _videoPathResolver.ResolveVideoPath(videoId);
+
+            await _videoProgressStore.StoreNewVideo(
+                    videoId,
+                    await _framesFetcher.FetchVideoFrames(intermediateVideoPath));
 
             VideoMetadata videoMetadata =
                     await _videoMetadataGrabber.GrabMetadata(intermediateVideoPath);
@@ -41,12 +52,12 @@
                 (videoMetadata.VideoCodec == VideoCodec.Vp9 &&
                  videoMetadata.VideoFormat == VideoFormat.Webm))
             {
-                await _videoCoercer.CopyWithoutCoercing(intermediateVideoPath, outputVideoPath);
+                return await _videoCoercer.CopyWithoutCoercing(
+                        intermediateVideoPath,
+                        outputVideoPath);
             }
-            else
-            {
-                await _videoCoercer.CoerceToVp9(intermediateVideoPath, outputVideoPath);
-            }
+
+            return await _videoCoercer.CoerceToVp9(intermediateVideoPath, outputVideoPath);
         }
     }
 }
