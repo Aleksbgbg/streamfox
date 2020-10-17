@@ -141,7 +141,7 @@
             {
                 if (videoId == _savedVideoId)
                 {
-                    _savedVideoId = new VideoId();
+                    _savedVideoId = new VideoId(0);
                     DeletedVideo = true;
                 }
                 else

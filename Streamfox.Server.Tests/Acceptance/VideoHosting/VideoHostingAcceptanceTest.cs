@@ -51,15 +51,21 @@
             VideoId videoId = await _applicationHost.Post("/api/videos", h265VideoBytes);
             var progress1 =
                     await _applicationHost.Get<ConversionProgressResponse>(
-                            $"/api/videos/${videoId}/progress");
-            await Task.Delay(5_000);
+                            $"/api/videos/{videoId}/progress");
+            if (!progress1.IsCompleted)
+            {
+                await Task.Delay(5_000);
+            }
             var progress2 =
                     await _applicationHost.Get<ConversionProgressResponse>(
-                            $"/api/videos/${videoId}/progress");
-            await Task.Delay(20_000);
+                            $"/api/videos/{videoId}/progress");
+            if (!progress2.IsCompleted)
+            {
+                await Task.Delay(5_000);
+            }
             var progress3 =
                     await _applicationHost.Get<ConversionProgressResponse>(
-                            $"/api/videos/${videoId}/progress");
+                            $"/api/videos/{videoId}/progress");
             BytesResponse response =
                     await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
 

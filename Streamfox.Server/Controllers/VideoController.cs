@@ -74,12 +74,11 @@
         [HttpGet("{videoId}/progress")]
         public IActionResult GetProgress(VideoId videoId)
         {
-            Optional<ConversionProgressResponse> progress =
-                    _videoClerk.RetrieveConversionProgress(videoId);
+            Optional<ConversionProgress> progress = _videoClerk.RetrieveConversionProgress(videoId);
 
             if (progress.HasValue)
             {
-                return Ok(progress);
+                return Ok(new ConversionProgressResponse(progress.Value));
             }
 
             return NotFound();

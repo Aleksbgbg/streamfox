@@ -38,8 +38,12 @@
             services.AddTransient<IBackgroundVideoProcessor, BackgroundVideoProcessor>();
             services.AddTransient<IFormatConverter, ProgressLoggingFormatConverter>();
             services.AddTransient<IVideoFinalizer, VideoFinalizer>();
-            services.AddTransient<IVideoProgressStore, VideoProgressStore>();
-            services.AddTransient<IProgressSink, VideoProgressStore>();
+            services.AddSingleton<VideoProgressStore>();
+            services.AddTransient<IVideoProgressStore>(
+                    factory => factory.GetService<VideoProgressStore>());
+            services.AddTransient<IProgressSink>(
+                    factory => factory.GetService<VideoProgressStore>());
+            services.AddTransient<IProgressRetriever>(factory => factory.GetService<VideoProgressStore>());
             services.AddTransient<IVideoPathResolver>(
                     factory => factory.GetService<VideoComponentPathResolverFacade>());
             services.AddTransient<IIntermediateVideoPathResolver>(

@@ -1,6 +1,6 @@
 ﻿namespace Streamfox.Server.Controllers.Responses
 {
-    using System;
+    using Streamfox.Server.VideoManagement;
 
     public class ConversionProgressResponse
     {
@@ -8,28 +8,26 @@
         {
         }
 
-        public ConversionProgressResponse(
-                bool isCompleted, TimeSpan currentFrame, TimeSpan videoDuration,
-                double doneFraction, TimeSpan timeElapsed, TimeSpan timeRemaining)
+        public ConversionProgressResponse(ConversionProgress conversionProgress)
         {
-            IsCompleted = isCompleted;
-            CurrentFrame = currentFrame;
-            VideoDuration = videoDuration;
-            DoneFraction = doneFraction;
-            TimeElapsed = timeElapsed;
-            TimeRemaining = timeRemaining;
+            IsCompleted = conversionProgress.CurrentFrame == conversionProgress.VideoDuration;
+            CurrentFrame = conversionProgress.CurrentFrame;
+            VideoDuration = conversionProgress.VideoDuration;
+            DoneFraction = (double)conversionProgress.CurrentFrame / conversionProgress.VideoDuration;
+            TimeElapsed = conversionProgress.TimeElapsed.TotalSeconds;
+            TimeRemaining = conversionProgress.TimeRemaining.TotalSeconds;
         }
 
-        public bool IsCompleted { get; }
+        public bool IsCompleted { get; set; }
 
-        public TimeSpan CurrentFrame { get; }
+        public int CurrentFrame { get; set; }
 
-        public TimeSpan VideoDuration { get; }
+        public int VideoDuration { get; set; }
 
-        public double DoneFraction { get; }
+        public double DoneFraction { get; set; }
 
-        public TimeSpan TimeElapsed { get; }
+        public double TimeElapsed { get; set; }
 
-        public TimeSpan TimeRemaining { get; }
+        public double TimeRemaining { get; set; }
     }
 }
