@@ -2,9 +2,8 @@
 {
     using Streamfox.Server.Persistence.Operations;
     using Streamfox.Server.VideoManagement;
-    using Streamfox.Server.VideoProcessing;
 
-    public class VideoComponentPathResolverFacade : IVideoComponentPathResolver, IIntermediateVideoPathResolver, IThumbnailPathResolver
+    public class VideoComponentPathResolverFacade : IIntermediateVideoPathResolver, IThumbnailPathResolver, IVideoPathResolver
     {
         private readonly IFilePathResolver _intermediateVideoFilePathResolver;
 

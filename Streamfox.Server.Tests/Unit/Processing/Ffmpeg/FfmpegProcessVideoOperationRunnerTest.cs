@@ -53,7 +53,7 @@
                     .ReturnsAsync(ffprobeResult);
 
             VideoMetadata metadata =
-                    await _ffmpegProcessVideoOperationRunner.GrabVideoMetadata("video");
+                    await _ffmpegProcessVideoOperationRunner.GrabMetadata("video");
 
             Assert.Equal(expectedMetadata, metadata);
         }

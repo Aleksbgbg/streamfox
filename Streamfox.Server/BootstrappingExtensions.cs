@@ -13,6 +13,67 @@
     {
         public static IServiceCollection AddVideoHosting(this IServiceCollection services)
         {
+            AddVideoClerks(services);
+            AddHighLevelVideoProcessors(services);
+            AddLowLevelVideoProcessors(services);
+            AddFfmpeg(services);
+            AddPersistence(services);
+
+            return services;
+        }
+
+        private static void AddVideoClerks(IServiceCollection services)
+        {
+            services.AddTransient<VideoStorageClerk>();
+            services.AddTransient<VideoRetrievalClerk>();
+            services.AddTransient<VideoProgressClerk>();
+            services.AddTransient<IVideoClerk, VideoClerkFacade>();
+        }
+
+        private static void AddHighLevelVideoProcessors(IServiceCollection services)
+        {
+            services.AddTransient<IVideoIdGenerator, SnowflakeVideoIdGenerator>();
+            services.AddTransient<IVideoProcessor, VideoProcessor>();
+            services.AddTransient<IVideoVerifier, VideoVerifier>();
+            services.AddTransient<IBackgroundVideoProcessor, BackgroundVideoProcessor>();
+            services.AddTransient<IFormatConverter, ProgressLoggingFormatConverter>();
+            services.AddTransient<IVideoFinalizer, VideoFinalizer>();
+            services.AddTransient<IVideoProgressStore, VideoProgressStore>();
+            services.AddTransient<IProgressSink, VideoProgressStore>();
+            services.AddTransient<IVideoPathResolver>(
+                    factory => factory.GetService<VideoComponentPathResolverFacade>());
+            services.AddTransient<IIntermediateVideoPathResolver>(
+                    factory => factory.GetService<VideoComponentPathResolverFacade>());
+            services.AddTransient<IThumbnailPathResolver>(
+                    factory => factory.GetService<VideoComponentPathResolverFacade>());
+        }
+
+        private static void AddLowLevelVideoProcessors(IServiceCollection services)
+        {
+            services.AddTransient<ITaskRunner, TaskRunner>();
+            services.AddTransient<IThumbnailExtractor, ThumbnailExtractor>();
+            services.AddTransient<IMetadataExtractor, MetadataExtractor>();
+            services.AddTransient<IFormatConverterWithLogging, FormatConverter>();
+        }
+
+        private static void AddFfmpeg(IServiceCollection services)
+        {
+            services.AddTransient<IFramesFetcher, FfmpegProcessVideoOperationRunner>();
+            services
+                    .AddTransient<IFileSystemThumbnailExtractor, FfmpegProcessVideoOperationRunner
+                    >();
+            services.AddTransient<IVideoMetadataGrabber, FfmpegProcessVideoOperationRunner>();
+            services.AddTransient<IVideoCoercer, FfmpegProcessVideoOperationRunner>();
+            services.AddTransient<IFfmpegProcessRunner, FfmpegProcessRunner>();
+        }
+
+        private static void AddPersistence(IServiceCollection services)
+        {
+            AddFileStores(services);
+        }
+
+        private static void AddFileStores(IServiceCollection services)
+        {
             FileStore intermediateFileStore = new FileStore("Intermediate");
             FileStore metadataFileStore = new FileStore("Metadata");
             FileStore thumbnailFileStore = new FileStore("Thumbnails");
@@ -40,32 +101,23 @@
                             fileExistenceChecker: metadataFileStore,
                             videoFileReadOpener: videoFileStore,
                             thumbnailFileReadOpener: thumbnailFileStore));
-            services.AddTransient<IIntermediateVideoWriter>(
+            services.AddTransient(
                     factory => new IntermediateVideoWriter(
                             fileStreamWriter: intermediateFileStore,
                             fileDeleter: intermediateFileStore));
+            services.AddTransient<IIntermediateVideoWriter>(
+                    factory => factory.GetService<IntermediateVideoWriter>());
+            services.AddTransient<IIntermediateVideoDeleter>(
+                    factory => factory.GetService<IntermediateVideoWriter>());
             services.AddTransient<IVideoComponentExistenceChecker>(
                     factory => new VideoComponentExistenceCheckerFacade(
                             videoFileExistenceChecker: videoFileStore,
                             thumbnailFileExistenceChecker: thumbnailFileStore));
-            services.AddTransient<IVideoComponentPathResolver>(
+            services.AddTransient(
                     factory => new VideoComponentPathResolverFacade(
                             intermediateVideoFilePathResolver: intermediateFileStore,
                             thumbnailFilePathResolver: thumbnailFileStore,
                             videoFilePathResolver: videoFileStore));
-            services.AddTransient<IVideoIdGenerator, SnowflakeVideoIdGenerator>();
-
-            services.AddSingleton<VideoConversionQueue>();
-            services.AddHostedService<BackgroundVideoConverter>();
-            services.AddSingleton<IVideoConverter>(factory => factory.GetService<VideoConversionQueue>());
-
-            services.AddTransient<IFfmpegProcessRunner, FfmpegProcessRunner>();
-            services.AddTransient<IVideoProcessor, VideoProcessor>();
-            services.AddTransient<VideoRetrievalClerk>();
-            services.AddTransient<VideoStorageClerk>();
-            services.AddTransient<IVideoClerk, VideoClerkFacade>();
-
-            return services;
         }
     }
 }

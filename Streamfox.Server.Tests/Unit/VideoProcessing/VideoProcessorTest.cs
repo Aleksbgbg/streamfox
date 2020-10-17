@@ -122,7 +122,7 @@
                           .Returns(Task.FromResult(false));
         }
 
-        private class FakeFileSystem : IIntermediateVideoWriter, IVideoComponentPathResolver
+        private class FakeFileSystem : IIntermediateVideoWriter
         {
             private VideoId _savedVideoId;
 
@@ -148,36 +148,6 @@
                 {
                     throw VideoNotSaved();
                 }
-            }
-
-            public string ResolveIntermediateVideoPath(VideoId videoId)
-            {
-                if (videoId == _savedVideoId)
-                {
-                    return $"intermediate-{videoId}";
-                }
-
-                throw VideoNotSaved();
-            }
-
-            public string ResolveThumbnailPath(VideoId videoId)
-            {
-                if (videoId == _savedVideoId)
-                {
-                    return $"thumbnail-{videoId}";
-                }
-
-                throw VideoNotSaved();
-            }
-
-            public string ResolveVideoPath(VideoId videoId)
-            {
-                if (videoId == _savedVideoId)
-                {
-                    return $"video-{videoId}";
-                }
-
-                throw VideoNotSaved();
             }
 
             private static InvalidOperationException VideoNotSaved()
