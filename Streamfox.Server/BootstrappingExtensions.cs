@@ -43,7 +43,8 @@
                     factory => factory.GetService<VideoProgressStore>());
             services.AddTransient<IProgressSink>(
                     factory => factory.GetService<VideoProgressStore>());
-            services.AddTransient<IProgressRetriever>(factory => factory.GetService<VideoProgressStore>());
+            services.AddTransient<IProgressRetriever>(
+                    factory => factory.GetService<VideoProgressStore>());
             services.AddTransient<IVideoPathResolver>(
                     factory => factory.GetService<VideoComponentPathResolverFacade>());
             services.AddTransient<IIntermediateVideoPathResolver>(
@@ -58,11 +59,12 @@
             services.AddTransient<IThumbnailExtractor, ThumbnailExtractor>();
             services.AddTransient<IMetadataExtractor, MetadataExtractor>();
             services.AddTransient<IFormatConverterWithLogging, FormatConverter>();
+            services.AddTransient<IFramesFetcher, FramesFetcher>();
         }
 
         private static void AddFfmpeg(IServiceCollection services)
         {
-            services.AddTransient<IFramesFetcher, FfmpegProcessVideoOperationRunner>();
+            services.AddTransient<IVideoFramesFetcher, FfmpegProcessVideoOperationRunner>();
             services
                     .AddTransient<IFileSystemThumbnailExtractor, FfmpegProcessVideoOperationRunner
                     >();
@@ -102,9 +104,10 @@
             services.AddTransient<IVideoLoader>(
                     factory => new DiskVideoLoader(
                             fileLister: metadataFileStore,
-                            fileExistenceChecker: metadataFileStore,
+                            videoExistenceChecker: metadataFileStore,
                             videoFileReadOpener: videoFileStore,
-                            thumbnailFileReadOpener: thumbnailFileStore));
+                            thumbnailFileReadOpener: thumbnailFileStore,
+                            thumbnailExistenceChecker: thumbnailFileStore));
             services.AddTransient(
                     factory => new IntermediateVideoWriter(
                             fileStreamWriter: intermediateFileStore,

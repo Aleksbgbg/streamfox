@@ -6,7 +6,9 @@
 
     public interface IFfmpegProcessRunner
     {
-        Task<IProgressLogger> RunFfmpeg(string args);
+        Task RunFfmpeg(string args);
+
+        Task<IProgressLogger> RunFfmpegWithProgressLogging(string args);
 
         Task<string> RunFfprobe(string args);
     }

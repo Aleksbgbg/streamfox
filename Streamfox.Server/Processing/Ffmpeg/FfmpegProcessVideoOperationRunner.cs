@@ -1,6 +1,8 @@
 ﻿namespace Streamfox.Server.Processing.Ffmpeg
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -9,7 +11,8 @@
 
     using Streamfox.Server.VideoProcessing;
 
-    public class FfmpegProcessVideoOperationRunner : IVideoCoercer, IFileSystemThumbnailExtractor, IFramesFetcher, IVideoMetadataGrabber
+    public class FfmpegProcessVideoOperationRunner : IVideoCoercer, IFileSystemThumbnailExtractor,
+                                                     IVideoFramesFetcher, IVideoMetadataGrabber
     {
         private readonly IFfmpegProcessRunner _ffmpegProcessRunner;
 
@@ -67,13 +70,12 @@
 
         public async Task<IProgressLogger> CoerceToVp9(string sourcePath, string outputPath)
         {
-            return await _ffmpegProcessRunner.RunFfmpeg(
+            return await _ffmpegProcessRunner.RunFfmpegWithProgressLogging(
                     $"-i \"{sourcePath}\" -c:v vp9 -crf 30 -b:v 0 -f webm \"{outputPath}\"");
         }
 
         public Task<IProgressLogger> CopyWithoutCoercing(string sourcePath, string outputPath)
         {
-
             File.Copy(sourcePath, outputPath);
             return Task.FromResult<IProgressLogger>(new EmptyProgressLogger());
         }
@@ -145,14 +147,21 @@
 
         private class EmptyProgressLogger : IProgressLogger
         {
+            private readonly Queue<ProgressReport> _progressReports = new Queue<ProgressReport>();
+
+            public EmptyProgressLogger()
+            {
+                _progressReports.Enqueue(new ProgressReport(int.MaxValue));
+            }
+
             public Task<bool> HasMoreProgress()
             {
-                return Task.FromResult(false);
+                return Task.FromResult(_progressReports.Count > 0);
             }
 
             public Task<ProgressReport> GetNextProgress()
             {
-                throw new NotImplementedException();
+                return Task.FromResult(_progressReports.Dequeue());
             }
         }
     }

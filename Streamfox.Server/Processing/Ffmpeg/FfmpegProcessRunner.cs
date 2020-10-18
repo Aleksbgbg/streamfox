@@ -12,7 +12,16 @@
 
     public class FfmpegProcessRunner : IFfmpegProcessRunner
     {
-        public async Task<IProgressLogger> RunFfmpeg(string args)
+        public Task RunFfmpeg(string args)
+        {
+            return new Process
+            {
+                StartInfo = new ProcessStartInfo("ffmpeg", args),
+                EnableRaisingEvents = true
+            }.StartAsync();
+        }
+
+        public Task<IProgressLogger> RunFfmpegWithProgressLogging(string args)
         {
             Process process = new Process
             {
@@ -24,12 +33,15 @@
             };
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            FfmpegProgressLogger ffmpegProgressLogger = new FfmpegProgressLogger(cancellationTokenSource.Token);
+            FfmpegProgressLogger ffmpegProgressLogger =
+                    new FfmpegProgressLogger(cancellationTokenSource.Token);
 
             Task _ = process.StartAsync();
-            Task __ = Task.Run(
+            Task.Run(
                     async () =>
                     {
+                        ffmpegProgressLogger.AddProgressReport(new ProgressReport(0));
+
                         using (process.StandardError)
                         {
                             while (!process.StandardError.EndOfStream)
@@ -44,15 +56,13 @@
                                     ffmpegProgressLogger.AddProgressReport(progressReport.Value);
                                 }
                             }
-
-                            ffmpegProgressLogger.AddProgressReport(
-                                    new ProgressReport(int.MaxValue));
                         }
 
+                        ffmpegProgressLogger.AddProgressReport(new ProgressReport(int.MaxValue));
                         cancellationTokenSource.Cancel();
                     });
 
-            return ffmpegProgressLogger;
+            return Task.FromResult<IProgressLogger>(ffmpegProgressLogger);
         }
 
         public async Task<string> RunFfprobe(string args)

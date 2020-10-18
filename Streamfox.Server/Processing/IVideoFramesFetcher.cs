@@ -2,7 +2,7 @@
 {
     using System.Threading.Tasks;
 
-    public interface IFramesFetcher
+    public interface IVideoFramesFetcher
     {
         Task<int> FetchVideoFrames(string videoPath);
     }

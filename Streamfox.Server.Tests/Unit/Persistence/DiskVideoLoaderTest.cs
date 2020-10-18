@@ -39,7 +39,8 @@
                     _fileLister.Object,
                     _fileExistenceChecker.Object,
                     _videoFileReadOpener.Object,
-                    _thumbnailFileReadOpener.Object);
+                    _thumbnailFileReadOpener.Object,
+                    _fileExistenceChecker.Object);
             _files = new List<string>();
         }
 

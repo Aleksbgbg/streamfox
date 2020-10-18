@@ -1,7 +1,7 @@
 import { EndpointResolver } from "@/endpoints/endpoint-resolver";
 
 describe("EndpointResolver", () => {
-  it("resolves regular url", () => {
+  it("resolves regular thumbnailUrl", () => {
     const resolver = new EndpointResolver("/streamfox/api");
 
     const resolved = resolver.resolve("/videos/123/thumbnail");
@@ -9,7 +9,7 @@ describe("EndpointResolver", () => {
     expect(resolved).toBe("/streamfox/api/videos/123/thumbnail");
   });
 
-  it("resolves extra trailing slashes url", () => {
+  it("resolves extra trailing slashes thumbnailUrl", () => {
     const resolver = new EndpointResolver("/streamfox/api/");
 
     const resolved = resolver.resolve("/videos/123/thumbnail/");
@@ -17,7 +17,7 @@ describe("EndpointResolver", () => {
     expect(resolved).toBe("/streamfox/api/videos/123/thumbnail");
   });
 
-  it("resolves no leading slashes url", () => {
+  it("resolves no leading slashes thumbnailUrl", () => {
     const resolver = new EndpointResolver("streamfox/api");
 
     const resolved = resolver.resolve("videos/123/thumbnail");
@@ -25,7 +25,7 @@ describe("EndpointResolver", () => {
     expect(resolved).toBe("/streamfox/api/videos/123/thumbnail");
   });
 
-  it("resolves too many slashes url", () => {
+  it("resolves too many slashes thumbnailUrl", () => {
     const resolver = new EndpointResolver("///streamfox///api///");
 
     const resolved = resolver.resolve("///videos//////123///thumbnail///");
@@ -33,7 +33,7 @@ describe("EndpointResolver", () => {
     expect(resolved).toBe("/streamfox/api/videos/123/thumbnail");
   });
 
-  it("resolves empty url", () => {
+  it("resolves empty thumbnailUrl", () => {
     const resolver = new EndpointResolver("///streamfox///api///");
 
     const resolved = resolver.resolve("");
