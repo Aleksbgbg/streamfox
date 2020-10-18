@@ -14,8 +14,6 @@
     {
         private readonly BackgroundVideoProcessor _backgroundVideoProcessor;
 
-        private readonly Mock<IThumbnailExtractor> _thumbnailExtractor;
-
         private readonly Mock<IFormatConverter> _formatConverter;
 
         private readonly Mock<IMetadataExtractor> _metadataExtractor;
@@ -24,12 +22,10 @@
 
         public BackgroundVideoProcessorTest()
         {
-            _thumbnailExtractor = new Mock<IThumbnailExtractor>();
             _formatConverter = new Mock<IFormatConverter>();
             _metadataExtractor = new Mock<IMetadataExtractor>();
             _videoFinalizer = new Mock<IVideoFinalizer>();
             _backgroundVideoProcessor = new BackgroundVideoProcessor(
-                    _thumbnailExtractor.Object,
                     _formatConverter.Object,
                     _metadataExtractor.Object,
                     _videoFinalizer.Object);
@@ -42,15 +38,6 @@
             new object[] { new VideoId(300) },
             new object[] { new VideoId(400) }
         };
-
-        [Theory]
-        [MemberData(nameof(VideoIds))]
-        public async Task ExtractsThumbnail(VideoId videoId)
-        {
-            await _backgroundVideoProcessor.ProcessVideo(videoId);
-
-            _thumbnailExtractor.Verify(extractor => extractor.ExtractThumbnail(videoId));
-        }
 
         [Theory]
         [MemberData(nameof(VideoIds))]

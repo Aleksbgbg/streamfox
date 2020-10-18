@@ -16,22 +16,15 @@
 
         private readonly IVideoCoercer _videoCoercer;
 
-        private readonly IFramesFetcher _framesFetcher;
-
-        private readonly IVideoProgressStore _videoProgressStore;
-
         public FormatConverter(
                 IIntermediateVideoPathResolver intermediateVideoPathResolver,
                 IVideoPathResolver videoPathResolver, IVideoMetadataGrabber videoMetadataGrabber,
-                IVideoCoercer videoCoercer, IFramesFetcher framesFetcher,
-                IVideoProgressStore videoProgressStore)
+                IVideoCoercer videoCoercer)
         {
             _intermediateVideoPathResolver = intermediateVideoPathResolver;
             _videoPathResolver = videoPathResolver;
             _videoMetadataGrabber = videoMetadataGrabber;
             _videoCoercer = videoCoercer;
-            _framesFetcher = framesFetcher;
-            _videoProgressStore = videoProgressStore;
         }
 
         public async Task<IProgressLogger> CoerceVideoToSupportedFormat(VideoId videoId)
@@ -39,10 +32,6 @@
             string intermediateVideoPath =
                     _intermediateVideoPathResolver.ResolveIntermediateVideoPath(videoId);
             string outputVideoPath = _videoPathResolver.ResolveVideoPath(videoId);
-
-            await _videoProgressStore.StoreNewVideo(
-                    videoId,
-                    await _framesFetcher.FetchVideoFrames(intermediateVideoPath));
 
             VideoMetadata videoMetadata =
                     await _videoMetadataGrabber.GrabMetadata(intermediateVideoPath);

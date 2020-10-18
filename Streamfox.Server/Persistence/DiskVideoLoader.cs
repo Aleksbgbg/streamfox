@@ -11,25 +11,29 @@
     {
         private readonly IFileLister _fileLister;
 
-        private readonly IFileExistenceChecker _fileExistenceChecker;
+        private readonly IFileExistenceChecker _videoExistenceChecker;
 
         private readonly IFileReadOpener _videoFileReadOpener;
 
         private readonly IFileReadOpener _thumbnailFileReadOpener;
 
+        private readonly IFileExistenceChecker _thumbnailExistenceChecker;
+
         public DiskVideoLoader(
-                IFileLister fileLister, IFileExistenceChecker fileExistenceChecker,
-                IFileReadOpener videoFileReadOpener, IFileReadOpener thumbnailFileReadOpener)
+                IFileLister fileLister, IFileExistenceChecker videoExistenceChecker,
+                IFileReadOpener videoFileReadOpener, IFileReadOpener thumbnailFileReadOpener,
+                IFileExistenceChecker thumbnailExistenceChecker)
         {
             _fileLister = fileLister;
-            _fileExistenceChecker = fileExistenceChecker;
+            _videoExistenceChecker = videoExistenceChecker;
             _videoFileReadOpener = videoFileReadOpener;
             _thumbnailFileReadOpener = thumbnailFileReadOpener;
+            _thumbnailExistenceChecker = thumbnailExistenceChecker;
         }
 
         public Optional<Stream> LoadVideo(string label)
         {
-            if (_fileExistenceChecker.Exists(label))
+            if (_videoExistenceChecker.Exists(label))
             {
                 return Optional.Of(_videoFileReadOpener.OpenRead(label));
             }
@@ -44,7 +48,7 @@
 
         public Optional<Stream> LoadThumbnail(string label)
         {
-            if (_fileExistenceChecker.Exists(label))
+            if (_thumbnailExistenceChecker.Exists(label))
             {
                 return Optional.Of(_thumbnailFileReadOpener.OpenRead(label));
             }

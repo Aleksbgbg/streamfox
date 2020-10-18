@@ -23,17 +23,30 @@
 
         private readonly Mock<ITaskRunner> _taskRunner;
 
+        private readonly Mock<IFramesFetcher> _framesFetcher;
+
+        private readonly Mock<IVideoProgressStore> _videoProgressStore;
+
+        private readonly Mock<IThumbnailExtractor> _thumbnailExtractor;
+
         public VideoProcessorTest()
         {
             _fakeFileSystem = new FakeFileSystem();
             _videoVerifier = new Mock<IVideoVerifier>();
             _backgroundVideoProcessor = new Mock<IBackgroundVideoProcessor>();
             _taskRunner = new Mock<ITaskRunner>();
+            _framesFetcher = new Mock<IFramesFetcher>();
+            _videoProgressStore = new Mock<IVideoProgressStore>();
+            _thumbnailExtractor = new Mock<IThumbnailExtractor>();
+            _thumbnailExtractor = new Mock<IThumbnailExtractor>();
             _videoProcessor = new VideoProcessor(
                     _fakeFileSystem,
                     _videoVerifier.Object,
                     _backgroundVideoProcessor.Object,
-                    _taskRunner.Object);
+                    _taskRunner.Object,
+                    _framesFetcher.Object,
+                    _videoProgressStore.Object,
+                    _thumbnailExtractor.Object);
         }
 
         [Fact]
@@ -108,6 +121,31 @@
             await _videoProcessor.ProcessVideo(videoId, videoStream);
 
             _taskRunner.Verify(runner => runner.RunBackground(backgroundProcessingTask));
+        }
+
+        [Fact]
+        public async Task StoresVideoInProgressStore()
+        {
+            VideoId videoId = new VideoId(700);
+            const int frames = 575;
+            SetupValidVideo(videoId);
+            _framesFetcher.Setup(fetcher => fetcher.FetchVideoFrames(videoId))
+                          .ReturnsAsync(frames);
+
+            await _videoProcessor.ProcessVideo(videoId, TestUtils.MockStream());
+
+            _videoProgressStore.Verify(store => store.StoreNewVideo(videoId, frames));
+        }
+
+        [Fact]
+        public async Task ExtractsThumbnail()
+        {
+            VideoId videoId = new VideoId(800);
+            SetupValidVideo(videoId);
+
+            await _videoProcessor.ProcessVideo(videoId, TestUtils.MockStream());
+
+            _thumbnailExtractor.Verify(extractor => extractor.ExtractThumbnail(videoId));
         }
 
         private void SetupValidVideo(VideoId videoId)

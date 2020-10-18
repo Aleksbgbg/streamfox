@@ -23,25 +23,17 @@
 
         private readonly Mock<IVideoCoercer> _videoCoercer;
 
-        private readonly Mock<IFramesFetcher> _framesFetcher;
-
-        private readonly Mock<IVideoProgressStore> _videoProgressStore;
-
         public FormatConverterTest()
         {
             _intermediateVideoPathResolver = new Mock<IIntermediateVideoPathResolver>();
             _videoPathResolver = new Mock<IVideoPathResolver>();
             _videoMetadataGrabber = new Mock<IVideoMetadataGrabber>();
             _videoCoercer = new Mock<IVideoCoercer>();
-            _framesFetcher = new Mock<IFramesFetcher>();
-            _videoProgressStore = new Mock<IVideoProgressStore>();
             _formatConverter = new FormatConverter(
                     _intermediateVideoPathResolver.Object,
                     _videoPathResolver.Object,
                     _videoMetadataGrabber.Object,
-                    _videoCoercer.Object,
-                    _framesFetcher.Object,
-                    _videoProgressStore.Object);
+                    _videoCoercer.Object);
         }
 
         [Theory]
@@ -102,23 +94,6 @@
                     await _formatConverter.CoerceVideoToSupportedFormat(videoId);
 
             Assert.Equal(progressLogger, outputProgressLogger);
-        }
-
-        [Theory]
-        [InlineData(100, 20, "int-video-100")]
-        [InlineData(200, 1507, "int-video-100")]
-        public async Task StoresVideoInProgressStore(long videoIdLong, int frames, string videoPath)
-        {
-            VideoId videoId = new VideoId(videoIdLong);
-            _intermediateVideoPathResolver
-                    .Setup(resolver => resolver.ResolveIntermediateVideoPath(videoId))
-                    .Returns(videoPath);
-            _framesFetcher.Setup(fetcher => fetcher.FetchVideoFrames(videoPath))
-                          .ReturnsAsync(frames);
-
-            await _formatConverter.CoerceVideoToSupportedFormat(videoId);
-
-            _videoProgressStore.Verify(store => store.StoreNewVideo(videoId, frames));
         }
 
         private static IProgressLogger MockProgressLogger()
