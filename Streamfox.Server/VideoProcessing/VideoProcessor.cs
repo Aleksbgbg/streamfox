@@ -43,7 +43,7 @@
             {
                 await _thumbnailExtractor.ExtractThumbnail(videoId);
 
-                await _videoProgressStore.StoreNewVideo(
+                _videoProgressStore.RegisterVideo(
                         videoId,
                         await _framesFetcher.FetchVideoFrames(videoId));
 

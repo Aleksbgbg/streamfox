@@ -13,7 +13,7 @@
 
         public Optional<ConversionProgress> RetrieveConversionProgress(VideoId videoId)
         {
-            return _progressRetriever.RetrieveConversionProgress(videoId);
+            return _progressRetriever.RetrieveProgress(videoId);
         }
     }
 }

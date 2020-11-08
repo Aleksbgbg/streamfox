@@ -1,92 +1,101 @@
 ﻿namespace Streamfox.Server.VideoProcessing
 {
     using System;
-    using System.Collections.Concurrent;
-    using System.Diagnostics;
-    using System.Threading.Tasks;
+    using System.Collections.Generic;
 
     using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
 
     public class VideoProgressStore : IVideoProgressStore, IProgressSink, IProgressRetriever
     {
-        private readonly ConcurrentDictionary<VideoId, ConversionProgress> _progress =
-                new ConcurrentDictionary<VideoId, ConversionProgress>();
+        private readonly IClockFactory _clockFactory;
 
-        private readonly ConcurrentDictionary<VideoId, Stopwatch> _clocks =
-                new ConcurrentDictionary<VideoId, Stopwatch>();
+        private readonly Dictionary<VideoId, VideoProgressTracking> _videos =
+                new Dictionary<VideoId, VideoProgressTracking>();
 
-        public Task StoreNewVideo(VideoId videoId, int frames)
+        public VideoProgressStore(IClockFactory clockFactory)
         {
-            ConversionProgress progress = new ConversionProgress(
-                    0,
-                    frames,
-                    TimeSpan.Zero,
-                    TimeSpan.MaxValue);
-            _progress.TryAdd(videoId, progress);
-            Stopwatch clock = new Stopwatch();
-            _clocks.TryAdd(videoId, clock);
-            return Task.CompletedTask;
+            _clockFactory = clockFactory;
         }
 
-        public Task ReportProgress(ProgressSinkReport report)
+        public void RegisterVideo(VideoId videoId, int totalFrames)
         {
-            VideoId videoId = report.VideoId;
-            ConversionProgress currentProgress = _progress[videoId];
+            _videos.Add(
+                    videoId,
+                    new VideoProgressTracking(totalFrames, _clockFactory.CreateClock()));
+        }
 
-            if (report.CurrentFrame >= currentProgress.VideoDuration)
+        public void ReportProgress(VideoId videoId, int currentFrame)
+        {
+            VideoProgressTracking videoProgressTracking = _videos[videoId];
+
+            if (currentFrame >= videoProgressTracking.TotalFrames)
             {
-                _clocks[videoId].Stop();
-
-                _progress.TryRemove(videoId, out ConversionProgress _);
-                _clocks.TryRemove(videoId, out Stopwatch _);
+                _videos.Remove(videoId);
             }
             else
             {
-                _progress[report.VideoId] = Update(report.VideoId, report.CurrentFrame);
-            }
+                if (!videoProgressTracking.Clock.IsStarted())
+                {
+                    videoProgressTracking.Clock.Start();
+                }
 
-            return Task.CompletedTask;
+                videoProgressTracking.CurrentFrame = currentFrame;
+            }
         }
 
-        public Optional<ConversionProgress> RetrieveConversionProgress(VideoId videoId)
+        public Optional<ConversionProgress> RetrieveProgress(VideoId videoId)
         {
-            if (_progress.ContainsKey(videoId))
+            if (_videos.ContainsKey(videoId))
             {
-                ConversionProgress progress = _progress[videoId];
-                return Optional.Of(
-                        new ConversionProgress(
-                                progress.CurrentFrame,
-                                progress.VideoDuration,
-                                _clocks[videoId].Elapsed,
-                                progress.TimeRemaining));
+                VideoProgressTracking videoProgressTracking = _videos[videoId];
+                return Optional.Of(CalculateConversionProgress(videoProgressTracking));
             }
 
             return Optional<ConversionProgress>.Empty();
         }
 
-        private ConversionProgress Update(VideoId videoId, int doneFrames)
+        private static ConversionProgress CalculateConversionProgress(
+                VideoProgressTracking videoProgressTracking)
         {
-            ConversionProgress currentProgress = _progress[videoId];
+            int currentFrame = videoProgressTracking.CurrentFrame;
+            int totalFrames = videoProgressTracking.TotalFrames;
+            TimeSpan timeElapsed = videoProgressTracking.Clock.ElapsedTime();
+            TimeSpan timeRemaining = CalculateRemainingTime(currentFrame, totalFrames, timeElapsed);
 
-            if (doneFrames == 0)
+            return new ConversionProgress(currentFrame, totalFrames, timeElapsed, timeRemaining);
+        }
+
+        private static TimeSpan CalculateRemainingTime(
+                int framesDone, int framesTotal, TimeSpan elapsedTime)
+        {
+            if (elapsedTime.Ticks == 0)
             {
-                _clocks[videoId].Start();
+                return TimeSpan.Zero;
             }
 
-            double timePerFrame = (double)_clocks[videoId].ElapsedMilliseconds / doneFrames;
-            int remainingFrames = currentProgress.VideoDuration - doneFrames;
+            int framesRemaining = framesTotal - framesDone;
+            double framesPerTick = (double)framesDone / elapsedTime.Ticks;
 
-            TimeSpan timeRemaining =
-                    (double.IsPositiveInfinity(timePerFrame) ||
-                     double.IsNaN(timePerFrame) ||
-                     double.IsNegativeInfinity(timePerFrame)) ? TimeSpan.MaxValue
-                            : TimeSpan.FromMilliseconds(timePerFrame * remainingFrames);
-            return new ConversionProgress(
-                    doneFrames,
-                    currentProgress.VideoDuration,
-                    TimeSpan.Zero,
-                    timeRemaining);
+            double remainingTicks = framesRemaining / framesPerTick;
+
+            return TimeSpan.FromTicks((long)Math.Ceiling(remainingTicks));
+        }
+
+        private class VideoProgressTracking
+        {
+            public VideoProgressTracking(int totalFrames, IClock clock)
+            {
+                CurrentFrame = 0;
+                TotalFrames = totalFrames;
+                Clock = clock;
+            }
+
+            public int CurrentFrame { get; set; }
+
+            public int TotalFrames { get; }
+
+            public IClock Clock { get; }
         }
     }
 }

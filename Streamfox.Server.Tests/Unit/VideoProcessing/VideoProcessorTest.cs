@@ -129,12 +129,11 @@
             VideoId videoId = new VideoId(700);
             const int frames = 575;
             SetupValidVideo(videoId);
-            _framesFetcher.Setup(fetcher => fetcher.FetchVideoFrames(videoId))
-                          .ReturnsAsync(frames);
+            _framesFetcher.Setup(fetcher => fetcher.FetchVideoFrames(videoId)).ReturnsAsync(frames);
 
             await _videoProcessor.ProcessVideo(videoId, TestUtils.MockStream());
 
-            _videoProgressStore.Verify(store => store.StoreNewVideo(videoId, frames));
+            _videoProgressStore.Verify(store => store.RegisterVideo(videoId, frames));
         }
 
         [Fact]

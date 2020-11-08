@@ -1,9 +1,9 @@
 ﻿namespace Streamfox.Server.VideoProcessing
 {
-    using System.Threading.Tasks;
+    using Streamfox.Server.VideoManagement;
 
     public interface IProgressSink
     {
-        Task ReportProgress(ProgressSinkReport report);
+        void ReportProgress(VideoId videoId, int currentFrame);
     }
 }

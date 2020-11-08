@@ -37,7 +37,11 @@
             HttpResponseMessage response = await httpClient.GetAsync(endpoint);
             byte[] bytes = await response.Content.ReadAsByteArrayAsync();
 
-            return new BytesResponse(bytes, response.Content.Headers.ContentType.MediaType);
+            return new BytesResponse(
+                    bytes,
+                    response.Content.Headers.ContentType.MediaType,
+                    response.IsSuccessStatusCode,
+                    response.ReasonPhrase);
         }
 
         public async Task<PartialResponse> GetRange(string endpoint, string range)
