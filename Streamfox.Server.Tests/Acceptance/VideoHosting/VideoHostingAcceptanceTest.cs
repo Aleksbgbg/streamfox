@@ -38,8 +38,9 @@
             BytesResponse response =
                     await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
 
-            Assert.Equal(videoBytes, response.Bytes);
+            Assert.True(response.IsSuccess);
             Assert.Equal("video/mp4", response.ContentType);
+            Assert.Equal(videoBytes, response.Bytes);
         }
 
         [Fact(Timeout = 60_000)]

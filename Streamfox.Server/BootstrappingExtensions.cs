@@ -77,6 +77,8 @@
         private static void AddPersistence(IServiceCollection services)
         {
             AddFileStores(services);
+            services.AddTransient<IMetadataRetriever, DatabaseMetadataStore>();
+            services.AddTransient<IMetadataSaver, DatabaseMetadataStore>();
         }
 
         private static void AddFileStores(IServiceCollection services)
@@ -94,14 +96,14 @@
                 fileStore.EnsureFileStorePresent();
             }
 
-            services.AddTransient<IMetadataRetriever>(
-                    factory => new DiskMetadataStore(
-                            fileWriter: metadataFileStore,
-                            fileReader: metadataFileStore));
-            services.AddTransient<IMetadataSaver>(
-                    factory => new DiskMetadataStore(
-                            fileWriter: metadataFileStore,
-                            fileReader: metadataFileStore));
+            //services.AddTransient<IMetadataRetriever>(
+            //        factory => new DiskMetadataStore(
+            //                fileWriter: metadataFileStore,
+            //                fileReader: metadataFileStore));
+            //services.AddTransient<IMetadataSaver>(
+            //        factory => new DiskMetadataStore(
+            //                fileWriter: metadataFileStore,
+            //                fileReader: metadataFileStore));
             services.AddTransient<IVideoLoader>(
                     factory => new DiskVideoLoader(
                             fileLister: metadataFileStore,
