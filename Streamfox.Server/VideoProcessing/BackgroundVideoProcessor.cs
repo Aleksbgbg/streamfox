@@ -1,5 +1,6 @@
 ﻿namespace Streamfox.Server.VideoProcessing
 {
+    using System;
     using System.Threading.Tasks;
 
     using Streamfox.Server.VideoManagement;
@@ -23,9 +24,18 @@
 
         public async Task ProcessVideo(VideoId videoId)
         {
-            await _formatConverter.CoerceVideoToSupportedFormat(videoId);
-            await _metadataExtractor.ExtractVideoMetadata(videoId);
-            await _videoFinalizer.FinalizeVideoProcessing(videoId);
+            try
+            {
+                await _formatConverter.CoerceVideoToSupportedFormat(videoId);
+                await _metadataExtractor.ExtractVideoMetadata(videoId);
+                await _videoFinalizer.FinalizeVideoProcessing(videoId);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("== Error in video processing");
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
         }
     }
 }
