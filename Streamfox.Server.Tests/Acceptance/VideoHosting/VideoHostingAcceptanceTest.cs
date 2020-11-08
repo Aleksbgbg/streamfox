@@ -42,35 +42,25 @@
             Assert.Equal("video/mp4", response.ContentType);
         }
 
-        [Fact]
+        [Fact(Timeout = 60_000)]
         public async Task UploadH265Video_ThenDownload_ExpectVp9CopyDownloaded()
         {
             byte[] h265VideoBytes = await ReadTestFile("Video-h265.mp4");
             byte[] vp9VideoBytes = await ReadTestFile("Video-vp9.webm");
 
             VideoId videoId = await _applicationHost.Post("/api/videos", h265VideoBytes);
-            var progress1 =
-                    await _applicationHost.Get<ConversionProgressResponse>(
-                            $"/api/videos/{videoId}/progress");
-            if (!progress1.IsCompleted)
+            ConversionProgressResponse progress = new ConversionProgressResponse();
+            while (!progress.IsCompleted)
             {
-                await Task.Delay(5_000);
+                await Task.Delay(3_000);
+                progress = await _applicationHost.Get<ConversionProgressResponse>(
+                        $"/api/videos/{videoId}/progress");
             }
-            var progress2 =
-                    await _applicationHost.Get<ConversionProgressResponse>(
-                            $"/api/videos/{videoId}/progress");
-            if (!progress2.IsCompleted)
-            {
-                await Task.Delay(5_000);
-            }
-            var progress3 =
-                    await _applicationHost.Get<ConversionProgressResponse>(
-                            $"/api/videos/{videoId}/progress");
+
             BytesResponse response =
                     await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
 
-            Assert.True(progress2.CurrentFrame > progress1.CurrentFrame, "No progress in 5 seconds");
-            Assert.True(progress3.IsCompleted, "Conversion did not complete before downloading video");
+            Assert.True(response.IsSuccess, response.ErrorReason);
             double matchingPercent = ((double)CountMatchingBytes(vp9VideoBytes, response.Bytes) /
                                       vp9VideoBytes.Length) *
                                      100d;

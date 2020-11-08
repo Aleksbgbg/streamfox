@@ -38,6 +38,7 @@
             services.AddTransient<IBackgroundVideoProcessor, BackgroundVideoProcessor>();
             services.AddTransient<IFormatConverter, ProgressLoggingFormatConverter>();
             services.AddTransient<IVideoFinalizer, VideoFinalizer>();
+            services.AddTransient<IClockFactory, StopwatchClockFactory>();
             services.AddSingleton<VideoProgressStore>();
             services.AddTransient<IVideoProgressStore>(
                     factory => factory.GetService<VideoProgressStore>());

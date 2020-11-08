@@ -26,8 +26,7 @@
             while (await progressLogger.HasMoreProgress())
             {
                 ProgressReport progressReport = await progressLogger.GetNextProgress();
-                await _progressSink.ReportProgress(
-                        new ProgressSinkReport(videoId, progressReport.Frame));
+                _progressSink.ReportProgress(videoId, progressReport.Frame);
             }
         }
     }

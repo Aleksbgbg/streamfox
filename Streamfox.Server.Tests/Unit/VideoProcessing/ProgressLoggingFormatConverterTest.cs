@@ -96,11 +96,7 @@
 
         private void VerifyProgress(VideoId videoId, int currentFrame)
         {
-            _progressSink.Verify(
-                    sink => sink.ReportProgress(
-                            It.Is<ProgressSinkReport>(
-                                    report => report.VideoId == videoId &&
-                                              report.CurrentFrame == currentFrame)));
+            _progressSink.Verify(sink => sink.ReportProgress(videoId, currentFrame));
         }
     }
 }

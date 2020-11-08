@@ -4,6 +4,6 @@
 
     public interface IProgressRetriever
     {
-        Optional<ConversionProgress> RetrieveConversionProgress(VideoId videoId);
+        Optional<ConversionProgress> RetrieveProgress(VideoId videoId);
     }
 }
