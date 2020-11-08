@@ -14,7 +14,7 @@ div
         span.block.text-center Your video has uploaded.
         router-link.my-3(:to="{ name: 'watch', params: { id: video.id }}")
           img(:src="video.thumbnailUrl" alt="")
-      div(v-if="conversion.started")
+      div(v-if="conversion.started && !video.isDone")
         span.block.text-center Your video is being converted to a supported format.
         span.block.text-center {{ conversion.frameCurrent }} / {{ conversion.framesTotal }} frames completed
         div.text-center

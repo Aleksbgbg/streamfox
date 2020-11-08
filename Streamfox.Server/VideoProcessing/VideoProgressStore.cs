@@ -27,6 +27,11 @@
 
         public void ReportProgress(VideoId videoId, int currentFrame)
         {
+            if (!_videos.ContainsKey(videoId))
+            {
+                return;
+            }
+
             VideoProgressTracking videoProgressTracking = _videos[videoId];
 
             if (currentFrame >= videoProgressTracking.TotalFrames)
