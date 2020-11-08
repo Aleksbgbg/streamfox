@@ -154,12 +154,28 @@
         [Theory]
         [InlineData(60, 60)]
         [InlineData(120, 140)]
+        [InlineData(61, int.MaxValue)]
         public void ReportCompleted_StopsStoring(int totalFrames, int lastReportedFrame)
         {
             VideoId videoId = new VideoId(10);
 
             _videoProgressStore.RegisterVideo(videoId, totalFrames);
             _videoProgressStore.ReportProgress(videoId, lastReportedFrame);
+            Optional<ConversionProgress> optionalConversionProgress =
+                    _videoProgressStore.RetrieveProgress(videoId);
+
+            Assert.False(optionalConversionProgress.HasValue);
+        }
+
+        [Fact]
+        // TODO: This case should not occur - see if FFMPEG will always report the last frame
+        public void ReportAfterCompletion_IgnoresReport()
+        {
+            VideoId videoId = new VideoId(10);
+
+            _videoProgressStore.RegisterVideo(videoId, 60);
+            _videoProgressStore.ReportProgress(videoId, 60);
+            _videoProgressStore.ReportProgress(videoId, int.MaxValue);
             Optional<ConversionProgress> optionalConversionProgress =
                     _videoProgressStore.RetrieveProgress(videoId);
 
