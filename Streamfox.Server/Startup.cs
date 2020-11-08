@@ -3,10 +3,12 @@ namespace Streamfox.Server
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Server.Kestrel.Core;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
 
     using Streamfox.Server.Controllers.Formatters;
+    using Streamfox.Server.Persistence.Database;
 
     public class Startup
     {
@@ -14,6 +16,8 @@ namespace Streamfox.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<VideoDatabaseContext>(
+                    options => options.UseNpgsql("Uid=postgres;Pwd=123456;Host=localhost;Port=5432;Database=streamfox"));
             services.AddSpaStaticFiles(
                     configuration => configuration.RootPath = SpaStaticFilesPath);
             services.AddControllers(
@@ -23,7 +27,8 @@ namespace Streamfox.Server
                         options.InputFormatters.Add(new VideoIdParameterFormatter());
                     });
             services.AddVideoHosting();
-            services.Configure<KestrelServerOptions>(options => options.Limits.MaxRequestBodySize = int.MaxValue);
+            services.Configure<KestrelServerOptions>(
+                    options => options.Limits.MaxRequestBodySize = int.MaxValue);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
