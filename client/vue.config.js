@@ -4,5 +4,5 @@ module.exports = {
     host: "localhost",
     port: 8080
   },
-  publicPath: "/streamfox"
+  publicPath: process.env.VUE_APP_PUBLIC_PATH
 };
