@@ -4,56 +4,43 @@
     using System.Linq;
 
     using Streamfox.Server.Persistence.Operations;
-    using Streamfox.Server.Types;
     using Streamfox.Server.VideoManagement;
 
     public class DiskVideoLoader : IVideoLoader
     {
         private readonly IFileLister _fileLister;
 
-        private readonly IFileExistenceChecker _videoExistenceChecker;
-
         private readonly IFileReadOpener _videoFileReadOpener;
 
         private readonly IFileReadOpener _thumbnailFileReadOpener;
 
-        private readonly IFileExistenceChecker _thumbnailExistenceChecker;
-
         public DiskVideoLoader(
-                IFileLister fileLister, IFileExistenceChecker videoExistenceChecker,
-                IFileReadOpener videoFileReadOpener, IFileReadOpener thumbnailFileReadOpener,
-                IFileExistenceChecker thumbnailExistenceChecker)
+                IFileLister fileLister, IFileReadOpener videoFileReadOpener,
+                IFileReadOpener thumbnailFileReadOpener)
         {
             _fileLister = fileLister;
-            _videoExistenceChecker = videoExistenceChecker;
             _videoFileReadOpener = videoFileReadOpener;
             _thumbnailFileReadOpener = thumbnailFileReadOpener;
-            _thumbnailExistenceChecker = thumbnailExistenceChecker;
         }
 
-        public Optional<Stream> LoadVideo(string label)
+        public Stream LoadVideo(VideoId videoId)
         {
-            if (_videoExistenceChecker.Exists(label))
-            {
-                return Optional.Of(_videoFileReadOpener.OpenRead(label));
-            }
-
-            return Optional<Stream>.Empty();
+            return _videoFileReadOpener.OpenRead(videoId.ToString());
         }
 
-        public string[] ListLabels()
+        public Stream LoadThumbnail(VideoId videoId)
         {
-            return _fileLister.ListFiles().Select(Path.GetFileName).ToArray();
+            return _thumbnailFileReadOpener.OpenRead(videoId.ToString());
         }
 
-        public Optional<Stream> LoadThumbnail(string label)
+        public VideoId[] ListLabels()
         {
-            if (_thumbnailExistenceChecker.Exists(label))
-            {
-                return Optional.Of(_thumbnailFileReadOpener.OpenRead(label));
-            }
-
-            return Optional<Stream>.Empty();
+            return _fileLister.ListFiles()
+                              .Select(Path.GetFileName)
+                              .Select(long.Parse)
+                              .OrderBy(id => id)
+                              .Select(id => new VideoId(id))
+                              .ToArray();
         }
     }
 }

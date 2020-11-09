@@ -2,14 +2,12 @@
 {
     using System.IO;
 
-    using Streamfox.Server.Types;
-
     public interface IVideoLoader
     {
-        Optional<Stream> LoadVideo(string label);
+        Stream LoadVideo(VideoId videoId);
 
-        string[] ListLabels();
+        Stream LoadThumbnail(VideoId videoId);
 
-        Optional<Stream> LoadThumbnail(string label);
+        VideoId[] ListLabels();
     }
 }
