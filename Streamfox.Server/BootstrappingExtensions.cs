@@ -96,21 +96,11 @@
                 fileStore.EnsureFileStorePresent();
             }
 
-            //services.AddTransient<IMetadataRetriever>(
-            //        factory => new DiskMetadataStore(
-            //                fileWriter: metadataFileStore,
-            //                fileReader: metadataFileStore));
-            //services.AddTransient<IMetadataSaver>(
-            //        factory => new DiskMetadataStore(
-            //                fileWriter: metadataFileStore,
-            //                fileReader: metadataFileStore));
             services.AddTransient<IVideoLoader>(
                     factory => new DiskVideoLoader(
                             fileLister: metadataFileStore,
-                            videoExistenceChecker: metadataFileStore,
                             videoFileReadOpener: videoFileStore,
-                            thumbnailFileReadOpener: thumbnailFileStore,
-                            thumbnailExistenceChecker: thumbnailFileStore));
+                            thumbnailFileReadOpener: thumbnailFileStore));
             services.AddTransient(
                     factory => new IntermediateVideoWriter(
                             fileStreamWriter: intermediateFileStore,

@@ -1,7 +1,6 @@
 ﻿namespace Streamfox.Server.VideoManagement
 {
     using System.IO;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Streamfox.Server.Processing;
@@ -13,20 +12,24 @@
 
         private readonly IMetadataRetriever _metadataRetriever;
 
-        public VideoRetrievalClerk(IVideoLoader videoLoader, IMetadataRetriever metadataRetriever)
+        private readonly IVideoExistenceChecker _videoExistenceChecker;
+
+        public VideoRetrievalClerk(
+                IVideoLoader videoLoader, IMetadataRetriever metadataRetriever,
+                IVideoExistenceChecker videoExistenceChecker)
         {
             _videoLoader = videoLoader;
             _metadataRetriever = metadataRetriever;
+            _videoExistenceChecker = videoExistenceChecker;
         }
 
         public async Task<Optional<StoredVideo>> RetrieveVideo(VideoId videoId)
         {
-            Optional<Stream> video = _videoLoader.LoadVideo(videoId.ToString());
-
-            if (video.HasValue)
+            if (_videoExistenceChecker.VideoExists(videoId))
             {
+                Stream video = _videoLoader.LoadVideo(videoId);
                 VideoMetadata metadata = await _metadataRetriever.RetrieveMetadata(videoId);
-                return Optional.Of(new StoredVideo(metadata, video.Value));
+                return Optional.Of(new StoredVideo(metadata, video));
             }
 
             return Optional<StoredVideo>.Empty();
@@ -34,16 +37,17 @@
 
         public VideoId[] ListVideos()
         {
-            return _videoLoader.ListLabels()
-                               .Select(long.Parse)
-                               .OrderBy(id => id)
-                               .Select(id => new VideoId(id))
-                               .ToArray();
+            return _videoLoader.ListLabels();
         }
 
         public Optional<Stream> RetrieveThumbnail(VideoId videoId)
         {
-            return _videoLoader.LoadThumbnail(videoId.ToString());
+            if (_videoExistenceChecker.VideoExists(videoId))
+            {
+                return Optional.Of(_videoLoader.LoadThumbnail(videoId));
+            }
+
+            return Optional<Stream>.Empty();
         }
     }
 }
