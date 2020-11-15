@@ -3,6 +3,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using Streamfox.Server.Persistence;
+    using Streamfox.Server.Persistence.Database;
     using Streamfox.Server.Persistence.Operations;
     using Streamfox.Server.Processing;
     using Streamfox.Server.Processing.Ffmpeg;
@@ -79,6 +80,12 @@
             AddFileStores(services);
             services.AddTransient<IMetadataRetriever, DatabaseMetadataStore>();
             services.AddTransient<IMetadataSaver, DatabaseMetadataStore>();
+            services.AddTransient<IThumbnailExistenceChecker>(
+                    factory => factory.GetService<DiskVideoLoader>());
+            services.AddTransient<IVideoExistenceChecker>(
+                    factory => factory.GetService<VideoDatabaseContext>());
+            services.AddTransient<IVideoLister>(
+                    factory => factory.GetService<VideoDatabaseContext>());
         }
 
         private static void AddFileStores(IServiceCollection services)
@@ -96,11 +103,13 @@
                 fileStore.EnsureFileStorePresent();
             }
 
-            services.AddTransient<IVideoLoader>(
+            services.AddTransient<DiskVideoLoader>(
                     factory => new DiskVideoLoader(
                             fileLister: metadataFileStore,
                             videoFileReadOpener: videoFileStore,
-                            thumbnailFileReadOpener: thumbnailFileStore));
+                            thumbnailFileReadOpener: thumbnailFileStore,
+                            thumbnailExistenceChecker: thumbnailFileStore));
+            services.AddTransient<IVideoLoader>(factory => factory.GetService<DiskVideoLoader>());
             services.AddTransient(
                     factory => new IntermediateVideoWriter(
                             fileStreamWriter: intermediateFileStore,

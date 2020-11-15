@@ -1,7 +1,6 @@
 ﻿namespace Streamfox.Server.Tests.Unit.VideoManagement
 {
     using System.IO;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Moq;
@@ -104,11 +103,6 @@
                 _videoLoader.Setup(loader => loader.LoadVideo(videoId)).Returns(stream.Value);
                 _videoLoader.Setup(loader => loader.LoadThumbnail(videoId)).Returns(stream.Value);
             }
-        }
-
-        private static VideoId[] ToVideoIds(params string[] labels)
-        {
-            return labels.Select(long.Parse).Select(id => new VideoId(id)).ToArray();
         }
     }
 }

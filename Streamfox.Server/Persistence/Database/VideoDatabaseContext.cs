@@ -1,8 +1,12 @@
 ﻿namespace Streamfox.Server.Persistence.Database
 {
+    using System.Linq;
+
     using Microsoft.EntityFrameworkCore;
 
-    public class VideoDatabaseContext : DbContext
+    using Streamfox.Server.VideoManagement;
+
+    public class VideoDatabaseContext : DbContext, IVideoExistenceChecker, IVideoLister
     {
         public VideoDatabaseContext(DbContextOptions<VideoDatabaseContext> options) : base(options)
         {
@@ -23,6 +27,18 @@
                                videoTag.VideoId,
                                videoTag.TagId
                            });
+        }
+
+        public bool VideoExists(VideoId videoId)
+        {
+            return Videos.Any(video => video.Id == videoId.Value);
+        }
+
+        public VideoId[] ListLabels()
+        {
+            return Videos.OrderBy(video => video.Id)
+                         .Select(video => new VideoId(video.Id))
+                         .ToArray();
         }
     }
 }

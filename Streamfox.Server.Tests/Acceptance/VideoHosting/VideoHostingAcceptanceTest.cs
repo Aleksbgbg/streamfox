@@ -35,15 +35,16 @@
             byte[] videoBytes = await ReadTestFile("Video.mp4");
 
             VideoId videoId = await _applicationHost.Post("/api/videos", videoBytes);
+            await Task.Delay(3_000);
             BytesResponse response =
                     await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
 
-            Assert.True(response.IsSuccess);
+            Assert.True(response.IsSuccess, response.ErrorReason);
             Assert.Equal("video/mp4", response.ContentType);
             Assert.Equal(videoBytes, response.Bytes);
         }
 
-        [Fact(Timeout = 60_000)]
+        [Fact(Timeout = 30_000)]
         public async Task UploadH265Video_ThenDownload_ExpectVp9CopyDownloaded()
         {
             byte[] h265VideoBytes = await ReadTestFile("Video-h265.mp4");
@@ -57,7 +58,6 @@
                 progress = await _applicationHost.Get<ConversionProgressResponse>(
                         $"/api/videos/{videoId}/progress");
             }
-
             BytesResponse response =
                     await _applicationHost.GetBytesAndContentType($"/api/videos/{videoId}");
 

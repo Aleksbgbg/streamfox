@@ -14,13 +14,20 @@
 
         private readonly IVideoExistenceChecker _videoExistenceChecker;
 
+        private readonly IThumbnailExistenceChecker _thumbnailExistenceChecker;
+
+        private readonly IVideoLister _videoLister;
+
         public VideoRetrievalClerk(
                 IVideoLoader videoLoader, IMetadataRetriever metadataRetriever,
-                IVideoExistenceChecker videoExistenceChecker)
+                IVideoExistenceChecker videoExistenceChecker,
+                IThumbnailExistenceChecker thumbnailExistenceChecker, IVideoLister videoLister)
         {
             _videoLoader = videoLoader;
             _metadataRetriever = metadataRetriever;
             _videoExistenceChecker = videoExistenceChecker;
+            _thumbnailExistenceChecker = thumbnailExistenceChecker;
+            _videoLister = videoLister;
         }
 
         public async Task<Optional<StoredVideo>> RetrieveVideo(VideoId videoId)
@@ -37,12 +44,12 @@
 
         public VideoId[] ListVideos()
         {
-            return _videoLoader.ListLabels();
+            return _videoLister.ListLabels();
         }
 
         public Optional<Stream> RetrieveThumbnail(VideoId videoId)
         {
-            if (_videoExistenceChecker.VideoExists(videoId))
+            if (_thumbnailExistenceChecker.ThumbnailExists(videoId))
             {
                 return Optional.Of(_videoLoader.LoadThumbnail(videoId));
             }
