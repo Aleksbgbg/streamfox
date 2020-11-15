@@ -6,7 +6,7 @@
     using Streamfox.Server.Persistence.Operations;
     using Streamfox.Server.VideoManagement;
 
-    public class DiskVideoLoader : IVideoLoader
+    public class DiskVideoLoader : IVideoLoader, IThumbnailExistenceChecker
     {
         private readonly IFileLister _fileLister;
 
@@ -14,13 +14,16 @@
 
         private readonly IFileReadOpener _thumbnailFileReadOpener;
 
+        private readonly IFileExistenceChecker _thumbnailExistenceChecker;
+
         public DiskVideoLoader(
                 IFileLister fileLister, IFileReadOpener videoFileReadOpener,
-                IFileReadOpener thumbnailFileReadOpener)
+                IFileReadOpener thumbnailFileReadOpener, IFileExistenceChecker thumbnailExistenceChecker)
         {
             _fileLister = fileLister;
             _videoFileReadOpener = videoFileReadOpener;
             _thumbnailFileReadOpener = thumbnailFileReadOpener;
+            _thumbnailExistenceChecker = thumbnailExistenceChecker;
         }
 
         public Stream LoadVideo(VideoId videoId)
@@ -41,6 +44,11 @@
                               .OrderBy(id => id)
                               .Select(id => new VideoId(id))
                               .ToArray();
+        }
+
+        public bool ThumbnailExists(VideoId videoId)
+        {
+            return _thumbnailExistenceChecker.Exists(videoId.ToString());
         }
     }
 }
