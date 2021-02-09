@@ -1,3 +1,8 @@
+using System;
+using System.IO;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
+
 namespace Streamfox.Server
 {
     using Microsoft.AspNetCore.Builder;
@@ -40,16 +45,44 @@ namespace Streamfox.Server
 
             app.UseMiddleware<HtmlOpenGraphMiddleware>();
 
-            app.UseSpa(
-                    spa =>
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/api"))
+                {
+                    Console.WriteLine(context.Response.StatusCode);
+                    await next.Invoke();
+                    Console.WriteLine(context.Response.StatusCode);
+                }
+                else
+                {
+                    string rq = context.Request.Path.ToString();
+                    string[] p = rq.Split('/');
+                    
+                    if (p[p.Length - 2] == "css")
                     {
-                        spa.Options.SourcePath = SpaStaticFilesPath;
+                        await context.Response.WriteAsync(await File.ReadAllTextAsync($"/home/streamfox/client/dist/css/{p[p.Length - 1]}"));
+                    }
+                    else if (p[p.Length - 2] == "js")
+                    {
+                        await context.Response.WriteAsync(await File.ReadAllTextAsync($"/home/streamfox/client/dist/js/{p[p.Length - 1]}"));
+                    }
+                    else
+                    {
+                        await context.Response.WriteAsync(await File.ReadAllTextAsync("/home/streamfox/client/dist/index.html"));
+                    }
+                }
+            });
 
-                        if (env.IsDevelopment())
-                        {
-                            spa.UseProxyToSpaDevelopmentServer("http://localhost:8080/");
-                        }
-                    });
+            // app.UseSpa(
+            //         spa =>
+            //         {
+            //             spa.Options.SourcePath = SpaStaticFilesPath;
+            //
+            //             if (env.IsDevelopment())
+            //             {
+            //                 spa.UseProxyToSpaDevelopmentServer("http://localhost:8080/");
+            //             }
+            //         });
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace Streamfox.Server
 {
     using Microsoft.Extensions.DependencyInjection;
-
+    using Streamfox.Server.Controllers;
     using Streamfox.Server.Persistence;
     using Streamfox.Server.Persistence.Database;
     using Streamfox.Server.Persistence.Operations;
@@ -33,7 +33,8 @@
 
         private static void AddHighLevelVideoProcessors(IServiceCollection services)
         {
-            services.AddTransient<IVideoIdGenerator, SnowflakeVideoIdGenerator>();
+            services.AddTransient<IVideoIdGenerator, SnowflakeIdGenerator>(); 
+            services.AddTransient<IViewIdGenerator, SnowflakeIdGenerator>();
             services.AddTransient<IVideoProcessor, VideoProcessor>();
             services.AddTransient<IVideoVerifier, VideoVerifier>();
             services.AddTransient<IBackgroundVideoProcessor, BackgroundVideoProcessor>();

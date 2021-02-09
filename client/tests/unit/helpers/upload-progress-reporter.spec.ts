@@ -65,4 +65,25 @@ describe("UploadProgressReporter", () => {
 
     expect(isRecording).toBe(true);
   });
+
+  test("reports speed recorded in the last 3 seconds", () => {
+    let elapsedTime = 0;
+    const uploadProgressReporter = new UploadProgressReporter({
+      beginRecording() { },
+      reportElapsedTimeSeconds(): number {
+        return elapsedTime;
+      }
+    });
+    let reportedProgress: ProgressReport = { uploadedFraction: 0, dataRateBytesPerSecond: 0 };
+    const reportProgress = uploadProgressReporter.createProgressReporter((progressReport: ProgressReport) => {
+      reportedProgress = progressReport;
+    });
+
+    elapsedTime = 3;
+    reportProgress({ loaded: 0, total: 300_000 });
+    elapsedTime = 6;
+    reportProgress({ loaded: 300_000, total: 300_000 });
+
+    expect(reportedProgress.dataRateBytesPerSecond).toEqual(100_000);
+  });
 });
