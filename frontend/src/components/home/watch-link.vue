@@ -6,7 +6,7 @@ router-link(:to="{ name: 'watch', params: { id: videoId } }")
 <script>
 export default {
   props: {
-    videoId: String
-  }
+    videoId: String,
+  },
 };
 </script>

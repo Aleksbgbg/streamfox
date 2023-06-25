@@ -1,5 +1,11 @@
 function joinFragments(fragments: string[]): string {
-  return "/" + (fragments.flatMap(fragment => fragment.split("/")).filter(fragment => fragment.length > 0).join("/"));
+  return (
+    "/" +
+    fragments
+      .flatMap((fragment) => fragment.split("/"))
+      .filter((fragment) => fragment.length > 0)
+      .join("/")
+  );
 }
 
 export class EndpointResolver {

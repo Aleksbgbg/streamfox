@@ -9,17 +9,17 @@ div
 </template>
 
 <script>
-import WatchLinkComponent from "@/components/home/watch-link.vue";
-import { videoLister } from "@/bootstrapper/video-endpoint";
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
+import { videoLister } from "@/bootstrapper/video-endpoint";
+import WatchLinkComponent from "@/components/home/watch-link.vue";
 
 export default {
   components: {
-    "c-watch-link": WatchLinkComponent
+    "c-watch-link": WatchLinkComponent,
   },
   data() {
     return {
-      videos: []
+      videos: [],
     };
   },
   async created() {
@@ -28,10 +28,10 @@ export default {
     for (const videoId of videoList.videoIds.reverse()) {
       this.videos.push({
         id: videoId,
-        thumbnail: await endpointResolver.resolve(`/videos/${videoId}/thumbnail`)
+        thumbnail: await endpointResolver.resolve(`/videos/${videoId}/thumbnail`),
       });
     }
-  }
+  },
 };
 </script>
 

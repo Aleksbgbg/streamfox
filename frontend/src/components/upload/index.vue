@@ -32,9 +32,9 @@ div
 </template>
 
 <script>
-import { videoProgressFetcher, videoUploader } from "@/bootstrapper/video-endpoint";
-import { uploadProgressReporter } from "@/bootstrapper/upload-progress-reporter";
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
+import { uploadProgressReporter } from "@/bootstrapper/upload-progress-reporter";
+import { videoProgressFetcher, videoUploader } from "@/bootstrapper/video-endpoint";
 
 function formatTime(totalSeconds) {
   if (totalSeconds > 86400) {
@@ -74,7 +74,7 @@ export default {
         started: false,
         failed: false,
         progressPercentage: 0,
-        dataRate: 0
+        dataRate: 0,
       },
       conversion: {
         started: false,
@@ -82,14 +82,14 @@ export default {
         frameCurrent: 0,
         framesTotal: 0,
         timeCurrent: 0,
-        timeRemaining: 0
+        timeRemaining: 0,
       },
       video: {
         isUploaded: false,
         isDone: false,
         id: 0,
-        thumbnailUrl: null
-      }
+        thumbnailUrl: null,
+      },
     };
   },
   computed: {
@@ -101,7 +101,7 @@ export default {
     },
     timeRemaining() {
       return formatTime(this.conversion.timeRemaining);
-    }
+    },
   },
   methods: {
     fileSelected() {
@@ -111,12 +111,15 @@ export default {
       const file = this.$refs.fileInput.files[0];
       const reader = new FileReader();
 
-      reader.onloadend = async() => {
+      reader.onloadend = async () => {
         try {
-          const response = await videoUploader.uploadVideo(reader.result, uploadProgressReporter.createProgressReporter((progressReport) => {
-            this.upload.progressPercentage = progressReport.uploadedFraction * 100;
-            this.upload.dataRate = progressReport.dataRateBytesPerSecond / 1000000;
-          }));
+          const response = await videoUploader.uploadVideo(
+            reader.result,
+            uploadProgressReporter.createProgressReporter((progressReport) => {
+              this.upload.progressPercentage = progressReport.uploadedFraction * 100;
+              this.upload.dataRate = progressReport.dataRateBytesPerSecond / 1000000;
+            })
+          );
           this.onSuccess(response);
         } catch {
           this.onFailure();
@@ -164,7 +167,7 @@ export default {
       this.conversion.timeRemaining = progress.timeRemaining;
 
       setTimeout(this.startProgressLookupLoop.bind(this), 1000);
-    }
-  }
+    },
+  },
 };
 </script>

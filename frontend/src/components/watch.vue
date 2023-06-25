@@ -6,18 +6,19 @@
       h2.font-semibold.text-lg {{ $route.params.id }}
 </template>
 
-<script>
+<script lang="js">
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
-import VideoPlayerComponent from "@/components/video-player";
+import VideoPlayerComponent from "@/components/video-player.vue";
+
 
 export default {
   components: {
-    "c-video-player": VideoPlayerComponent
+    "c-video-player": VideoPlayerComponent,
   },
   computed: {
     videoUrl() {
       return endpointResolver.resolve(`/videos/${this.$route.params.id}`);
-    }
-  }
+    },
+  },
 };
 </script>

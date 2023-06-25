@@ -3,13 +3,14 @@ video.video-js.vjs-theme-sea(ref="player")
   source(:src="videoUrl" type="video/mp4")
 </template>
 
-<script>
+<script lang="js">
 import videojs from "video.js";
 import { volumeSettingsStore } from "@/bootstrapper/settings-store";
 
+
 export default {
   props: {
-    videoUrl: String
+    videoUrl: String,
   },
   mounted() {
     const player = videojs(this.$refs.player, {
@@ -22,16 +23,16 @@ export default {
       controlBar: {
         volumePanel: {
           vertical: true,
-          inline: false
-        }
-      }
+          inline: false,
+        },
+      },
     });
 
     player.volume(volumeSettingsStore.getVolume());
-    player.on("volumechange", function() {
+    player.on("volumechange", function () {
       volumeSettingsStore.setVolume(player.volume());
     });
-  }
+  },
 };
 </script>
 

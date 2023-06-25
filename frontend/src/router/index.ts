@@ -1,28 +1,22 @@
-import Vue from "vue";
-import VueRouter, { RouteConfig } from "vue-router";
+import * as VueRouter from "vue-router";
 
-Vue.use(VueRouter);
-
-const routes: Array<RouteConfig> = [
-  {
-    path: "/",
-    name: "home",
-    component: () => import("@/components/home/index.vue")
-  },
-  {
-    path: "/watch/:id",
-    name: "watch",
-    component: () => import("@/components/watch.vue")
-  },
-  {
-    path: "/upload",
-    name: "upload",
-    component: () => import("@/components/upload/index.vue")
-  }
-];
-
-export default new VueRouter({
-  mode: "history",
-  base: process.env.BASE_URL,
-  routes
+export const router = VueRouter.createRouter({
+  history: VueRouter.createWebHistory(),
+  routes: [
+    {
+      path: "/",
+      name: "home",
+      component: () => import("@/components/home/index.vue"),
+    },
+    {
+      path: "/watch/:id",
+      name: "watch",
+      component: () => import("@/components/watch.vue"),
+    },
+    {
+      path: "/upload",
+      name: "upload",
+      component: () => import("@/components/upload/index.vue"),
+    },
+  ],
 });

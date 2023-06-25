@@ -18,15 +18,18 @@ export class VideoEndpoint implements VideoLister, VideoUploader, VideoProgressF
     return await this._communicator.get<VideoList>();
   }
 
-  public async uploadVideo(video: ArrayBuffer, onUploadProgress: (uploadedDataReport: UploadedDataReport) => void): Promise<VideoMetadata> {
+  public async uploadVideo(
+    video: ArrayBuffer,
+    onUploadProgress: (uploadedDataReport: UploadedDataReport) => void
+  ): Promise<VideoMetadata> {
     return await this._communicator.post<VideoMetadata>("", video, {
       headers: { "Content-Type": "application/octet-stream" },
-      onUploadProgress(progressEvent: any) {
+      onUploadProgress(progressEvent: UploadedDataReport) {
         onUploadProgress({
           loaded: progressEvent.loaded,
-          total: progressEvent.total
+          total: progressEvent.total,
         });
-      }
+      },
     });
   }
 

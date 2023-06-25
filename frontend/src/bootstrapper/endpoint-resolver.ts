@@ -1,3 +1,3 @@
 import { EndpointResolver } from "@/endpoints/endpoint-resolver";
 
-export const endpointResolver = new EndpointResolver(process.env.VUE_APP_API_ENDPOINT);
+export const endpointResolver = new EndpointResolver(import.meta.env.VITE_API_ENDPOINT);

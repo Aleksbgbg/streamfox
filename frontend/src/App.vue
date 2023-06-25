@@ -14,8 +14,8 @@ import UploadButtonComponent from "@/components/upload-button.vue";
 
 export default {
   components: {
-    "c-upload-button": UploadButtonComponent
-  }
+    "c-upload-button": UploadButtonComponent,
+  },
 };
 </script>
 

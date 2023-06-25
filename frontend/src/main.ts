@@ -1,15 +1,8 @@
-import Vue from "vue";
-import App from "./App.vue";
-import router from "./router";
-import store from "./store";
-import "@/assets/main.css";
-import "video.js/dist/video-js.css";
+import { createApp } from "vue";
 import "video.js";
+import "video.js/dist/video-js.css";
+import App from "@/App.vue";
+import "@/assets/main.css";
+import { router } from "@/router";
 
-Vue.config.productionTip = false;
-
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount("#app");
+createApp(App).use(router).mount("#app");

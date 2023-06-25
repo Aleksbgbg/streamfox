@@ -37,12 +37,12 @@ function processTag(tag) {
 export default {
   components: {
     "c-form-input": FormInputComponent,
-    "c-form-textarea": FormTextareaComponent
+    "c-form-textarea": FormTextareaComponent,
   },
   data() {
     return {
       tags: [],
-      tagText: ""
+      tagText: "",
     };
   },
   methods: {
@@ -62,7 +62,7 @@ export default {
         this.tagText = popTag(this.tags);
         event.preventDefault();
       }
-    }
-  }
+    },
+  },
 };
 </script>

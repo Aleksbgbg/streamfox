@@ -8,7 +8,7 @@
 export default {
   props: {
     title: String,
-    placeholder: String
-  }
+    placeholder: String,
+  },
 };
 </script>
