@@ -1,5 +1,5 @@
 <template lang="pug">
-#app.grid.grid-rows-6.bg-theme-dark.text-white.h-screen
+#app.grid.grid-rows-6.bg-polar-dark.text-white.h-screen
   header.row-end-1.bg-theme-darkest.h-20.p-5.shadow-2xl
     nav.flex
       router-link(:to="{ name: 'home' }")
