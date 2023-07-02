@@ -1,23 +1,14 @@
+<script setup lang="ts">
+import VNavbar from "@/views/navbar.vue";
+</script>
+
 <template lang="pug">
 #app.grid.grid-rows-6.bg-polar-dark.text-white.h-screen
-  header.row-end-1.bg-theme-darkest.h-20.p-5.shadow-2xl
-    nav.flex
-      router-link(:to="{ name: 'home' }")
-        h1.font-bold.text-2xl Streamfox
-      c-upload-button
+  header.row-end-1.bg-theme-darkest.shadow-2xl
+    v-navbar
   main.row-start-1.row-end-7.overflow-auto
     router-view
 </template>
-
-<script>
-import UploadButtonComponent from "@/components/upload-button.vue";
-
-export default {
-  components: {
-    "c-upload-button": UploadButtonComponent,
-  },
-};
-</script>
 
 <style lang="stylus">
 #app
