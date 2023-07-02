@@ -4,7 +4,7 @@ import VNavbar from "@/views/navbar.vue";
 
 <template lang="pug">
 #app.grid.grid-rows-6.bg-polar-dark.text-white.h-screen
-  header.row-end-1.bg-theme-darkest.shadow-2xl
+  header.row-end-1.bg-polar-darkest
     v-navbar
   main.row-start-1.row-end-7.overflow-auto
     router-view
