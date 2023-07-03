@@ -1,5 +1,5 @@
 # gowatch
-backend.exe
+/backend*
 
 # Application data
 /data

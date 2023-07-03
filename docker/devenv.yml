@@ -1,0 +1,62 @@
+version: "3"
+services:
+  frontend:
+    image: "node:alpine"
+    user: "root"
+    working_dir: /home/node/app
+    volumes:
+      - ../frontend:/home/node/app
+      - node-modules:/home/node/app/node_modules
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    environment:
+      FORWARD_HOST: backend
+    command: >
+      sh -c "npm i && npm run dev"
+
+  backend:
+    image: "streamfox/backend"
+    build:
+      context: backend
+      dockerfile: ../docker/backend.Dockerfile
+    volumes:
+      - ../backend:/backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      DATA_ROOT: /data
+      DB_HOST: postgres
+
+  postgres:
+    image: postgres
+    restart: unless-stopped
+    hostname: postgres
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8000:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+volumes:
+  node-modules:
+    driver: local

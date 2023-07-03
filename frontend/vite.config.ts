@@ -1,8 +1,11 @@
 import vue from "@vitejs/plugin-vue";
+import dotenv from "dotenv";
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 import eslint from "vite-plugin-eslint";
+
+dotenv.config();
 
 export default defineConfig({
   plugins: [
@@ -23,7 +26,7 @@ export default defineConfig({
       usePolling: true,
     },
     proxy: {
-      "/api": "http://localhost:5000",
+      "/api": `http://${process.env.FORWARD_HOST}:5000`,
     },
   },
 });
