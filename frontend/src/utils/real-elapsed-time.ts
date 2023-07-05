@@ -1,4 +1,4 @@
-import { ElapsedTime } from "@/helpers/elapsed-time";
+import { ElapsedTime } from "@/utils/elapsed-time";
 
 export class RealElapsedTime implements ElapsedTime {
   private _startTime = 0;

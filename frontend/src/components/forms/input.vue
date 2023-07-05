@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { toLowerCamelCase } from "@/helpers/strings";
+import { toLowerCamelCase } from "@/utils/strings";
 
 defineEmits<{
   (e: "update:modelValue", value: string): void;

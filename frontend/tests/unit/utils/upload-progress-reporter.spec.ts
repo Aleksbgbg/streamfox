@@ -1,5 +1,5 @@
-import { ProgressReport } from "@/helpers/progress-report";
-import { UploadProgressReporter } from "@/helpers/upload-progress-reporter";
+import { ProgressReport } from "@/utils/progress-report";
+import { UploadProgressReporter } from "@/utils/upload-progress-reporter";
 
 describe("UploadProgressReporter", () => {
   describe.each([
