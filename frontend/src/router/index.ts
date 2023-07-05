@@ -9,6 +9,11 @@ export const router = VueRouter.createRouter({
       component: () => import("@/components/home/index.vue"),
     },
     {
+      path: "/register",
+      name: "register",
+      component: () => import("@/views/accounts/register.vue"),
+    },
+    {
       path: "/login",
       name: "login",
       component: () => import("@/views/accounts/login.vue"),

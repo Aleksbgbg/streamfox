@@ -1,14 +1,35 @@
-<template lang="pug">
-.flex.flex-col
-  label {{ title }}
-  input.rounded.focus-outline-none.focus-shadow-outline.border.border-gray-300.rounded-lg.py-2.px-4.block.w-full.appearance-none.leading-normal.text-black.placeholder-black(type="text" :placeholder="placeholder")
-</template>
+<script setup lang="ts">
+import { computed } from "vue";
+import { toLowerCamelCase } from "@/helpers/strings";
 
-<script>
-export default {
-  props: {
-    title: String,
-    placeholder: String,
-  },
-};
+defineEmits<{
+  (e: "update:modelValue", value: string): void;
+}>();
+
+interface Props {
+  title: string;
+  placeholder?: string;
+  type?: string;
+  modelValue: string;
+  errors: string[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: "text",
+});
+
+const label = computed(() => toLowerCamelCase(props.title));
 </script>
+
+<template lang="pug">
+label.justify-self-end.mt-2(:for="label")
+  span {{ title }}
+  span.text-aurora-red *
+.flex.flex-col
+  input.bg-polar-darkest.rounded.border.focus_border-aurora-green.focus_outline-none.leading-normal.text-white.placeholder-white.py-2.px-3(
+    :class="[errors.length === 0 ? 'border-polar-lightest' : 'border-aurora-red']"
+    :id="label" :label="label" :placeholder="placeholder" :type="type"
+    :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
+  )
+  p.text-aurora-red(v-for="error of errors") {{ error }}
+</template>
