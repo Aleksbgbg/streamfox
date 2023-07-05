@@ -3,6 +3,7 @@ import { reactive } from "vue";
 import { useRouter } from "vue-router";
 import CFormInput from "@/components/forms/input.vue";
 import { register } from "@/endpoints/auth";
+import { login } from "@/utils/auth";
 
 const router = useRouter();
 
@@ -23,7 +24,9 @@ const specificErrors = reactive({
 
 function submit() {
   register(registration)
-    .then(() => {
+    .then((response) => {
+      login(response.data.token);
+
       router.push({ name: "home" });
     })
     .catch((error) => {
