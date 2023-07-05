@@ -13,7 +13,7 @@ func main() {
 
 	router := gin.Default()
 
-	auth := router.Group("/auth")
+	auth := router.Group("/api/auth")
 	auth.POST("/register", controllers.Register)
 	auth.POST("/login", controllers.Login)
 
