@@ -1,39 +1,14 @@
 package controllers
 
 import (
-	"bytes"
 	"fmt"
-	"unicode"
-	"unicode/utf8"
+	"streamfox-backend/utils"
 
 	"github.com/go-playground/validator/v10"
 )
 
-func toLowerCamelCase(str string) string {
-	r, size := utf8.DecodeRuneInString(str)
-	if r == utf8.RuneError && size <= 1 {
-		return str
-	}
-	lowerCase := unicode.ToLower(r)
-	if r == lowerCase {
-		return str
-	}
-	return string(lowerCase) + str[size:]
-}
-
-func addSpaces(str string) string {
-	buffer := &bytes.Buffer{}
-	for i, rune := range str {
-		if unicode.IsUpper(rune) && i > 0 {
-			buffer.WriteRune(' ')
-		}
-		buffer.WriteRune(rune)
-	}
-	return buffer.String()
-}
-
 func prettyFormat(err validator.FieldError) string {
-	fieldName := addSpaces(err.Field())
+	fieldName := utils.AddSpaces(err.Field())
 
 	switch err.Tag() {
 	case "required":
@@ -55,7 +30,7 @@ func prettyFormat(err validator.FieldError) string {
 	case "email":
 		return fmt.Sprintf("%s must be a valid email address.", fieldName)
 	case "eqfield":
-		return fmt.Sprintf("%s must be identical to %s.", fieldName, addSpaces(err.Param()))
+		return fmt.Sprintf("%s must be identical to %s.", fieldName, utils.AddSpaces(err.Param()))
 	case "printascii":
 		return fmt.Sprintf("%s must contain valid characters (printable ASCII only).", fieldName)
 	default:
@@ -73,7 +48,7 @@ func formatErrors(err error) any {
 	errors := make(errorMap)
 
 	for _, value := range err.(validator.ValidationErrors) {
-		name := toLowerCamelCase(value.Field())
+		name := utils.ToLowerCamelCase(value.Field())
 
 		if _, found := errors[value.Field()]; !found {
 			errors[name] = []string{}
