@@ -4,9 +4,22 @@ import (
 	"bytes"
 	"fmt"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/go-playground/validator/v10"
 )
+
+func toLowerCamelCase(str string) string {
+	r, size := utf8.DecodeRuneInString(str)
+	if r == utf8.RuneError && size <= 1 {
+		return str
+	}
+	lowerCase := unicode.ToLower(r)
+	if r == lowerCase {
+		return str
+	}
+	return string(lowerCase) + str[size:]
+}
 
 func addSpaces(str string) string {
 	buffer := &bytes.Buffer{}
@@ -60,11 +73,13 @@ func formatErrors(err error) any {
 	errors := make(errorMap)
 
 	for _, value := range err.(validator.ValidationErrors) {
+		name := toLowerCamelCase(value.Field())
+
 		if _, found := errors[value.Field()]; !found {
-			errors[value.Field()] = []string{}
+			errors[name] = []string{}
 		}
 
-		errors[value.Field()] = append(errors[value.Field()], prettyFormat(value))
+		errors[name] = append(errors[name], prettyFormat(value))
 	}
 
 	return errors

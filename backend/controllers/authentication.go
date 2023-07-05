@@ -9,10 +9,10 @@ import (
 )
 
 type RegisterInput struct {
-	Username       string `json:"username"        binding:"required,min=2,max=32,printascii"`
-	EmailAddress   string `json:"email_address"   binding:"required,email"`
-	Password       string `json:"password"        binding:"required,min=6,max=72,printascii"`
-	RepeatPassword string `json:"repeat_password" binding:"required,eqfield=Password"`
+	Username       string `json:"username"       binding:"required,min=2,max=32,printascii"`
+	EmailAddress   string `json:"emailAddress"   binding:"required,email"`
+	Password       string `json:"password"       binding:"required,min=6,max=72,printascii"`
+	RepeatPassword string `json:"repeatPassword" binding:"required,eqfield=Password"`
 }
 
 func Register(c *gin.Context) {
@@ -26,7 +26,7 @@ func Register(c *gin.Context) {
 	if models.UsernameExists(input.Username) {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H{"errors": gin.H{"Username": "Username must not be taken."}},
+			gin.H{"errors": gin.H{"username": [...]string{"Username must not be taken."}}},
 		)
 		return
 	}
@@ -34,7 +34,7 @@ func Register(c *gin.Context) {
 	if models.EmailExists(input.EmailAddress) {
 		c.JSON(
 			http.StatusBadRequest,
-			gin.H{"errors": gin.H{"EmailAddress": "Email Address must not be taken."}},
+			gin.H{"errors": gin.H{"emailAddress": [...]string{"Email Address must not be taken."}}},
 		)
 		return
 	}
