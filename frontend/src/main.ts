@@ -8,6 +8,6 @@ import { pinia } from "@/store";
 import "@/style.css";
 import { refreshLoginStatus } from "@/utils/auth";
 
-refreshLoginStatus();
-
 createApp(App).use(router).use(pinia).mount("#app");
+
+refreshLoginStatus();
