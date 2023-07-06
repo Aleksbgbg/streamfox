@@ -31,17 +31,18 @@ function submit() {
     })
     .catch((error) => {
       genericErrors.length = 0;
+      for (const key of Object.keys(specificErrors)) {
+        specificErrors[key].length = 0;
+      }
 
       const responseErrors = error.response.data.errors;
 
       if (responseErrors === undefined) {
-        genericErrors.push("Registration failed for an unknown reason.");
+        genericErrors.push("Log in failed for an unknown reason.");
       } else if (typeof responseErrors === "object") {
         for (const key of Object.keys(specificErrors)) {
           if (responseErrors[key]) {
             specificErrors[key] = responseErrors[key];
-          } else {
-            specificErrors[key].length = 0;
           }
         }
       } else {
@@ -61,7 +62,7 @@ function submit() {
         c-form-input(title="Email Address" v-model="registration.emailAddress" :errors="specificErrors.emailAddress")
         c-form-input(title="Password" type="password" v-model="registration.password" :errors="specificErrors.password")
         c-form-input(title="Repeat Password" type="password" v-model="registration.repeatPassword" :errors="specificErrors.repeatPassword")
-      .mb-3(v-if="genericErrors.length > 0")
+      .mb-5(v-if="genericErrors.length > 0")
         p.text-aurora-red(v-for="error of genericErrors") {{ error }}
       button.bg-frost-blue.hover_bg-frost-deep.rounded.transition.duration-150.px-4.py-2.mb-4 Register Account
       router-link.text-frost-deep.hover_underline(
