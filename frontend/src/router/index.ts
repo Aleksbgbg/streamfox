@@ -9,6 +9,11 @@ export const router = VueRouter.createRouter({
       component: () => import("@/components/home/index.vue"),
     },
     {
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/accounts/login.vue"),
+    },
+    {
       path: "/watch/:id",
       name: "watch",
       component: () => import("@/components/watch.vue"),
