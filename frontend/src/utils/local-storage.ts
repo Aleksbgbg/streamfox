@@ -5,3 +5,7 @@ export function localGet(name: string, defaultValue: string): string {
 export function localSet(name: string, value: string) {
   return localStorage.setItem(name, value);
 }
+
+export function localDelete(name: string) {
+  localStorage.removeItem(name);
+}
