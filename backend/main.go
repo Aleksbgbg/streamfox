@@ -19,7 +19,10 @@ func main() {
 
 	api := router.Group("/api")
 	api.Use(middleware.JwtAuthMiddleware())
+
 	api.GET("/user", controllers.GetUser)
+
+	api.POST("/videos", controllers.PostVideo)
 
 	router.Run(":5000")
 }
