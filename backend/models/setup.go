@@ -38,6 +38,7 @@ func Setup() {
 	}
 
 	DATABASE.AutoMigrate(&User{})
+	DATABASE.AutoMigrate(&Video{})
 
 	ID_GENERATOR, err = snowflake.NewNode(1)
 
