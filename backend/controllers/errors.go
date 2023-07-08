@@ -2,10 +2,69 @@ package controllers
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"streamfox-backend/utils"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
+
+type ErrorType int
+
+const (
+	SERVER_ERROR ErrorType = iota
+	VALIDATION_ERROR
+	AUTHORIZATION_ERROR
+)
+
+func toHttpError(errorType ErrorType) (e int) {
+	switch errorType {
+	case SERVER_ERROR:
+		return http.StatusInternalServerError
+	case VALIDATION_ERROR:
+		return http.StatusBadRequest
+	case AUTHORIZATION_ERROR:
+		return http.StatusUnauthorized
+	}
+
+	log.Panicf("toHttpError failed because errorType %d is not handled", errorType)
+	return
+}
+
+func errorMessage(c *gin.Context, errorType ErrorType, message any) {
+	c.JSON(toHttpError(errorType), gin.H{"errors": message})
+}
+
+type PredefinedError int
+
+const (
+	USER_FETCH_FAILED PredefinedError = iota
+	DATABASE_WRITE_FAILED
+	DATA_CREATION_FAILED
+	FILE_IO_FAILED
+)
+
+func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string) {
+	switch predefinedError {
+	case USER_FETCH_FAILED:
+		return SERVER_ERROR, "Could not fetch current user."
+	case DATABASE_WRITE_FAILED:
+		return SERVER_ERROR, "Could not write to database."
+	case DATA_CREATION_FAILED:
+		return SERVER_ERROR, "Could not create data files."
+	case FILE_IO_FAILED:
+		return SERVER_ERROR, "Could not write to file."
+	}
+
+	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefinedError)
+	return
+}
+
+func errorPredefined(c *gin.Context, predefinedError PredefinedError) {
+	errorType, message := getPredefinedError(predefinedError)
+	errorMessage(c, errorType, message)
+}
 
 func prettyFormat(err validator.FieldError) string {
 	fieldName := utils.AddSpaces(err.Field())

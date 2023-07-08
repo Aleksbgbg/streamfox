@@ -19,22 +19,20 @@ func Register(c *gin.Context) {
 	var input RegisterInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": formatErrors(err)})
+		errorMessage(c, VALIDATION_ERROR, formatErrors(err))
 		return
 	}
 
 	if models.UsernameExists(input.Username) {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{"errors": gin.H{"username": [...]string{"Username must not be taken."}}},
-		)
+		errorMessage(c, VALIDATION_ERROR, gin.H{"username": [...]string{"Username must not be taken."}})
 		return
 	}
 
 	if models.EmailExists(input.EmailAddress) {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{"errors": gin.H{"emailAddress": [...]string{"Email Address must not be taken."}}},
+		errorMessage(
+			c,
+			VALIDATION_ERROR,
+			gin.H{"emailAddress": [...]string{"Email Address must not be taken."}},
 		)
 		return
 	}
@@ -47,14 +45,14 @@ func Register(c *gin.Context) {
 	_, err := user.Save()
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": "Error in writing to database."})
+		errorPredefined(c, DATABASE_WRITE_FAILED)
 		return
 	}
 
 	token, err := utils.GenerateToken(user.IdSnowflake())
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"errors": "Error in generating token."})
+		errorMessage(c, SERVER_ERROR, "Error in generating token.")
 		return
 	}
 
@@ -70,14 +68,14 @@ func Login(c *gin.Context) {
 	var input LoginInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": formatErrors(err)})
+		errorMessage(c, VALIDATION_ERROR, formatErrors(err))
 		return
 	}
 
 	token, err := models.ValidateCredentials(input.Username, input.Password)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"errors": "Invalid credentials."})
+		errorMessage(c, AUTHORIZATION_ERROR, "Invalid credentials.")
 		return
 	}
 

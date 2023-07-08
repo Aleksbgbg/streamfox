@@ -17,14 +17,14 @@ func GetUser(c *gin.Context) {
 	userId, err := utils.ExtractUserId(c)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		errorPredefined(c, USER_FETCH_FAILED)
 		return
 	}
 
 	user, err := models.FetchUser(userId)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		errorPredefined(c, USER_FETCH_FAILED)
 		return
 	}
 
