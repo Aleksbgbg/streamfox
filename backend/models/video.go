@@ -65,3 +65,17 @@ func NewVideo(creatorId snowflake.ID) (*Video, error) {
 
 	return &video, err
 }
+
+func FetchVideo(id snowflake.ID) (*Video, error) {
+	video := Video{}
+	err := DATABASE.First(&video, id.Int64()).Error
+	return &video, err
+}
+
+func (video *Video) IsCreator(userId snowflake.ID) bool {
+	return video.CreatorId == userId.Int64()
+}
+
+func (video *Video) Save() error {
+	return DATABASE.Save(video).Error
+}

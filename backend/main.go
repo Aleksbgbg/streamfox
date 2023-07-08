@@ -23,6 +23,7 @@ func main() {
 	api.GET("/user", controllers.GetUser)
 
 	api.POST("/videos", controllers.PostVideo)
+	api.PUT("/videos/:id/settings", controllers.UpdateVideo)
 
 	router.Run(":5000")
 }
