@@ -72,29 +72,45 @@ func prettyFormat(err validator.FieldError) string {
 	switch err.Tag() {
 	case "required":
 		return fmt.Sprintf("%s must be provided.", fieldName)
-	case "min":
-		return fmt.Sprintf(
-			"%s must be at least %s characters long (currently %d).",
-			fieldName,
-			err.Param(),
-			len(err.Value().(string)),
-		)
-	case "max":
-		return fmt.Sprintf(
-			"%s must be at most %s characters long (currently %d).",
-			fieldName,
-			err.Param(),
-			len(err.Value().(string)),
-		)
 	case "email":
 		return fmt.Sprintf("%s must be a valid email address.", fieldName)
 	case "eqfield":
 		return fmt.Sprintf("%s must be identical to %s.", fieldName, utils.AddSpaces(err.Param()))
 	case "printascii":
 		return fmt.Sprintf("%s must contain valid characters (printable ASCII only).", fieldName)
-	default:
-		return err.Error()
+	case "min", "max":
+		value := err.Value()
+
+		if str, ok := value.(string); ok {
+			var modifier string
+
+			if err.Tag() == "min" {
+				modifier = "least"
+			} else {
+				modifier = "most"
+			}
+
+			return fmt.Sprintf(
+				"%s must be at %s %s characters long (currently %d).",
+				fieldName,
+				modifier,
+				err.Param(),
+				len(str),
+			)
+		} else {
+			var modifier string
+
+			if err.Tag() == "min" {
+				modifier = "lower"
+			} else {
+				modifier = "higher"
+			}
+
+			return fmt.Sprintf("%s must not be %s than %s.", fieldName, modifier, err.Param())
+		}
 	}
+
+	return err.Error()
 }
 
 type errorMap = map[string][]string
