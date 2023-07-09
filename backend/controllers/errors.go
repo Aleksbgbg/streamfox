@@ -46,6 +46,7 @@ const (
 	VIDEO_ID_INVALID
 	VIDEO_ID_NON_EXISTENT
 	VIDEO_NOT_OWNED
+	VIDEO_UPLOAD_INCOMPLETE
 )
 
 func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string) {
@@ -64,6 +65,8 @@ func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string)
 		return VALIDATION_ERROR, "Video does not exist."
 	case VIDEO_NOT_OWNED:
 		return AUTHORIZATION_ERROR, "Cannot make modifications to a video you do not own."
+	case VIDEO_UPLOAD_INCOMPLETE:
+		return AUTHORIZATION_ERROR, "Video upload has not yet completed."
 	}
 
 	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefinedError)

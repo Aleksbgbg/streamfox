@@ -190,3 +190,44 @@ func UploadVideo(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func GetVideoContent(c *gin.Context) {
+	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_INVALID)
+		return
+	}
+
+	video, err := models.FetchVideo(videoId)
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
+		return
+	}
+
+	if video.Status < models.COMPLETE {
+		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
+		return
+	}
+
+	if video.Visibility == models.PRIVATE {
+		userId, err := utils.ExtractUserId(c)
+
+		if err != nil {
+			errorPredefined(c, USER_FETCH_FAILED)
+			return
+		}
+
+		if !video.IsCreator(userId) {
+			errorPredefined(c, VIDEO_NOT_OWNED)
+			return
+		}
+	}
+
+	dataRoot := os.Getenv("DATA_ROOT")
+	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58())
+
+	c.File(filepath)
+	c.Header("Content-Type", video.MimeType)
+}

@@ -23,6 +23,7 @@ func main() {
 	api.GET("/user", controllers.GetUser)
 
 	api.POST("/videos", controllers.CreateVideo)
+	api.GET("/videos/:id/content", controllers.GetVideoContent)
 	api.PUT("/videos/:id/settings", controllers.UpdateVideo)
 	api.PUT("/videos/:id/content", controllers.UploadVideo)
 
