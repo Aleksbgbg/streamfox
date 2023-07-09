@@ -133,7 +133,7 @@ func UploadVideo(c *gin.Context) {
 	}
 
 	video.Status = models.UPLOADING
-	video.Save()
+	defer video.Save()
 
 	dataRoot := os.Getenv("DATA_ROOT")
 
@@ -178,7 +178,6 @@ func UploadVideo(c *gin.Context) {
 	video.MimeType = probe.MimeType
 	video.DurationSecs = probe.DurationSecs
 	video.Status = models.PROCESSING
-	video.Save()
 
 	err = ffmpeg.GenerateThumbnail(videoDir)
 
@@ -188,7 +187,6 @@ func UploadVideo(c *gin.Context) {
 	}
 
 	video.Status = models.COMPLETE
-	video.Save()
 
 	c.Status(http.StatusNoContent)
 }
