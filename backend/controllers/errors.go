@@ -43,6 +43,9 @@ const (
 	DATABASE_WRITE_FAILED
 	DATA_CREATION_FAILED
 	FILE_IO_FAILED
+	VIDEO_ID_INVALID
+	VIDEO_ID_NON_EXISTENT
+	VIDEO_NOT_OWNED
 )
 
 func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string) {
@@ -55,6 +58,12 @@ func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string)
 		return SERVER_ERROR, "Could not create data files."
 	case FILE_IO_FAILED:
 		return SERVER_ERROR, "Could not write to file."
+	case VIDEO_ID_INVALID:
+		return VALIDATION_ERROR, "Video ID is invalid."
+	case VIDEO_ID_NON_EXISTENT:
+		return VALIDATION_ERROR, "Video does not exist."
+	case VIDEO_NOT_OWNED:
+		return AUTHORIZATION_ERROR, "Cannot make modifications to a video you do not own."
 	}
 
 	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefinedError)

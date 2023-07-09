@@ -72,6 +72,10 @@ func FetchVideo(id snowflake.ID) (*Video, error) {
 	return &video, err
 }
 
+func (video *Video) IdSnowflake() snowflake.ID {
+	return snowflake.ParseInt64(video.Id)
+}
+
 func (video *Video) IsCreator(userId snowflake.ID) bool {
 	return video.CreatorId == userId.Int64()
 }

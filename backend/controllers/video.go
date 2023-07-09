@@ -19,7 +19,7 @@ type VideoCreatedInfo struct {
 	Visibility  models.Visibility `json:"visibility"`
 }
 
-func PostVideo(c *gin.Context) {
+func CreateVideo(c *gin.Context) {
 	userId, err := utils.ExtractUserId(c)
 
 	if err != nil {
@@ -34,32 +34,8 @@ func PostVideo(c *gin.Context) {
 		return
 	}
 
-	dataRoot := os.Getenv("DATA_ROOT")
-	videoId := snowflake.ParseInt64(video.Id)
-
-	err = os.MkdirAll(fmt.Sprintf("%s/videos/%s", dataRoot, videoId.Base58()), os.ModePerm)
-
-	if err != nil {
-		errorPredefined(c, DATA_CREATION_FAILED)
-		return
-	}
-
-	file, err := os.Create(fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58()))
-	if err != nil {
-		errorPredefined(c, DATA_CREATION_FAILED)
-		return
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, c.Request.Body)
-
-	if err != nil {
-		errorPredefined(c, FILE_IO_FAILED)
-		return
-	}
-
 	c.JSON(http.StatusCreated, VideoCreatedInfo{
-		Id:          videoId.Base58(),
+		Id:          video.IdSnowflake().Base58(),
 		Name:        video.Name,
 		Description: video.Description,
 		Visibility:  video.Visibility,
@@ -83,14 +59,14 @@ func UpdateVideo(c *gin.Context) {
 	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
 
 	if err != nil {
-		errorMessage(c, VALIDATION_ERROR, "Video ID is invalid.")
+		errorPredefined(c, VIDEO_ID_INVALID)
 		return
 	}
 
 	video, err := models.FetchVideo(videoId)
 
 	if err != nil {
-		errorMessage(c, VALIDATION_ERROR, "Video does not exist.")
+		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
 		return
 	}
 
@@ -102,7 +78,7 @@ func UpdateVideo(c *gin.Context) {
 	}
 
 	if !video.IsCreator(userId) {
-		errorMessage(c, AUTHORIZATION_ERROR, "Cannot make modifications to a video you do not own.")
+		errorPredefined(c, VIDEO_NOT_OWNED)
 		return
 	}
 
@@ -115,6 +91,74 @@ func UpdateVideo(c *gin.Context) {
 		errorPredefined(c, DATABASE_WRITE_FAILED)
 		return
 	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func UploadVideo(c *gin.Context) {
+	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_INVALID)
+		return
+	}
+
+	video, err := models.FetchVideo(videoId)
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
+		return
+	}
+
+	userId, err := utils.ExtractUserId(c)
+
+	if err != nil {
+		errorPredefined(c, USER_FETCH_FAILED)
+		return
+	}
+
+	if !video.IsCreator(userId) {
+		errorPredefined(c, VIDEO_NOT_OWNED)
+		return
+	}
+
+	if video.Status > models.UPLOADING {
+		errorMessage(
+			c,
+			VALIDATION_ERROR,
+			"Cannot rewrite video after uploading has completed successfully.",
+		)
+		return
+	}
+
+	video.Status = models.UPLOADING
+	video.Save()
+
+	dataRoot := os.Getenv("DATA_ROOT")
+
+	err = os.MkdirAll(fmt.Sprintf("%s/videos/%s", dataRoot, videoId.Base58()), os.ModePerm)
+
+	if err != nil {
+		errorPredefined(c, DATA_CREATION_FAILED)
+		return
+	}
+
+	file, err := os.Create(fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58()))
+	if err != nil {
+		errorPredefined(c, DATA_CREATION_FAILED)
+		return
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, c.Request.Body)
+
+	if err != nil {
+		errorPredefined(c, FILE_IO_FAILED)
+		return
+	}
+
+	video.Status = models.PROCESSING
+	video.Save()
 
 	c.Status(http.StatusNoContent)
 }
