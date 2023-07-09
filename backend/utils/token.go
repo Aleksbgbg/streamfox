@@ -2,8 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/bwmarrin/snowflake"
@@ -12,11 +10,7 @@ import (
 )
 
 func GenerateToken(userId snowflake.ID) (string, error) {
-	tokenLifespan, err := strconv.Atoi(os.Getenv("TOKEN_LIFESPAN_HRS"))
-
-	if err != nil {
-		return "", err
-	}
+	tokenLifespan := GetEnvVarInt(AUTH_TOKEN_LIFESPAN_HRS)
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
@@ -25,7 +19,7 @@ func GenerateToken(userId snowflake.ID) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(os.Getenv("API_SECRET")))
+	return token.SignedString(getApiSecret())
 }
 
 func ExtractUserId(c *gin.Context) (snowflake.ID, error) {
@@ -61,10 +55,14 @@ func parseToken(c *gin.Context) (*jwt.Token, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return []byte(os.Getenv("API_SECRET")), nil
+		return getApiSecret(), nil
 	})
 }
 
 func extractToken(c *gin.Context) string {
 	return c.Request.Header.Get("Authorization")
+}
+
+func getApiSecret() []byte {
+	return []byte(GetEnvVar(AUTH_API_SECRET))
 }

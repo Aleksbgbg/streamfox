@@ -135,7 +135,7 @@ func UploadVideo(c *gin.Context) {
 	video.Status = models.UPLOADING
 	defer video.Save()
 
-	dataRoot := os.Getenv("DATA_ROOT")
+	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 
 	videoDir := fmt.Sprintf("%s/videos/%s", dataRoot, videoId.Base58())
 	err = os.MkdirAll(videoDir, os.ModePerm)
@@ -304,7 +304,7 @@ func GetVideoThumbnail(c *gin.Context) {
 		}
 	}
 
-	dataRoot := os.Getenv("DATA_ROOT")
+	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 	filepath := fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, videoId.Base58())
 
 	c.File(filepath)
@@ -344,7 +344,7 @@ func GetVideoStream(c *gin.Context) {
 		}
 	}
 
-	dataRoot := os.Getenv("DATA_ROOT")
+	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58())
 
 	c.File(filepath)
