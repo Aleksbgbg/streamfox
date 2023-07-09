@@ -137,7 +137,8 @@ func UploadVideo(c *gin.Context) {
 
 	dataRoot := os.Getenv("DATA_ROOT")
 
-	err = os.MkdirAll(fmt.Sprintf("%s/videos/%s", dataRoot, videoId.Base58()), os.ModePerm)
+	videoDir := fmt.Sprintf("%s/videos/%s", dataRoot, videoId.Base58())
+	err = os.MkdirAll(videoDir, os.ModePerm)
 
 	if err != nil {
 		errorPredefined(c, DATA_CREATION_FAILED)
@@ -177,6 +178,16 @@ func UploadVideo(c *gin.Context) {
 	video.MimeType = probe.MimeType
 	video.DurationSecs = probe.DurationSecs
 	video.Status = models.PROCESSING
+	video.Save()
+
+	err = ffmpeg.GenerateThumbnail(videoDir)
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, fmt.Sprintf("Error in generating thumbnail: %s.", err.Error()))
+		return
+	}
+
+	video.Status = models.COMPLETE
 	video.Save()
 
 	c.Status(http.StatusNoContent)
