@@ -1,4 +1,4 @@
-package utils
+package ffmpeg
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
-var ffmpegFormatToMimeType = map[string]string{
+var formatToMimeType = map[string]string{
 	"3dostr":                  "application/vnd.pg.format",
 	"3g2":                     "video/3gpp2",
 	"3gp":                     "video/3gpp",
@@ -123,7 +123,7 @@ func Probe(path string) (*ProbeResult, error) {
 	}
 
 	formatName := data.Format.FormatName
-	mimeType, ok := ffmpegFormatToMimeType[formatName]
+	mimeType, ok := formatToMimeType[formatName]
 
 	if !ok {
 		return nil, &InvalidVideoTypeError{}

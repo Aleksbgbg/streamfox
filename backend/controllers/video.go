@@ -7,6 +7,7 @@ import (
 	"os"
 	"streamfox-backend/models"
 	"streamfox-backend/utils"
+	"streamfox-backend/utils/ffmpeg"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
@@ -160,12 +161,12 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	probe, err := utils.Probe(filepath)
+	probe, err := ffmpeg.Probe(filepath)
 
 	if err != nil {
 		os.Remove(filepath)
 
-		if _, ok := err.(*utils.InvalidVideoTypeError); ok {
+		if _, ok := err.(*ffmpeg.InvalidVideoTypeError); ok {
 			errorMessage(c, VALIDATION_ERROR, "Invalid video format.")
 		} else {
 			errorMessage(c, SERVER_ERROR, "Unable to probe video.")
