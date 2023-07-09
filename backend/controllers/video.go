@@ -191,6 +191,65 @@ func UploadVideo(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+type VideoInfo struct {
+	Id           string            `json:"id"`
+	Creator      UserInfo          `json:"user"`
+	DurationSecs int32             `json:"duration_secs"`
+	Name         string            `json:"name"`
+	Description  string            `json:"description"`
+	Visibility   models.Visibility `json:"visibility"`
+	Views        int64             `json:"views"`
+	Likes        int64             `json:"likes"`
+	Dislikes     int64             `json:"dislikes"`
+}
+
+func GetVideoInfo(c *gin.Context) {
+	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_INVALID)
+		return
+	}
+
+	video, err := models.FetchVideoWithOwner(videoId)
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
+		return
+	}
+
+	if video.Status < models.COMPLETE {
+		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
+		return
+	}
+
+	if video.Visibility == models.PRIVATE {
+		userId, err := utils.ExtractUserId(c)
+
+		if err != nil {
+			errorPredefined(c, USER_FETCH_FAILED)
+			return
+		}
+
+		if !video.IsCreator(userId) {
+			errorPredefined(c, VIDEO_NOT_OWNED)
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, VideoInfo{
+		Id:           video.IdSnowflake().Base58(),
+		Creator:      getUserInfo(&video.Creator),
+		DurationSecs: video.DurationSecs,
+		Name:         video.Name,
+		Description:  video.Description,
+		Visibility:   video.Visibility,
+		Views:        video.Views,
+		Likes:        video.Likes,
+		Dislikes:     video.Dislikes,
+	})
+}
+
 func GetVideoThumbnail(c *gin.Context) {
 	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
 

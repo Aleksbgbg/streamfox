@@ -13,6 +13,13 @@ type UserInfo struct {
 	Username string `json:"username"`
 }
 
+func getUserInfo(user *models.User) UserInfo {
+	return UserInfo{
+		Id:       user.IdSnowflake().Base58(),
+		Username: user.Username,
+	}
+}
+
 func GetUser(c *gin.Context) {
 	userId, err := utils.ExtractUserId(c)
 
@@ -28,8 +35,5 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, UserInfo{
-		Id:       userId.Base58(),
-		Username: user.Username,
-	})
+	c.JSON(http.StatusOK, getUserInfo(&user))
 }
