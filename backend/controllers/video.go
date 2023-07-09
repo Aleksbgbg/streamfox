@@ -143,20 +143,38 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	file, err := os.Create(fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58()))
+	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58())
+	file, err := os.Create(filepath)
 	if err != nil {
 		errorPredefined(c, DATA_CREATION_FAILED)
 		return
 	}
-	defer file.Close()
 
 	_, err = io.Copy(file, c.Request.Body)
+	file.Close()
 
 	if err != nil {
+		os.Remove(filepath)
+
 		errorPredefined(c, FILE_IO_FAILED)
 		return
 	}
 
+	probe, err := utils.Probe(filepath)
+
+	if err != nil {
+		os.Remove(filepath)
+
+		if _, ok := err.(*utils.InvalidVideoTypeError); ok {
+			errorMessage(c, VALIDATION_ERROR, "Invalid video format.")
+		} else {
+			errorMessage(c, SERVER_ERROR, "Unable to probe video.")
+		}
+		return
+	}
+
+	video.MimeType = probe.MimeType
+	video.DurationSecs = probe.DurationSecs
 	video.Status = models.PROCESSING
 	video.Save()
 
