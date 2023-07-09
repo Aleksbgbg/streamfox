@@ -191,7 +191,7 @@ func UploadVideo(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func GetVideoContent(c *gin.Context) {
+func GetVideoStream(c *gin.Context) {
 	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
 
 	if err != nil {

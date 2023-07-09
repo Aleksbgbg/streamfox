@@ -23,9 +23,9 @@ func main() {
 	api.GET("/user", controllers.GetUser)
 
 	api.POST("/videos", controllers.CreateVideo)
-	api.GET("/videos/:id/content", controllers.GetVideoContent)
+	api.GET("/videos/:id/stream", controllers.GetVideoStream)
 	api.PUT("/videos/:id/settings", controllers.UpdateVideo)
-	api.PUT("/videos/:id/content", controllers.UploadVideo)
+	api.PUT("/videos/:id/stream", controllers.UploadVideo)
 
 	router.Run(":5000")
 }
