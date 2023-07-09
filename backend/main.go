@@ -23,6 +23,7 @@ func main() {
 	api.GET("/user", controllers.GetUser)
 
 	api.POST("/videos", controllers.CreateVideo)
+	api.GET("/videos", controllers.GetVideos)
 	api.GET("/videos/:id/info", controllers.GetVideoInfo)
 	api.GET("/videos/:id/thumbnail", controllers.GetVideoThumbnail)
 	api.GET("/videos/:id/stream", controllers.GetVideoStream)

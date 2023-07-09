@@ -203,6 +203,36 @@ type VideoInfo struct {
 	Dislikes     int64             `json:"dislikes"`
 }
 
+func getVideoInfo(video *models.Video) VideoInfo {
+	return VideoInfo{
+		Id:           video.IdSnowflake().Base58(),
+		Creator:      getUserInfo(&video.Creator),
+		DurationSecs: video.DurationSecs,
+		Name:         video.Name,
+		Description:  video.Description,
+		Visibility:   video.Visibility,
+		Views:        video.Views,
+		Likes:        video.Likes,
+		Dislikes:     video.Dislikes,
+	}
+}
+
+func GetVideos(c *gin.Context) {
+	videos, err := models.FetchAllVideos()
+
+	if err != nil {
+		errorPredefined(c, DATABASE_READ_FAILED)
+		return
+	}
+
+	videoInfos := make([]VideoInfo, 0)
+	for _, video := range videos {
+		videoInfos = append(videoInfos, getVideoInfo(&video))
+	}
+
+	c.JSON(http.StatusOK, videoInfos)
+}
+
 func GetVideoInfo(c *gin.Context) {
 	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
 
@@ -237,17 +267,7 @@ func GetVideoInfo(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, VideoInfo{
-		Id:           video.IdSnowflake().Base58(),
-		Creator:      getUserInfo(&video.Creator),
-		DurationSecs: video.DurationSecs,
-		Name:         video.Name,
-		Description:  video.Description,
-		Visibility:   video.Visibility,
-		Views:        video.Views,
-		Likes:        video.Likes,
-		Dislikes:     video.Dislikes,
-	})
+	c.JSON(http.StatusOK, getVideoInfo(video))
 }
 
 func GetVideoThumbnail(c *gin.Context) {

@@ -78,6 +78,14 @@ func FetchVideoWithOwner(id snowflake.ID) (*Video, error) {
 	return &video, err
 }
 
+func FetchAllVideos() ([]Video, error) {
+	users := make([]Video, 0)
+	err := DATABASE.Preload("Creator").
+		Find(&users, &Video{Metadata: Metadata{Status: COMPLETE}, Settings: Settings{Visibility: PUBLIC}}).
+		Error
+	return users, err
+}
+
 func (video *Video) IdSnowflake() snowflake.ID {
 	return snowflake.ParseInt64(video.Id)
 }

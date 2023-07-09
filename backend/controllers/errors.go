@@ -40,6 +40,7 @@ type PredefinedError int
 
 const (
 	USER_FETCH_FAILED PredefinedError = iota
+	DATABASE_READ_FAILED
 	DATABASE_WRITE_FAILED
 	DATA_CREATION_FAILED
 	FILE_IO_FAILED
@@ -53,6 +54,8 @@ func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string)
 	switch predefinedError {
 	case USER_FETCH_FAILED:
 		return SERVER_ERROR, "Could not fetch current user."
+	case DATABASE_READ_FAILED:
+		return SERVER_ERROR, "Could not read from database."
 	case DATABASE_WRITE_FAILED:
 		return SERVER_ERROR, "Could not write to database."
 	case DATA_CREATION_FAILED:
