@@ -1,36 +1,3 @@
-<template lang="pug">
-div
-  .flex.justify-center
-    .flex.flex-col.items-center.bg-theme-light.rounded-lg.p-5.m-5
-      h2.font-bold.text-lg Video Upload
-      form(v-if="!upload.startedOnce")
-        input(type="file" ref="fileInput" @change="fileSelected")
-      div(v-show="upload.started")
-        span.block.text-center Uploading...
-        span.block.text-center {{ roundedDataRate }} MB/s
-        .bg-white.h-2.w-64
-          .bg-theme-darkest.h-2(:style="{ width: `${upload.progressPercentage}%` }")
-      .flex.flex-col.items-center(v-if="video.isUploaded")
-        span.block.text-center Your video has uploaded.
-        router-link.my-3(:to="{ name: 'watch', params: { id: video.id }}")
-          img(:src="video.thumbnailUrl" alt="")
-      div(v-if="conversion.started && !video.isDone")
-        span.block.text-center Your video is being converted to a supported format.
-        span.block.text-center {{ conversion.frameCurrent }} / {{ conversion.framesTotal }} frames completed
-        div.text-center
-          .bg-white.h-2.w-64.inline-block
-            .bg-theme-darkest.h-2(:style="{ width: `${conversion.progressPercentage}%` }")
-        span.block.text-center {{ timeElapsed }} elapsed, {{ timeRemaining }} remaining
-      div(v-if="video.isDone")
-        p
-          | Visit your video at
-          |
-          router-link.underline.text-theme-lightest(:to="{ name: 'watch', params: { id: video.id }}") watch/{{ video.id }}
-          | .
-      div(v-if="upload.failed")
-        p Your upload failed. The most common reasons for this are unsupported file formats and videos bigger than 100MB.
-</template>
-
 <script>
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
 import { uploadProgressReporter } from "@/bootstrapper/upload-progress-reporter";
@@ -171,3 +138,36 @@ export default {
   },
 };
 </script>
+
+<template lang="pug">
+div
+  .flex.justify-center
+    .flex.flex-col.items-center.bg-theme-light.rounded-lg.p-5.m-5
+      h2.font-bold.text-lg Video Upload
+      form(v-if="!upload.startedOnce")
+        input(type="file" ref="fileInput" @change="fileSelected")
+      div(v-show="upload.started")
+        span.block.text-center Uploading...
+        span.block.text-center {{ roundedDataRate }} MB/s
+        .bg-white.h-2.w-64
+          .bg-theme-darkest.h-2(:style="{ width: `${upload.progressPercentage}%` }")
+      .flex.flex-col.items-center(v-if="video.isUploaded")
+        span.block.text-center Your video has uploaded.
+        router-link.my-3(:to="{ name: 'watch', params: { id: video.id }}")
+          img(:src="video.thumbnailUrl" alt="")
+      div(v-if="conversion.started && !video.isDone")
+        span.block.text-center Your video is being converted to a supported format.
+        span.block.text-center {{ conversion.frameCurrent }} / {{ conversion.framesTotal }} frames completed
+        div.text-center
+          .bg-white.h-2.w-64.inline-block
+            .bg-theme-darkest.h-2(:style="{ width: `${conversion.progressPercentage}%` }")
+        span.block.text-center {{ timeElapsed }} elapsed, {{ timeRemaining }} remaining
+      div(v-if="video.isDone")
+        p
+          | Visit your video at
+          |
+          router-link.underline.text-theme-lightest(:to="{ name: 'watch', params: { id: video.id }}") watch/{{ video.id }}
+          | .
+      div(v-if="upload.failed")
+        p Your upload failed. The most common reasons for this are unsupported file formats and videos bigger than 100MB.
+</template>

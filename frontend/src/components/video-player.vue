@@ -1,8 +1,3 @@
-<template lang="pug">
-video.video-js.vjs-theme-sea(ref="player")
-  source(:src="videoUrl" type="video/mp4")
-</template>
-
 <script lang="js">
 import videojs from "video.js";
 import { volumeSettingsStore } from "@/bootstrapper/settings-store";
@@ -35,6 +30,11 @@ export default {
   },
 };
 </script>
+
+<template lang="pug">
+video.video-js.vjs-theme-sea(ref="player")
+  source(:src="videoUrl" type="video/mp4")
+</template>
 
 <style lang="stylus">
 $background-fill = rgba(65, 118, 188, .9)

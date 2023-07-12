@@ -1,8 +1,3 @@
-<template lang="pug">
-router-link(:to="{ name: 'watch', params: { id: videoId } }")
-  slot
-</template>
-
 <script>
 export default {
   props: {
@@ -10,3 +5,8 @@ export default {
   },
 };
 </script>
+
+<template lang="pug">
+router-link(:to="{ name: 'watch', params: { id: videoId } }")
+  slot
+</template>
