@@ -6,7 +6,7 @@ export const router = VueRouter.createRouter({
     {
       path: "/",
       name: "home",
-      component: () => import("@/components/home/index.vue"),
+      component: () => import("@/views/home.vue"),
     },
     {
       path: "/register",
@@ -21,12 +21,12 @@ export const router = VueRouter.createRouter({
     {
       path: "/watch/:id",
       name: "watch",
-      component: () => import("@/components/watch.vue"),
+      component: () => import("@/views/watch.vue"),
     },
     {
       path: "/upload",
       name: "upload",
-      component: () => import("@/components/upload/index.vue"),
+      component: () => import("@/views/upload.vue"),
     },
   ],
 });

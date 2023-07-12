@@ -11,7 +11,7 @@ div
 <script>
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
 import { videoLister } from "@/bootstrapper/video-endpoint";
-import WatchLinkComponent from "@/components/home/watch-link.vue";
+import WatchLinkComponent from "@/components/watch-link.vue";
 
 export default {
   components: {
