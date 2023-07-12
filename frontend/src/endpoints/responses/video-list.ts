@@ -1,3 +1,3 @@
-export interface VideoList {
-  videoIds: string[];
+export interface VideoInfo {
+  id: string;
 }

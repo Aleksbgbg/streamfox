@@ -25,10 +25,10 @@ export default {
   async created() {
     const videoList = await videoLister.listVideos();
 
-    for (const videoId of videoList.videoIds.reverse()) {
+    for (const { id } of videoList.reverse()) {
       this.videos.push({
-        id: videoId,
-        thumbnail: await endpointResolver.resolve(`/videos/${videoId}/thumbnail`),
+        id,
+        thumbnail: await endpointResolver.resolve(`/videos/${id}/thumbnail`),
       });
     }
   },

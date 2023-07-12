@@ -1,6 +1,6 @@
 import { Communicator } from "@/endpoints/communicator";
 import { ConversionProgressResponse } from "@/endpoints/responses/conversion-progress-response";
-import { VideoList } from "@/endpoints/responses/video-list";
+import { VideoInfo } from "@/endpoints/responses/video-list";
 import { VideoMetadata } from "@/endpoints/responses/video-metadata";
 import { VideoLister } from "@/endpoints/video-lister";
 import { VideoProgressFetcher } from "@/endpoints/video-progress-fetcher";
@@ -14,8 +14,8 @@ export class VideoEndpoint implements VideoLister, VideoUploader, VideoProgressF
     this._communicator = communicator;
   }
 
-  public async listVideos(): Promise<VideoList> {
-    return await this._communicator.get<VideoList>();
+  public async listVideos(): Promise<VideoInfo[]> {
+    return await this._communicator.get<VideoInfo[]>();
   }
 
   public async uploadVideo(
