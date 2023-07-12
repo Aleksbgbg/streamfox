@@ -1,9 +1,7 @@
-<script>
-export default {
-  props: {
-    videoId: String,
-  },
-};
+<script setup lang="ts">
+defineProps<{
+  videoId: string;
+}>();
 </script>
 
 <template lang="pug">

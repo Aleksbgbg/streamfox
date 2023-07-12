@@ -1,18 +1,12 @@
-<script lang="js">
+<script setup lang="ts">
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
-import VideoPlayerComponent from "@/components/video-player.vue";
+import CVideoPlayer from "@/components/video-player.vue";
 
+const route = useRoute();
 
-export default {
-  components: {
-    "c-video-player": VideoPlayerComponent,
-  },
-  computed: {
-    videoUrl() {
-      return endpointResolver.resolve(`/videos/${this.$route.params.id}/stream`);
-    },
-  },
-};
+const videoUrl = computed(() => endpointResolver.resolve(`/videos/${route.params.id}/stream`));
 </script>
 
 <template lang="pug">

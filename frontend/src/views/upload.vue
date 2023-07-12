@@ -1,9 +1,12 @@
-<script>
+<script setup lang="ts">
+import { type Ref, computed, reactive, ref } from "vue";
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
 import { uploadProgressReporter } from "@/bootstrapper/upload-progress-reporter";
 import { videoProgressFetcher, videoUploader } from "@/bootstrapper/video-endpoint";
+import { type VideoMetadata } from "@/endpoints/responses/video-metadata";
+import { panic } from "@/utils/panic";
 
-function formatTime(totalSeconds) {
+function formatTime(totalSeconds: number): string {
   if (totalSeconds > 86400) {
     return "more than 24 hours";
   }
@@ -33,110 +36,100 @@ function formatTime(totalSeconds) {
   return string;
 }
 
-export default {
-  data() {
-    return {
-      upload: {
-        startedOnce: false,
-        started: false,
-        failed: false,
-        progressPercentage: 0,
-        dataRate: 0,
-      },
-      conversion: {
-        started: false,
-        progressPercentage: 0,
-        frameCurrent: 0,
-        framesTotal: 0,
-        timeCurrent: 0,
-        timeRemaining: 0,
-      },
-      video: {
-        isUploaded: false,
-        isDone: false,
-        id: 0,
-        thumbnailUrl: null,
-      },
-    };
-  },
-  computed: {
-    roundedDataRate() {
-      return (Math.round(this.upload.dataRate * 100) / 100).toFixed(2);
-    },
-    timeElapsed() {
-      return formatTime(this.conversion.timeCurrent);
-    },
-    timeRemaining() {
-      return formatTime(this.conversion.timeRemaining);
-    },
-  },
-  methods: {
-    fileSelected() {
-      this.upload.startedOnce = true;
-      this.upload.started = true;
+const fileInput: Ref<HTMLInputElement | null> = ref(null);
 
-      const file = this.$refs.fileInput.files[0];
-      const reader = new FileReader();
+const upload = reactive({
+  startedOnce: false,
+  started: false,
+  failed: false,
+  progressPercentage: 0,
+  dataRate: 0,
+});
+const conversion = reactive({
+  started: false,
+  progressPercentage: 0,
+  frameCurrent: 0,
+  framesTotal: 0,
+  timeCurrent: 0,
+  timeRemaining: 0,
+});
+const video = reactive({
+  isUploaded: false,
+  isDone: false,
+  id: "",
+  thumbnailUrl: "",
+});
 
-      reader.onloadend = async () => {
-        try {
-          const response = await videoUploader.uploadVideo(
-            reader.result,
-            uploadProgressReporter.createProgressReporter((progressReport) => {
-              this.upload.progressPercentage = progressReport.uploadedFraction * 100;
-              this.upload.dataRate = progressReport.dataRateBytesPerSecond / 1000000;
-            })
-          );
-          this.onSuccess(response);
-        } catch {
-          this.onFailure();
-        }
-      };
+const roundedDataRate = computed(() => (Math.round(upload.dataRate * 100) / 100).toFixed(2));
+const timeElapsed = computed(() => formatTime(conversion.timeCurrent));
+const timeRemaining = computed(() => formatTime(conversion.timeRemaining));
 
-      reader.readAsArrayBuffer(file);
-    },
-    onSuccess(response) {
-      this.upload.started = false;
-      this.video.isUploaded = true;
-      this.video.id = response.videoId;
-      this.video.thumbnailUrl = endpointResolver.resolve(`/videos/${response.videoId}/thumbnail`);
+function fileSelected() {
+  upload.startedOnce = true;
+  upload.started = true;
 
-      this.beginConversion();
-    },
-    onFailure() {
-      this.upload.started = false;
-      this.upload.failed = true;
-    },
-    beginConversion() {
-      setTimeout(this.startProgressLookupLoop.bind(this), 1000);
-    },
-    async startProgressLookupLoop() {
-      let progress;
+  const file: File = fileInput.value?.files?.[0] ?? panic("no file found");
+  const reader = new FileReader();
+  reader.onloadend = async function () {
+    try {
+      const response = await videoUploader.uploadVideo(
+        reader.result as ArrayBuffer,
+        uploadProgressReporter.createProgressReporter((progressReport) => {
+          upload.progressPercentage = progressReport.uploadedFraction * 100;
+          upload.dataRate = progressReport.dataRateBytesPerSecond / 1000000;
+        })
+      );
+      onSuccess(response);
+    } catch {
+      onFailure();
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
 
-      try {
-        progress = await videoProgressFetcher.fetchProgress(this.video.id);
-      } catch {
-        this.conversion.progressPercentage = 100;
-        this.conversion.frameCurrent = this.conversion.framesTotal;
-        this.conversion.timeRemaining = 0;
+function onSuccess(response: VideoMetadata) {
+  upload.started = false;
+  video.isUploaded = true;
+  video.id = response.videoId;
+  video.thumbnailUrl = endpointResolver.resolve(`/videos/${response.videoId}/thumbnail`);
 
-        this.video.isDone = true;
+  beginConversion();
+}
 
-        return;
-      }
+function onFailure() {
+  upload.started = false;
+  upload.failed = true;
+}
 
-      this.conversion.started = true;
+function beginConversion() {
+  setTimeout(startProgressLookupLoop, 1000);
+}
 
-      this.conversion.progressPercentage = progress.doneFraction * 100;
-      this.conversion.frameCurrent = progress.currentFrame;
-      this.conversion.framesTotal = progress.videoDuration;
-      this.conversion.timeCurrent = progress.timeElapsed;
-      this.conversion.timeRemaining = progress.timeRemaining;
+async function startProgressLookupLoop() {
+  let progress;
 
-      setTimeout(this.startProgressLookupLoop.bind(this), 1000);
-    },
-  },
-};
+  try {
+    progress = await videoProgressFetcher.fetchProgress(video.id);
+  } catch {
+    conversion.progressPercentage = 100;
+    conversion.frameCurrent = conversion.framesTotal;
+    conversion.timeRemaining = 0;
+
+    video.isDone = true;
+
+    return;
+  }
+
+  conversion.started = true;
+
+  conversion.progressPercentage = progress.doneFraction * 100;
+  conversion.frameCurrent = progress.currentFrame;
+  conversion.framesTotal = progress.videoDuration;
+  conversion.timeCurrent = progress.timeElapsed;
+  conversion.timeRemaining = progress.timeRemaining;
+
+  setTimeout(startProgressLookupLoop, 1000);
+}
 </script>
 
 <template lang="pug">

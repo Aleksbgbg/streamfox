@@ -1,38 +1,40 @@
-<script lang="js">
+<script setup lang="ts">
+import { type Ref, onMounted, ref } from "vue";
 import videojs from "video.js";
 import { volumeSettingsStore } from "@/bootstrapper/settings-store";
+import { panic } from "@/utils/panic";
 
+defineProps<{
+  videoUrl: string;
+}>();
 
-export default {
-  props: {
-    videoUrl: String,
-  },
-  mounted() {
-    const player = videojs(this.$refs.player, {
-      autoplay: true,
-      controls: true,
-      loop: true,
-      preload: "auto",
-      responsive: true,
-      fill: true,
-      controlBar: {
-        volumePanel: {
-          vertical: true,
-          inline: false,
-        },
+const playerElement: Ref<HTMLVideoElement | null> = ref(null);
+
+onMounted(() => {
+  const player = videojs(playerElement.value ?? panic("player is null"), {
+    autoplay: true,
+    controls: true,
+    loop: true,
+    preload: "auto",
+    responsive: true,
+    fill: true,
+    controlBar: {
+      volumePanel: {
+        vertical: true,
+        inline: false,
       },
-    });
+    },
+  });
 
-    player.volume(volumeSettingsStore.getVolume());
-    player.on("volumechange", function () {
-      volumeSettingsStore.setVolume(player.volume());
-    });
-  },
-};
+  player.volume(volumeSettingsStore.getVolume());
+  player.on("volumechange", function () {
+    volumeSettingsStore.setVolume(player.volume());
+  });
+});
 </script>
 
 <template lang="pug">
-video.video-js.vjs-theme-sea(ref="player")
+video.video-js.vjs-theme-sea(ref="playerElement")
   source(:src="videoUrl" type="video/mp4")
 </template>
 

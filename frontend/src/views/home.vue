@@ -1,28 +1,26 @@
-<script>
+<script setup lang="ts">
+import { onBeforeMount, reactive } from "vue";
 import { endpointResolver } from "@/bootstrapper/endpoint-resolver";
 import { videoLister } from "@/bootstrapper/video-endpoint";
-import WatchLinkComponent from "@/components/watch-link.vue";
+import CWatchLink from "@/components/watch-link.vue";
 
-export default {
-  components: {
-    "c-watch-link": WatchLinkComponent,
-  },
-  data() {
-    return {
-      videos: [],
-    };
-  },
-  async created() {
-    const videoList = await videoLister.listVideos();
+interface Video {
+  id: string;
+  thumbnail: string;
+}
 
-    for (const { id } of videoList.reverse()) {
-      this.videos.push({
-        id,
-        thumbnail: await endpointResolver.resolve(`/videos/${id}/thumbnail`),
-      });
-    }
-  },
-};
+const videos: Video[] = reactive([]);
+
+onBeforeMount(async () => {
+  const videoList = await videoLister.listVideos();
+
+  for (const { id } of videoList.reverse()) {
+    videos.push({
+      id,
+      thumbnail: endpointResolver.resolve(`/videos/${id}/thumbnail`),
+    });
+  }
+});
 </script>
 
 <template lang="pug">
