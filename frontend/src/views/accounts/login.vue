@@ -20,8 +20,8 @@ const specificErrors = reactive({
 
 function submit() {
   requestLogin(credentials)
-    .then((response) => {
-      login(response.data.token);
+    .then(async (response) => {
+      await login();
 
       router.push({ name: "home" });
     })

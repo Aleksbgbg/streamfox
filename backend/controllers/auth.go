@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func authenticate(c *gin.Context, token string) {
+	c.SetCookie("Authorization", token, 0, "", "", false, false)
+}
+
 type RegisterInput struct {
 	Username       string `json:"username"       binding:"required,min=2,max=32,printascii"`
 	EmailAddress   string `json:"emailAddress"   binding:"required,email"`
@@ -56,7 +60,8 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"token": token})
+	authenticate(c, token)
+	c.Status(http.StatusCreated)
 }
 
 type LoginInput struct {
@@ -79,5 +84,6 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	authenticate(c, token)
+	c.Status(http.StatusNoContent)
 }

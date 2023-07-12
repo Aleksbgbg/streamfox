@@ -24,8 +24,8 @@ const specificErrors = reactive({
 
 function submit() {
   register(registration)
-    .then((response) => {
-      login(response.data.token);
+    .then(async (response) => {
+      await login();
 
       router.push({ name: "home" });
     })

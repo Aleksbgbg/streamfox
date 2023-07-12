@@ -60,7 +60,8 @@ func parseToken(c *gin.Context) (*jwt.Token, error) {
 }
 
 func extractToken(c *gin.Context) string {
-	return c.Request.Header.Get("Authorization")
+	cookie, _ := c.Cookie("Authorization")
+	return cookie
 }
 
 func getApiSecret() []byte {

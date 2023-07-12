@@ -1,20 +1,18 @@
-import axios from "axios";
 import { useUserStore } from "@/store/user";
-import { localDelete, localGet, localSet } from "@/utils/local-storage";
 
-const TOKEN_KEY = "token";
-
-export function refreshLoginStatus() {
-  axios.defaults.headers.common["Authorization"] = localGet(TOKEN_KEY, "");
-  useUserStore().updateUser();
+function deleteCookie(name: string) {
+  document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 }
 
-export function login(token: string) {
-  localSet(TOKEN_KEY, token);
-  refreshLoginStatus();
+export async function refreshLoginStatus() {
+  await useUserStore().updateUser();
+}
+
+export async function login() {
+  await refreshLoginStatus();
 }
 
 export function logout() {
-  localDelete(TOKEN_KEY);
+  deleteCookie("Authorization");
   refreshLoginStatus();
 }
