@@ -1,5 +1,5 @@
-import { VideoMetadata } from "@/endpoints/responses/video-metadata";
-import { UploadedDataReport } from "@/utils/uploaded-data-report";
+import { type VideoMetadata } from "@/endpoints/responses/video-metadata";
+import { type UploadedDataReport } from "@/utils/uploaded-data-report";
 
 export interface VideoUploader {
   uploadVideo(

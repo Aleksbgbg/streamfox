@@ -1,11 +1,11 @@
 import { Communicator } from "@/endpoints/communicator";
-import { ConversionProgressResponse } from "@/endpoints/responses/conversion-progress-response";
-import { VideoInfo } from "@/endpoints/responses/video-list";
-import { VideoMetadata } from "@/endpoints/responses/video-metadata";
-import { VideoLister } from "@/endpoints/video-lister";
-import { VideoProgressFetcher } from "@/endpoints/video-progress-fetcher";
-import { VideoUploader } from "@/endpoints/video-uploader";
-import { UploadedDataReport } from "@/utils/uploaded-data-report";
+import { type ConversionProgressResponse } from "@/endpoints/responses/conversion-progress-response";
+import { type VideoInfo } from "@/endpoints/responses/video-list";
+import { type VideoMetadata } from "@/endpoints/responses/video-metadata";
+import { type VideoLister } from "@/endpoints/video-lister";
+import { type VideoProgressFetcher } from "@/endpoints/video-progress-fetcher";
+import { type VideoUploader } from "@/endpoints/video-uploader";
+import { type UploadedDataReport } from "@/utils/uploaded-data-report";
 
 export class VideoEndpoint implements VideoLister, VideoUploader, VideoProgressFetcher {
   private readonly _communicator: Communicator;

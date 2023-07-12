@@ -1,4 +1,4 @@
-import { VolumeSettingsStore } from "@/services/volume-settings-store";
+import { type VolumeSettingsStore } from "@/services/volume-settings-store";
 import { localGet, localSet } from "@/utils/local-storage";
 
 const VOLUME = "volume";

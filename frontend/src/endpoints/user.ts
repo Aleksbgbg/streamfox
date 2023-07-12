@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Optional, empty } from "@/utils/optional";
+import { type Optional, empty } from "@/utils/optional";
 
 export interface User {
   id: string;

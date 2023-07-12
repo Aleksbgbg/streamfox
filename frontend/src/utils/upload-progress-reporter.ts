@@ -1,6 +1,6 @@
-import { ElapsedTime } from "@/utils/elapsed-time";
-import { ProgressReport } from "@/utils/progress-report";
-import { UploadedDataReport } from "@/utils/uploaded-data-report";
+import { type ElapsedTime } from "@/utils/elapsed-time";
+import { type ProgressReport } from "@/utils/progress-report";
+import { type UploadedDataReport } from "@/utils/uploaded-data-report";
 
 export class UploadProgressReporter {
   private readonly _elapsedTime: ElapsedTime;

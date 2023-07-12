@@ -3,6 +3,7 @@ import { reactive } from "vue";
 import { useRouter } from "vue-router";
 import CFormInput from "@/components/forms/input.vue";
 import { register } from "@/endpoints/auth";
+import { type GenericErrors, type SpecificErrors } from "@/types/errors";
 import { login } from "@/utils/auth";
 
 const router = useRouter();
@@ -14,8 +15,8 @@ const registration = {
   repeatPassword: "",
 };
 
-const genericErrors = reactive([]);
-const specificErrors = reactive({
+const genericErrors: GenericErrors = reactive([]);
+const specificErrors: SpecificErrors = reactive({
   username: [],
   emailAddress: [],
   password: [],
