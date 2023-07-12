@@ -17,7 +17,7 @@ export default {
   },
   computed: {
     videoUrl() {
-      return endpointResolver.resolve(`/videos/${this.$route.params.id}`);
+      return endpointResolver.resolve(`/videos/${this.$route.params.id}/stream`);
     },
   },
 };
