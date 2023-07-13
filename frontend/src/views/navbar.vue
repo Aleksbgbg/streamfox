@@ -2,7 +2,7 @@
 import CUploadButton from "@/components/upload-button.vue";
 import { useUserStore } from "@/store/user";
 import { logout } from "@/utils/auth";
-import { hasValue } from "@/utils/optional";
+import { getValue, hasValue } from "@/utils/optional";
 
 const store = useUserStore();
 </script>
@@ -14,7 +14,7 @@ nav.flex.h-20.p-5
   c-upload-button.flex-grow
   .self-center.flex.items-center(v-if="hasValue(store.user)")
     i.bi-question-square
-    p.ml-2 {{ store.user.username }}
+    p.ml-2 {{ getValue(store.user).username }}
     button.rounded.hover_bg-polar-light.px-3.py-2.ml-2(@click="logout")
       span Log Out
       i.bi-box-arrow-in-right

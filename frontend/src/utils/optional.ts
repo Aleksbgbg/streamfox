@@ -1,3 +1,5 @@
+import { panic } from "@/utils/panic";
+
 export type Optional<T> = T | null;
 
 export function empty<T>(): Optional<T> {
@@ -9,5 +11,5 @@ export function hasValue<T>(opt: Optional<T>): boolean {
 }
 
 export function getValue<T>(opt: Optional<T>): T {
-  return opt as T;
+  return opt ?? panic("no value was available in optional");
 }
