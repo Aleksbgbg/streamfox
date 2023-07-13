@@ -2,6 +2,7 @@
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
 import CFormInput from "@/components/forms/input.vue";
+import CCenterMain from "@/components/layout/center-main.vue";
 import { register } from "@/endpoints/auth";
 import { type GenericErrors, type SpecificErrors } from "@/types/errors";
 import { login } from "@/utils/auth";
@@ -54,7 +55,7 @@ function submit() {
 </script>
 
 <template lang="pug">
-.flex.justify-center.text-sm
+c-center-main
   .bg-polar-darkest.border.border-frost-deep.rounded-t.overflow-hidden.m-5(class="w-2/3")
     h2.bg-polar-dark.border-b.border-frost-deep.text-center.py-2 Register
     form.flex.flex-col.items-center.my-4(@submit.prevent="submit")
