@@ -1,4 +1,12 @@
 <template lang="pug">
 router-link(:to="{ name: 'upload' }")
-  button.rounded.font-bold.border-b-4.bg-blue-500.border-blue-700.hover_bg-blue-700.hover_border-blue-900.transition.duration-500.ease-in-out.transform.hover_-translate-y-1.hover_scale-110.mx-5.py-2.px-4 Upload Video
+  button(
+    class="bg-blue-500 border-blue-700 \
+    hover:bg-blue-700 hover:border-blue-900 \
+    hover:-translate-y-1 hover:scale-110 transform-gpu \
+    font-bold \
+    rounded border-b-4 \
+    transition duration-500 ease-in-out \
+    px-4 py-2 mx-5"
+  ) Upload Video
 </template>

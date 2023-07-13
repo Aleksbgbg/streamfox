@@ -24,13 +24,16 @@ onBeforeMount(async () => {
 </script>
 
 <template lang="pug">
-div
-  div.grid.video-grid.gap-4.m-6
-    div(v-for="video of videos")
-      div.flex.flex-col.items-center
-        c-watch-link(:videoId="video.id")
-          img.max-res-225p(:src="video.thumbnail" alt="")
-        c-watch-link.text-blue-100.no-underline.hover-underline.hover-text-blue-200.text-lg(:videoId="video.id") {{ video.id }}
+.grid.video-grid.gap-4.m-6
+  div(v-for="video of videos")
+    .flex.flex-col.items-center
+      c-watch-link(:videoId="video.id")
+        img(:src="video.thumbnail" alt="").max-res-225p
+      c-watch-link(
+        class="text-blue-100 hover:text-blue-200 \
+        no-underline text-lg hover:underline"
+        :videoId="video.id"
+      ) {{ video.id }}
 </template>
 
 <style lang="stylus" scoped>
