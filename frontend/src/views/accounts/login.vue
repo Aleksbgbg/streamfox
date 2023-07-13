@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
+import CForm from "@/components/forms/form.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CCenterMain from "@/components/layout/center-main.vue";
 import { requestLogin } from "@/endpoints/auth";
@@ -52,29 +53,27 @@ function submit() {
 
 <template lang="pug">
 c-center-main
-  .bg-polar-darkest.border.border-frost-deep.rounded-t.overflow-hidden.m-5(class="w-2/3")
-    h2.bg-polar-dark.border-b.border-frost-deep.text-center.py-2 Login
-    form.flex.flex-col.items-center.my-4(@submit.prevent="submit")
-      .grid.gap-4.mb-4(class="grid-cols-[auto_1fr] w-3/4")
-        c-form-input(
-          title="Username" v-model="credentials.username"
-          :errors="specificErrors.username"
-        )
-        c-form-input(
-          type="password"
-          title="Password" v-model="credentials.password"
-          :errors="specificErrors.password"
-        )
-      .mb-5(v-if="genericErrors.length > 0")
-        p.text-aurora-red(v-for="error of genericErrors") {{ error }}
-      button(
-        class="bg-frost-blue hover:bg-frost-deep \
-        rounded \
-        transition duration-150 \
-        px-4 py-2 mb-4"
-      ) Log In
-      router-link(
-        class="text-frost-deep hover:underline"
-        :to="{ name: 'register' }"
-      ) Don't yet have an account? Register now!
+  c-form(title="Login" @submit="submit")
+    .grid.gap-4.mb-4(class="grid-cols-[auto_1fr] w-3/4")
+      c-form-input(
+        title="Username" v-model="credentials.username"
+        :errors="specificErrors.username"
+      )
+      c-form-input(
+        type="password"
+        title="Password" v-model="credentials.password"
+        :errors="specificErrors.password"
+      )
+    .mb-5(v-if="genericErrors.length > 0")
+      p.text-aurora-red(v-for="error of genericErrors") {{ error }}
+    button(
+      class="bg-frost-blue hover:bg-frost-deep \
+      rounded \
+      transition duration-150 \
+      px-4 py-2 mb-4"
+    ) Log In
+    router-link(
+      class="text-frost-deep hover:underline"
+      :to="{ name: 'register' }"
+    ) Don't yet have an account? Register now!
 </template>
