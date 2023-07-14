@@ -28,11 +28,7 @@ label.justify-self-end.mt-2(:for="label")
   span.text-aurora-red *
 .flex.flex-col
   input(
-    class="bg-polar-darkest text-white placeholder-white \
-    focus:border-aurora-green focus:outline-none \
-    leading-normal \
-    rounded border \
-    py-2 px-3"
+    class="bg-polar-darkest text-white placeholder-white focus:border-aurora-green focus:outline-none leading-normal rounded border py-2 px-3"
     :class="[errors.length === 0 ? 'border-polar-lightest' : 'border-aurora-red']"
     :id="label" :label="label" :placeholder="placeholder" :type="type"
     :value="modelValue"

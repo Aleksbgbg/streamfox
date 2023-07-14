@@ -30,8 +30,7 @@ onBeforeMount(async () => {
       c-watch-link(:videoId="video.id")
         img(:src="video.thumbnail" alt="").max-res-225p
       c-watch-link(
-        class="text-blue-100 hover:text-blue-200 \
-        no-underline text-lg hover:underline"
+        class="text-blue-100 hover:text-blue-200 no-underline text-lg hover:underline"
         :videoId="video.id"
       ) {{ video.id }}
 </template>

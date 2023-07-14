@@ -67,10 +67,7 @@ c-center-main
     .mb-5(v-if="genericErrors.length > 0")
       p.text-aurora-red(v-for="error of genericErrors") {{ error }}
     button(
-      class="bg-frost-blue hover:bg-frost-deep \
-      rounded \
-      transition duration-150 \
-      px-4 py-2 mb-4"
+      class="bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2 mb-4"
     ) Log In
     router-link(
       class="text-frost-deep hover:underline"
