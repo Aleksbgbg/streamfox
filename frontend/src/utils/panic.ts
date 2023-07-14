@@ -1,3 +1,7 @@
 export function panic(message: string): never {
-  throw new Error(message);
+  throw panicErr(message);
+}
+
+export function panicErr(message: string) {
+  return new Error(message);
 }
