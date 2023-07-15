@@ -1,7 +1,7 @@
-import * as VueRouter from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
-export const router = VueRouter.createRouter({
-  history: VueRouter.createWebHistory(),
+export const router = createRouter({
+  history: createWebHistory(),
   routes: [
     {
       path: "/",
