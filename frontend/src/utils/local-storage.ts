@@ -1,3 +1,7 @@
+export function localGetFloat(name: string, defaultValue: number): number {
+  return Number.parseFloat(localGet(name, defaultValue.toString()));
+}
+
 export function localGet(name: string, defaultValue: string): string {
   return localStorage.getItem(name) ?? defaultValue;
 }

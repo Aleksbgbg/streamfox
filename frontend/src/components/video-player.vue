@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type Ref, onMounted, ref } from "vue";
 import videojs from "video.js";
-import { volumeSettingsStore } from "@/bootstrapper/settings-store";
+import { getVolume, setVolume } from "@/settings/volume";
 import { panic } from "@/utils/panic";
 
 defineProps<{
@@ -26,9 +26,9 @@ onMounted(() => {
     },
   });
 
-  player.volume(volumeSettingsStore.getVolume());
+  player.volume(getVolume());
   player.on("volumechange", function () {
-    volumeSettingsStore.setVolume(player.volume());
+    setVolume(player.volume());
   });
 });
 </script>
