@@ -1,4 +1,5 @@
 import axios, { type AxiosResponse } from "axios";
+import { apiUrl } from "@/endpoints/url";
 
 export type Authorization = AxiosResponse<{ token: string }>;
 
@@ -10,7 +11,7 @@ export interface Registration {
 }
 
 export function register(data: Registration): Promise<Authorization> {
-  return axios.post("/api/auth/register", data);
+  return axios.post(apiUrl("/auth/register"), data);
 }
 
 export interface Credentials {
@@ -19,5 +20,5 @@ export interface Credentials {
 }
 
 export function requestLogin(data: Credentials): Promise<Authorization> {
-  return axios.post("/api/auth/login", data);
+  return axios.post(apiUrl("/auth/login"), data);
 }

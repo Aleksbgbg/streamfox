@@ -1,4 +1,5 @@
 import axios from "axios";
+import { apiUrl } from "@/endpoints/url";
 import type { Id } from "@/types/id";
 import { type Optional, empty } from "@/types/optional";
 
@@ -11,7 +12,7 @@ export interface User {
 
 export async function getUser(): Promise<Optional<User>> {
   try {
-    const response = await axios.get("/api/user");
+    const response = await axios.get(apiUrl("/user"));
     return response.data;
   } catch {
     return empty();

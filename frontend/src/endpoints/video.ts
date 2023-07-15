@@ -1,4 +1,5 @@
 import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
+import { apiUrl } from "@/endpoints/url";
 import type { User } from "@/endpoints/user";
 import type { Id } from "@/types/id";
 import { panic } from "@/utils/panic";
@@ -20,15 +21,15 @@ export interface VideoCreatedInfo {
 }
 
 export function createVideo(): Promise<AxiosResponse<VideoCreatedInfo>> {
-  return axios.post("/api/videos");
+  return axios.post(apiUrl("/videos"));
 }
 
 export function videoThumbnail(id: VideoId): string {
-  return `/api/videos/${id}/thumbnail`;
+  return apiUrl(`/videos/${id}/thumbnail`);
 }
 
 export function videoStream(id: VideoId): string {
-  return `/api/videos/${id}/stream`;
+  return apiUrl(`/videos/${id}/stream`);
 }
 
 export function uploadVideo(
@@ -37,7 +38,7 @@ export function uploadVideo(
   onReportProgress: ProgressReportFunc
 ): Promise<AxiosResponse<void>> {
   const reportProgress = createProgressReporter(onReportProgress);
-  return axios.put(`/api/videos/${id}/stream`, video, {
+  return axios.put(apiUrl(`/videos/${id}/stream`), video, {
     onUploadProgress(progressEvent: AxiosProgressEvent) {
       reportProgress({
         uploadedBytes: progressEvent.loaded,
@@ -54,7 +55,7 @@ export interface VideoUpdateInfo {
 }
 
 export function updateVideo(id: VideoId, update: VideoUpdateInfo): Promise<AxiosResponse<void>> {
-  return axios.put(`/api/videos/${id}/settings`, update);
+  return axios.put(apiUrl(`/videos/${id}/settings`), update);
 }
 
 export interface VideoInfo {
@@ -70,5 +71,5 @@ export interface VideoInfo {
 }
 
 export async function getVideos(): Promise<VideoInfo[]> {
-  return (await axios.get("/api/videos")).data;
+  return (await axios.get(apiUrl("/videos"))).data;
 }
