@@ -2,7 +2,7 @@ import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
 import type { User } from "@/endpoints/user";
 import type { Id } from "@/types/id";
 import { panic } from "@/utils/panic";
-import type { UploadedDataReport } from "@/utils/uploaded-data-report";
+import { type ProgressReportFunc, createProgressReporter } from "@/utils/upload-progress-reporter";
 
 export type VideoId = Id;
 
@@ -34,13 +34,14 @@ export function videoStream(id: VideoId): string {
 export function uploadVideo(
   id: VideoId,
   video: ArrayBuffer,
-  onUploadProgress: (uploadedDataReport: UploadedDataReport) => void
+  onReportProgress: ProgressReportFunc
 ): Promise<AxiosResponse<void>> {
+  const reportProgress = createProgressReporter(onReportProgress);
   return axios.put(`/api/videos/${id}/stream`, video, {
     onUploadProgress(progressEvent: AxiosProgressEvent) {
-      onUploadProgress({
-        loaded: progressEvent.loaded,
-        total: progressEvent.total ?? panic("total video upload bytes unavailable"),
+      reportProgress({
+        uploadedBytes: progressEvent.loaded,
+        totalBytes: progressEvent.total ?? panic("total video upload bytes unavailable"),
       });
     },
   });

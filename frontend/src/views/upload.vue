@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { type Ref, computed, reactive, ref } from "vue";
-import { uploadProgressReporter } from "@/bootstrapper/upload-progress-reporter";
 import CForm from "@/components/forms/form.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormSelect from "@/components/forms/select.vue";
@@ -69,14 +68,10 @@ async function fileSelected() {
     try {
       upload.inProgress = true;
 
-      await uploadVideo(
-        video.value.id,
-        reader.result as ArrayBuffer,
-        uploadProgressReporter.createProgressReporter((progressReport) => {
-          upload.progressPercentage = progressReport.uploadedFraction * 100;
-          upload.dataRate = progressReport.dataRateBytesPerSecond / 1000000;
-        })
-      );
+      await uploadVideo(video.value.id, reader.result as ArrayBuffer, function (progressReport) {
+        upload.progressPercentage = progressReport.uploadedFraction * 100;
+        upload.dataRate = progressReport.dataRateBytesPerSec / 1000000;
+      });
 
       upload.inProgress = false;
       upload.complete = true;

@@ -1,97 +1,96 @@
-import { ProgressReport } from "@/utils/progress-report";
-import { UploadProgressReporter } from "@/utils/upload-progress-reporter";
+import { createProgressReporter } from "@/utils/upload-progress-reporter";
 
 describe("UploadProgressReporter", () => {
   describe.each([
     [3849, 10000, 0.3849],
     [79815, 100000, 0.7982],
-  ])("given loaded data and total", (loadedBytes, totalBytes, expectedUploadedFraction) => {
-    test("calculates transaction uploadedFraction", () => {
-      const uploadProgressReporter = new UploadProgressReporter({
-        beginRecording() {},
-        reportElapsedTimeSeconds(): number {
-          return 0;
-        },
+  ])(
+    "given uploadedBytes and totalBytes",
+    (uploadedBytes, totalBytes, expectedUploadedFraction) => {
+      test("calculates uploadedFraction", () => {
+        let reportedProgress = { uploadedFraction: 0, dataRateBytesPerSec: 0 };
+        const reportProgress = createProgressReporter(
+          function (progressReport) {
+            reportedProgress = progressReport;
+          },
+          {
+            beginRecording() {},
+            elapsedTimeSecs(): number {
+              return 0;
+            },
+          }
+        );
+
+        reportProgress({ uploadedBytes, totalBytes });
+
+        expect(reportedProgress.uploadedFraction).toBeCloseTo(expectedUploadedFraction);
       });
-      let reportedProgress: ProgressReport = { uploadedFraction: 0, dataRateBytesPerSecond: 0 };
-      const reportProgress = uploadProgressReporter.createProgressReporter(
-        (progressReport: ProgressReport) => {
-          reportedProgress = progressReport;
-        }
-      );
-
-      reportProgress({ loaded: loadedBytes, total: totalBytes });
-
-      expect(reportedProgress.uploadedFraction).toBeCloseTo(expectedUploadedFraction);
-    });
-  });
+    }
+  );
 
   describe.each([
     [5, 250_000, 50_000],
     [12, 120_000, 10_000],
   ])(
     "given elapsed time and transferred data",
-    (elapsedTimeSeconds, transferredBytes, expectedDataRate) => {
-      test("calculates data rate from elapsed time", () => {
-        const uploadProgressReporter = new UploadProgressReporter({
-          beginRecording() {},
-          reportElapsedTimeSeconds(): number {
-            return elapsedTimeSeconds;
-          },
-        });
-        let reportedProgress: ProgressReport = { uploadedFraction: 0, dataRateBytesPerSecond: 0 };
-        const reportProgress = uploadProgressReporter.createProgressReporter(
-          (progressReport: ProgressReport) => {
+    (elapsedTimeSecs, transferredBytes, expectedDataRate) => {
+      test("calculates upload data rate", () => {
+        let reportedProgress = { uploadedFraction: 0, dataRateBytesPerSec: 0 };
+        const reportProgress = createProgressReporter(
+          function (progressReport) {
             reportedProgress = progressReport;
+          },
+          {
+            beginRecording() {},
+            elapsedTimeSecs(): number {
+              return elapsedTimeSecs;
+            },
           }
         );
 
-        reportProgress({ loaded: transferredBytes, total: transferredBytes + 1 });
+        reportProgress({ uploadedBytes: transferredBytes, totalBytes: transferredBytes + 1 });
 
-        expect(reportedProgress.dataRateBytesPerSecond).toBe(expectedDataRate);
+        expect(reportedProgress.dataRateBytesPerSec).toBe(expectedDataRate);
       });
     }
   );
 
   test("begins recording before reporting elapsed time", () => {
     let isRecording = false;
-    const uploadProgressReporter = new UploadProgressReporter({
+    const reportProgress = createProgressReporter(function (_) {}, {
       beginRecording() {
         isRecording = true;
       },
-      reportElapsedTimeSeconds(): number {
+      elapsedTimeSecs(): number {
         return 0;
       },
     });
-    const reportProgress = uploadProgressReporter.createProgressReporter(
-      (_progressReport: ProgressReport) => {}
-    );
 
-    reportProgress({ loaded: 0, total: 1 });
+    reportProgress({ uploadedBytes: 0, totalBytes: 1 });
 
     expect(isRecording).toBe(true);
   });
 
-  test("reports speed recorded in the last 6 seconds", () => {
+  test("accepts multiple progress reports", () => {
+    let reportedProgress = { uploadedFraction: 0, dataRateBytesPerSec: 0 };
     let elapsedTime = 0;
-    const uploadProgressReporter = new UploadProgressReporter({
-      beginRecording() {},
-      reportElapsedTimeSeconds(): number {
-        return elapsedTime;
-      },
-    });
-    let reportedProgress: ProgressReport = { uploadedFraction: 0, dataRateBytesPerSecond: 0 };
-    const reportProgress = uploadProgressReporter.createProgressReporter(
-      (progressReport: ProgressReport) => {
+    const reportProgress = createProgressReporter(
+      function (progressReport) {
         reportedProgress = progressReport;
+      },
+      {
+        beginRecording() {},
+        elapsedTimeSecs(): number {
+          return elapsedTime;
+        },
       }
     );
 
     elapsedTime = 3;
-    reportProgress({ loaded: 0, total: 300_000 });
+    reportProgress({ uploadedBytes: 0, totalBytes: 300_000 });
     elapsedTime = 6;
-    reportProgress({ loaded: 300_000, total: 300_000 });
+    reportProgress({ uploadedBytes: 300_000, totalBytes: 300_000 });
 
-    expect(reportedProgress.dataRateBytesPerSecond).toEqual(50_000);
+    expect(reportedProgress.dataRateBytesPerSec).toEqual(50_000);
   });
 });
