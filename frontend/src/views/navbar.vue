@@ -11,7 +11,8 @@ const store = useUserStore();
 nav.flex.h-20.p-5
   router-link(:to="{ name: 'home' }")
     h1.font-bold.text-2xl Streamfox
-  c-upload-button.flex-grow
+  .flex-grow
+    c-upload-button
   .self-center.flex.items-center(v-if="hasValue(store.user)")
     i.bi-question-square
     p.ml-2 {{ getValue(store.user).username }}
