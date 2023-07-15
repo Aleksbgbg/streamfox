@@ -4,7 +4,12 @@ module.exports = {
     "@/(.*)": "<rootDir>/src/$1",
   },
   transform: {
-    "^.+\\.ts$": "ts-jest",
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        tsconfig: "./jest.tsconfig.json",
+      },
+    ],
     "^.+\\.vue$": "@vue/vue3-jest",
   },
 };
