@@ -1,8 +1,10 @@
 import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
+import type { User } from "@/endpoints/user";
+import type { Id } from "@/types/id";
 import { panic } from "@/utils/panic";
 import type { UploadedDataReport } from "@/utils/uploaded-data-report";
 
-export type VideoId = string;
+export type VideoId = Id;
 
 export enum Visibility {
   Private,
@@ -23,6 +25,10 @@ export function createVideo(): Promise<AxiosResponse<VideoCreatedInfo>> {
 
 export function videoThumbnail(id: VideoId): string {
   return `/api/videos/${id}/thumbnail`;
+}
+
+export function videoStream(id: VideoId): string {
+  return `/api/videos/${id}/stream`;
 }
 
 export function uploadVideo(
@@ -48,4 +54,20 @@ export interface VideoUpdateInfo {
 
 export function updateVideo(id: VideoId, update: VideoUpdateInfo): Promise<AxiosResponse<void>> {
   return axios.put(`/api/videos/${id}/settings`, update);
+}
+
+export interface VideoInfo {
+  id: VideoId;
+  creator: User;
+  durationSecs: number;
+  name: string;
+  description: string;
+  visibility: Visibility;
+  views: number;
+  likes: number;
+  dislikes: number;
+}
+
+export async function getVideos(): Promise<VideoInfo[]> {
+  return (await axios.get("/api/videos")).data;
 }

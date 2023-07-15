@@ -193,7 +193,7 @@ func UploadVideo(c *gin.Context) {
 
 type VideoInfo struct {
 	Id           string            `json:"id"`
-	Creator      UserInfo          `json:"user"`
+	Creator      UserInfo          `json:"creator"`
 	DurationSecs int32             `json:"duration_secs"`
 	Name         string            `json:"name"`
 	Description  string            `json:"description"`

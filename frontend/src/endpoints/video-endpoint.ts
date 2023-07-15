@@ -1,7 +1,7 @@
 import { Communicator } from "@/endpoints/communicator";
 import { type ConversionProgressResponse } from "@/endpoints/responses/conversion-progress-response";
-import { type VideoInfo } from "@/endpoints/responses/video-list";
 import { type VideoMetadata } from "@/endpoints/responses/video-metadata";
+import { type VideoInfo } from "@/endpoints/video";
 import { type VideoLister } from "@/endpoints/video-lister";
 import { type VideoProgressFetcher } from "@/endpoints/video-progress-fetcher";
 import { type VideoUploader } from "@/endpoints/video-uploader";

@@ -1,4 +1,4 @@
-import { type VideoInfo } from "@/endpoints/responses/video-list";
+import { type VideoInfo } from "@/endpoints/video";
 
 export interface VideoLister {
   listVideos(): Promise<VideoInfo[]>;
