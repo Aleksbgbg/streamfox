@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import CUploadButton from "@/components/upload-button.vue";
 import { useUserStore } from "@/store/user";
+import { getValue, hasValue } from "@/types/optional";
 import { logout } from "@/utils/auth";
-import { getValue, hasValue } from "@/utils/optional";
 
 const store = useUserStore();
 </script>

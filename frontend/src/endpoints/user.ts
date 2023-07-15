@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { Id } from "@/types/id";
-import { type Optional, empty } from "@/utils/optional";
+import { type Optional, empty } from "@/types/optional";
 
 export type UserId = Id;
 
