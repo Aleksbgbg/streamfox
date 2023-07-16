@@ -17,7 +17,7 @@ func main() {
 	auth.POST("/login", controllers.Login)
 
 	api := router.Group("/api")
-	api.Use(controllers.JwtAuthMiddleware())
+	api.Use(controllers.JwtAuthMiddleware)
 
 	api.GET("/user", controllers.GetUser)
 
