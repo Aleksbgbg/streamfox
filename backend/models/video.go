@@ -49,7 +49,7 @@ type Video struct {
 func NewVideo(creatorId snowflake.ID) (*Video, error) {
 	video := Video{
 		Base: Base{
-			Id: ID_GENERATOR.Generate().Int64(),
+			Id: idgen.Generate().Int64(),
 		},
 		Metadata: Metadata{
 			Status: CREATED,
@@ -61,26 +61,26 @@ func NewVideo(creatorId snowflake.ID) (*Video, error) {
 		},
 	}
 
-	err := DATABASE.Create(&video).Error
+	err := db.Create(&video).Error
 
 	return &video, err
 }
 
 func FetchVideo(id snowflake.ID) (*Video, error) {
 	video := Video{}
-	err := DATABASE.First(&video, id.Int64()).Error
+	err := db.First(&video, id.Int64()).Error
 	return &video, err
 }
 
 func FetchVideoWithOwner(id snowflake.ID) (*Video, error) {
 	video := Video{}
-	err := DATABASE.Preload("Creator").First(&video, id.Int64()).Error
+	err := db.Preload("Creator").First(&video, id.Int64()).Error
 	return &video, err
 }
 
 func FetchAllVideos() ([]Video, error) {
 	users := make([]Video, 0)
-	err := DATABASE.Preload("Creator").
+	err := db.Preload("Creator").
 		Find(&users, &Video{Metadata: Metadata{Status: COMPLETE}, Settings: Settings{Visibility: PUBLIC}}).
 		Error
 	return users, err
@@ -95,5 +95,5 @@ func (video *Video) IsCreator(userId snowflake.ID) bool {
 }
 
 func (video *Video) Save() error {
-	return DATABASE.Save(video).Error
+	return db.Save(video).Error
 }

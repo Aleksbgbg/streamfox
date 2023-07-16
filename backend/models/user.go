@@ -15,7 +15,7 @@ func VerifyPassword(password, hashedPassword string) error {
 func ValidateCredentials(username, password string) (string, error) {
 	user := User{}
 
-	err := DATABASE.Model(User{}).Where(&User{Username: username}).Take(&user).Error
+	err := db.Model(User{}).Where(&User{Username: username}).Take(&user).Error
 
 	if err != nil {
 		return "", err
@@ -38,13 +38,13 @@ func ValidateCredentials(username, password string) (string, error) {
 
 func FetchUser(id snowflake.ID) (User, error) {
 	user := User{}
-	err := DATABASE.Model(User{}).Where(&User{Base: Base{Id: id.Int64()}}).Take(&user).Error
+	err := db.Model(User{}).Where(&User{Base: Base{Id: id.Int64()}}).Take(&user).Error
 	return user, err
 }
 
 func UsernameExists(username string) bool {
 	var exists bool
-	DATABASE.Model(User{}).
+	db.Model(User{}).
 		Select("count(*) > 0").
 		Where(&User{Username: username}).
 		Find(&exists)
@@ -53,7 +53,7 @@ func UsernameExists(username string) bool {
 
 func EmailExists(email string) bool {
 	var exists bool
-	DATABASE.Model(User{}).
+	db.Model(User{}).
 		Select("count(*) > 0").
 		Where(&User{EmailAddress: email}).
 		Find(&exists)
@@ -72,8 +72,8 @@ func (user *User) IdSnowflake() snowflake.ID {
 }
 
 func (user *User) Save() (*User, error) {
-	user.Id = ID_GENERATOR.Generate().Int64()
-	err := DATABASE.Create(&user).Error
+	user.Id = idgen.Generate().Int64()
+	err := db.Create(&user).Error
 	return user, err
 }
 

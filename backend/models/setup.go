@@ -11,8 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
-var DATABASE *gorm.DB
-var ID_GENERATOR *snowflake.Node
+var db *gorm.DB
+var idgen *snowflake.Node
 
 func Setup() {
 	err := godotenv.Load(".env")
@@ -21,7 +21,7 @@ func Setup() {
 		log.Fatal("Error loading .env file.")
 	}
 
-	DATABASE, err = gorm.Open(
+	db, err = gorm.Open(
 		postgres.Open(fmt.Sprintf(
 			"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/London",
 			utils.GetEnvVar(utils.DB_HOST),
@@ -37,10 +37,10 @@ func Setup() {
 		log.Fatal("Could not connect to database:", err)
 	}
 
-	DATABASE.AutoMigrate(&User{})
-	DATABASE.AutoMigrate(&Video{})
+	db.AutoMigrate(&User{})
+	db.AutoMigrate(&Video{})
 
-	ID_GENERATOR, err = snowflake.NewNode(1)
+	idgen, err = snowflake.NewNode(1)
 
 	if err != nil {
 		log.Fatal("Could not setup snowflake:", err)
