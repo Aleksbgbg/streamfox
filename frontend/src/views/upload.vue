@@ -152,7 +152,7 @@ c-center-main
             :errors="specificErrors.name"
           )
           c-form-select(
-            title="Visibility" v-model="video.visibility"
+            title="Visibility" v-model.number="video.visibility"
             :errors="specificErrors.visibility"
           )
             option(:value="Visibility.Public") Public
