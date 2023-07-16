@@ -23,11 +23,14 @@ func main() {
 
 	api.POST("/videos", controllers.CreateVideo)
 	api.GET("/videos", controllers.GetVideos)
-	api.GET("/videos/:id/info", controllers.GetVideoInfo)
-	api.GET("/videos/:id/thumbnail", controllers.GetVideoThumbnail)
-	api.GET("/videos/:id/stream", controllers.GetVideoStream)
-	api.PUT("/videos/:id/settings", controllers.UpdateVideo)
-	api.PUT("/videos/:id/stream", controllers.UploadVideo)
+
+	specificVideo := api.Group("/videos/:id")
+	specificVideo.Use(controllers.ExtractVideoMiddleware)
+	specificVideo.GET("/info", controllers.GetVideoInfo)
+	specificVideo.GET("/thumbnail", controllers.GetVideoThumbnail)
+	specificVideo.GET("/stream", controllers.GetVideoStream)
+	specificVideo.PUT("/settings", controllers.UpdateVideo)
+	specificVideo.PUT("/stream", controllers.UploadVideo)
 
 	router.Run(":5000")
 }

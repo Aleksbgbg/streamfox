@@ -43,6 +43,30 @@ func CreateVideo(c *gin.Context) {
 	})
 }
 
+const VIDEO_PARAM_KEY = "video"
+
+func ExtractVideoMiddleware(c *gin.Context) {
+	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_INVALID)
+		c.Abort()
+	}
+
+	video, err := models.FetchVideo(videoId)
+
+	if err != nil {
+		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
+		c.Abort()
+	}
+
+	c.Set(VIDEO_PARAM_KEY, video)
+}
+
+func getVideoParam(c *gin.Context) *models.Video {
+	return c.MustGet(VIDEO_PARAM_KEY).(*models.Video)
+}
+
 type VideoUpdateInfo struct {
 	Name        string             `json:"name"        binding:"required,min=2,max=256"`
 	Description *string            `json:"description" binding:"required"`
@@ -57,26 +81,14 @@ func UpdateVideo(c *gin.Context) {
 		return
 	}
 
-	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_INVALID)
-		return
-	}
-
-	video, err := models.FetchVideo(videoId)
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
-		return
-	}
-
 	userId, err := utils.ExtractUserId(c)
 
 	if err != nil {
 		errorPredefined(c, USER_FETCH_FAILED)
 		return
 	}
+
+	video := getVideoParam(c)
 
 	if !video.IsCreator(userId) {
 		errorPredefined(c, VIDEO_NOT_OWNED)
@@ -97,26 +109,14 @@ func UpdateVideo(c *gin.Context) {
 }
 
 func UploadVideo(c *gin.Context) {
-	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_INVALID)
-		return
-	}
-
-	video, err := models.FetchVideo(videoId)
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
-		return
-	}
-
 	userId, err := utils.ExtractUserId(c)
 
 	if err != nil {
 		errorPredefined(c, USER_FETCH_FAILED)
 		return
 	}
+
+	video := getVideoParam(c)
 
 	if !video.IsCreator(userId) {
 		errorPredefined(c, VIDEO_NOT_OWNED)
@@ -137,7 +137,7 @@ func UploadVideo(c *gin.Context) {
 
 	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 
-	videoDir := fmt.Sprintf("%s/videos/%s", dataRoot, videoId.Base58())
+	videoDir := fmt.Sprintf("%s/videos/%s", dataRoot, video.IdSnowflake().Base58())
 	err = os.MkdirAll(videoDir, os.ModePerm)
 
 	if err != nil {
@@ -145,7 +145,7 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58())
+	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, video.IdSnowflake().Base58())
 	file, err := os.Create(filepath)
 	if err != nil {
 		errorPredefined(c, DATA_CREATION_FAILED)
@@ -234,19 +234,7 @@ func GetVideos(c *gin.Context) {
 }
 
 func GetVideoInfo(c *gin.Context) {
-	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_INVALID)
-		return
-	}
-
-	video, err := models.FetchVideoWithOwner(videoId)
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
-		return
-	}
+	video := getVideoParam(c)
 
 	if video.Status < models.COMPLETE {
 		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
@@ -271,19 +259,7 @@ func GetVideoInfo(c *gin.Context) {
 }
 
 func GetVideoThumbnail(c *gin.Context) {
-	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_INVALID)
-		return
-	}
-
-	video, err := models.FetchVideo(videoId)
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
-		return
-	}
+	video := getVideoParam(c)
 
 	if video.Status < models.COMPLETE {
 		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
@@ -305,25 +281,13 @@ func GetVideoThumbnail(c *gin.Context) {
 	}
 
 	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
-	filepath := fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, videoId.Base58())
+	filepath := fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, video.IdSnowflake().Base58())
 
 	c.File(filepath)
 }
 
 func GetVideoStream(c *gin.Context) {
-	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_INVALID)
-		return
-	}
-
-	video, err := models.FetchVideo(videoId)
-
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
-		return
-	}
+	video := getVideoParam(c)
 
 	if video.Status < models.COMPLETE {
 		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
@@ -345,7 +309,7 @@ func GetVideoStream(c *gin.Context) {
 	}
 
 	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
-	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, videoId.Base58())
+	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, video.IdSnowflake().Base58())
 
 	c.File(filepath)
 	c.Header("Content-Type", video.MimeType)

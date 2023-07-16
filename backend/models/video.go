@@ -68,12 +68,6 @@ func NewVideo(creatorId snowflake.ID) (*Video, error) {
 
 func FetchVideo(id snowflake.ID) (*Video, error) {
 	video := Video{}
-	err := db.First(&video, id.Int64()).Error
-	return &video, err
-}
-
-func FetchVideoWithOwner(id snowflake.ID) (*Video, error) {
-	video := Video{}
 	err := db.Preload("Creator").First(&video, id.Int64()).Error
 	return &video, err
 }
