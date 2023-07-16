@@ -13,9 +13,16 @@ type UserInfo struct {
 }
 
 func getUserInfo(user *models.User) UserInfo {
+	if user.IsAnonymous() {
+		return UserInfo{
+			Id:       user.IdSnowflake().Base58(),
+			Username: "Anonymous",
+		}
+	}
+
 	return UserInfo{
 		Id:       user.IdSnowflake().Base58(),
-		Username: user.Username,
+		Username: *user.Username,
 	}
 }
 

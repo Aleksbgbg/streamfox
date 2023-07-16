@@ -10,8 +10,19 @@ import (
 
 const AUTHORIZATION_COOKIE = "Authorization"
 
-func authenticate(c *gin.Context, token string) {
+func setAuthCookie(c *gin.Context, token string) {
 	c.SetCookie(AUTHORIZATION_COOKIE, token, 0, "", "", false, false)
+}
+
+func authenticate(c *gin.Context, user *models.User) error {
+	token, err := utils.GenerateToken(user.IdSnowflake())
+
+	if err != nil {
+		return err
+	}
+
+	setAuthCookie(c, token)
+	return nil
 }
 
 const USER_PARAM_KEY = "user"
@@ -38,8 +49,43 @@ func ExtractUserMiddleware(c *gin.Context) {
 	c.Set(USER_PARAM_KEY, user)
 }
 
+func GenerateAnonymousUserMiddleware(c *gin.Context) {
+	if hasUserParam(c) {
+		return
+	}
+
+	user, err := models.GenerateAnonymousUser()
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, "Error in generating user.")
+		c.Abort()
+		return
+	}
+
+	err = authenticate(c, user)
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, "Error in generating token.")
+		c.Abort()
+		return
+	}
+
+	c.Set(USER_PARAM_KEY, user)
+}
+
 func RequireUserMiddleware(c *gin.Context) {
-	if !hasUserParam(c) {
+	if hasUserParam(c) {
+		return
+	}
+
+	errorPredefined(c, USER_REQUIRED)
+	c.Abort()
+}
+
+func EnsureNotAnonymousMiddleware(c *gin.Context) {
+	user := getUserParam(c)
+
+	if user.IsAnonymous() {
 		errorPredefined(c, USER_REQUIRED)
 		c.Abort()
 	}
@@ -52,6 +98,20 @@ func hasUserParam(c *gin.Context) bool {
 
 func getUserParam(c *gin.Context) *models.User {
 	return c.MustGet(USER_PARAM_KEY).(*models.User)
+}
+
+func absorbAnonymousUser(c *gin.Context, user *models.User) error {
+	if !hasUserParam(c) {
+		return nil
+	}
+
+	existingUser := getUserParam(c)
+
+	if !existingUser.IsAnonymous() {
+		return nil
+	}
+
+	return user.Absorb(existingUser)
 }
 
 type RegisterInput struct {
@@ -83,26 +143,33 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user := models.User{
-		Username:     input.Username,
-		EmailAddress: input.EmailAddress,
-		Password:     input.Password,
+	user := &models.User{
+		Username:     &input.Username,
+		EmailAddress: &input.EmailAddress,
+		Password:     &input.Password,
 	}
-	_, err := user.Save()
+	err := user.Save()
 
 	if err != nil {
 		errorPredefined(c, DATABASE_WRITE_FAILED)
 		return
 	}
 
-	token, err := utils.GenerateToken(user.IdSnowflake())
+	err = absorbAnonymousUser(c, user)
 
 	if err != nil {
-		errorMessage(c, SERVER_ERROR, "Error in generating token.")
+		errorPredefined(c, USER_MERGE_FAILED)
 		return
 	}
 
-	authenticate(c, token)
+	err = authenticate(c, user)
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, "Error in generating token.")
+		c.Abort()
+		return
+	}
+
 	c.Status(http.StatusCreated)
 }
 
@@ -119,13 +186,27 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := models.ValidateCredentials(input.Username, input.Password)
+	user, err := models.ValidateCredentials(input.Username, input.Password)
 
 	if err != nil {
 		errorMessage(c, VALIDATION_ERROR, "Invalid credentials.")
 		return
 	}
 
-	authenticate(c, token)
+	err = absorbAnonymousUser(c, user)
+
+	if err != nil {
+		errorPredefined(c, USER_MERGE_FAILED)
+		return
+	}
+
+	err = authenticate(c, user)
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, "Error in generating token.")
+		c.Abort()
+		return
+	}
+
 	c.Status(http.StatusNoContent)
 }

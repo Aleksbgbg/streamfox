@@ -55,6 +55,7 @@ const (
 	VIDEO_NOT_OWNED
 	VIDEO_UPLOAD_INCOMPLETE
 	ACCESS_FORBIDDEN
+	USER_MERGE_FAILED
 )
 
 func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string) {
@@ -79,6 +80,8 @@ func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string)
 		return FORBIDDEN_ERROR, "Video upload has not yet completed."
 	case ACCESS_FORBIDDEN:
 		return FORBIDDEN_ERROR, "You are not allowed access to this resource."
+	case USER_MERGE_FAILED:
+		return SERVER_ERROR, "Could not update authenticated user with anonymous statistics."
 	}
 
 	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefinedError)

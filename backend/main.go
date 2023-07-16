@@ -12,19 +12,24 @@ func main() {
 
 	router := gin.Default()
 
-	auth := router.Group("/api/auth")
-	auth.POST("/register", controllers.Register)
-	auth.POST("/login", controllers.Login)
-
 	api := router.Group("/api")
 	api.Use(controllers.ExtractUserMiddleware)
 
-	api.GET("/user", controllers.RequireUserMiddleware, controllers.GetUser)
+	auth := api.Group("/auth")
+	auth.POST("/register", controllers.Register)
+	auth.POST("/login", controllers.Login)
 
-	api.POST("/videos", controllers.RequireUserMiddleware, controllers.CreateVideo)
-	api.GET("/videos", controllers.GetVideos)
+	api.GET(
+		"/user",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureNotAnonymousMiddleware,
+		controllers.GetUser,
+	)
 
-	specificVideo := api.Group("/videos/:id")
+	videos := api.Group("/videos")
+	videos.POST("", controllers.GenerateAnonymousUserMiddleware, controllers.CreateVideo)
+	videos.GET("", controllers.GetVideos)
+	specificVideo := videos.Group("/:id")
 	specificVideo.Use(controllers.ExtractVideoMiddleware)
 	specificVideo.GET(
 		"/info",
