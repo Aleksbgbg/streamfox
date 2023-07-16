@@ -38,7 +38,7 @@ func ValidateCredentials(username, password string) (string, error) {
 
 func FetchUser(id snowflake.ID) (User, error) {
 	user := User{}
-	err := db.Model(User{}).Where(&User{Base: Base{Id: id.Int64()}}).Take(&user).Error
+	err := db.First(&user, id.Int64()).Error
 	return user, err
 }
 
