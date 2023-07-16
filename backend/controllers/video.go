@@ -62,6 +62,15 @@ func getVideoParam(c *gin.Context) *models.Video {
 	return c.MustGet(VIDEO_PARAM_KEY).(*models.Video)
 }
 
+func EnsureCompleteVideoMiddleware(c *gin.Context) {
+	video := getVideoParam(c)
+
+	if video.Status < models.COMPLETE {
+		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
+		c.Abort()
+	}
+}
+
 type VideoUpdateInfo struct {
 	Name        string             `json:"name"        binding:"required,min=2,max=256"`
 	Description *string            `json:"description" binding:"required"`
@@ -219,11 +228,6 @@ func GetVideos(c *gin.Context) {
 func GetVideoInfo(c *gin.Context) {
 	video := getVideoParam(c)
 
-	if video.Status < models.COMPLETE {
-		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
-		return
-	}
-
 	if video.Visibility == models.PRIVATE {
 		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
 			c.Status(http.StatusForbidden)
@@ -236,11 +240,6 @@ func GetVideoInfo(c *gin.Context) {
 
 func GetVideoThumbnail(c *gin.Context) {
 	video := getVideoParam(c)
-
-	if video.Status < models.COMPLETE {
-		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
-		return
-	}
 
 	if video.Visibility == models.PRIVATE {
 		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
@@ -257,11 +256,6 @@ func GetVideoThumbnail(c *gin.Context) {
 
 func GetVideoStream(c *gin.Context) {
 	video := getVideoParam(c)
-
-	if video.Status < models.COMPLETE {
-		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
-		return
-	}
 
 	if video.Visibility == models.PRIVATE {
 		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
