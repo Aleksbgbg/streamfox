@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"streamfox-backend/codec"
 	"streamfox-backend/models"
 	"streamfox-backend/utils"
-	"streamfox-backend/utils/ffmpeg"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
@@ -162,12 +162,12 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	probe, err := ffmpeg.Probe(filepath)
+	probe, err := codec.Probe(filepath)
 
 	if err != nil {
 		os.Remove(filepath)
 
-		if _, ok := err.(*ffmpeg.InvalidVideoTypeError); ok {
+		if _, ok := err.(*codec.InvalidVideoTypeError); ok {
 			errorMessage(c, VALIDATION_ERROR, "Invalid video format.")
 		} else {
 			errorMessage(c, SERVER_ERROR, "Unable to probe video.")
@@ -179,7 +179,7 @@ func UploadVideo(c *gin.Context) {
 	video.DurationSecs = probe.DurationSecs
 	video.Status = models.PROCESSING
 
-	err = ffmpeg.GenerateThumbnail(videoDir)
+	err = codec.GenerateThumbnail(videoDir)
 
 	if err != nil {
 		errorMessage(c, SERVER_ERROR, fmt.Sprintf("Error in generating thumbnail: %s.", err.Error()))
