@@ -71,6 +71,15 @@ func EnsureCompleteVideoMiddleware(c *gin.Context) {
 	}
 }
 
+func EnsureVisibleVideoMiddleware(c *gin.Context) {
+	video := getVideoParam(c)
+
+	if video.Visibility == models.PRIVATE && (!hasUserParam(c) || !video.IsCreator(getUserParam(c))) {
+		c.Status(http.StatusForbidden)
+		c.Abort()
+	}
+}
+
 type VideoUpdateInfo struct {
 	Name        string             `json:"name"        binding:"required,min=2,max=256"`
 	Description *string            `json:"description" binding:"required"`
@@ -227,27 +236,11 @@ func GetVideos(c *gin.Context) {
 
 func GetVideoInfo(c *gin.Context) {
 	video := getVideoParam(c)
-
-	if video.Visibility == models.PRIVATE {
-		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
-			c.Status(http.StatusForbidden)
-			return
-		}
-	}
-
 	c.JSON(http.StatusOK, getVideoInfo(video))
 }
 
 func GetVideoThumbnail(c *gin.Context) {
 	video := getVideoParam(c)
-
-	if video.Visibility == models.PRIVATE {
-		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
-			c.Status(http.StatusForbidden)
-			return
-		}
-	}
-
 	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 	filepath := fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, video.IdSnowflake().Base58())
 
@@ -256,14 +249,6 @@ func GetVideoThumbnail(c *gin.Context) {
 
 func GetVideoStream(c *gin.Context) {
 	video := getVideoParam(c)
-
-	if video.Visibility == models.PRIVATE {
-		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
-			c.Status(http.StatusForbidden)
-			return
-		}
-	}
-
 	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, video.IdSnowflake().Base58())
 

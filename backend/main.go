@@ -26,15 +26,22 @@ func main() {
 
 	specificVideo := api.Group("/videos/:id")
 	specificVideo.Use(controllers.ExtractVideoMiddleware)
-	specificVideo.GET("/info", controllers.EnsureCompleteVideoMiddleware, controllers.GetVideoInfo)
+	specificVideo.GET(
+		"/info",
+		controllers.EnsureCompleteVideoMiddleware,
+		controllers.EnsureVisibleVideoMiddleware,
+		controllers.GetVideoInfo,
+	)
 	specificVideo.GET(
 		"/thumbnail",
 		controllers.EnsureCompleteVideoMiddleware,
+		controllers.EnsureVisibleVideoMiddleware,
 		controllers.GetVideoThumbnail,
 	)
 	specificVideo.GET(
 		"/stream",
 		controllers.EnsureCompleteVideoMiddleware,
+		controllers.EnsureVisibleVideoMiddleware,
 		controllers.GetVideoStream,
 	)
 	specificVideo.PUT("/settings", controllers.RequireUserMiddleware, controllers.UpdateVideo)
