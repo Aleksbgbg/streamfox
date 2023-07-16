@@ -44,8 +44,18 @@ func main() {
 		controllers.EnsureVisibleVideoMiddleware,
 		controllers.GetVideoStream,
 	)
-	specificVideo.PUT("/settings", controllers.RequireUserMiddleware, controllers.UpdateVideo)
-	specificVideo.PUT("/stream", controllers.RequireUserMiddleware, controllers.UploadVideo)
+	specificVideo.PUT(
+		"/settings",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureIsOwnerMiddleware,
+		controllers.UpdateVideo,
+	)
+	specificVideo.PUT(
+		"/stream",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureIsOwnerMiddleware,
+		controllers.UploadVideo,
+	)
 
 	router.Run(":5000")
 }

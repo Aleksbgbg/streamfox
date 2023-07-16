@@ -80,6 +80,16 @@ func EnsureVisibleVideoMiddleware(c *gin.Context) {
 	}
 }
 
+func EnsureIsOwnerMiddleware(c *gin.Context) {
+	user := getUserParam(c)
+	video := getVideoParam(c)
+
+	if !video.IsCreator(user) {
+		errorPredefined(c, VIDEO_NOT_OWNED)
+		c.Abort()
+	}
+}
+
 type VideoUpdateInfo struct {
 	Name        string             `json:"name"        binding:"required,min=2,max=256"`
 	Description *string            `json:"description" binding:"required"`
@@ -94,14 +104,7 @@ func UpdateVideo(c *gin.Context) {
 		return
 	}
 
-	user := getUserParam(c)
 	video := getVideoParam(c)
-
-	if !video.IsCreator(user) {
-		errorPredefined(c, VIDEO_NOT_OWNED)
-		return
-	}
-
 	video.Name = update.Name
 	video.Description = *update.Description
 	video.Visibility = *update.Visibility
@@ -116,13 +119,7 @@ func UpdateVideo(c *gin.Context) {
 }
 
 func UploadVideo(c *gin.Context) {
-	user := getUserParam(c)
 	video := getVideoParam(c)
-
-	if !video.IsCreator(user) {
-		errorPredefined(c, VIDEO_NOT_OWNED)
-		return
-	}
 
 	if video.Status > models.UPLOADING {
 		errorMessage(
