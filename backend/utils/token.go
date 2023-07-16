@@ -6,7 +6,6 @@ import (
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 )
 
 func GenerateToken(userId snowflake.ID) (string, error) {
@@ -22,8 +21,8 @@ func GenerateToken(userId snowflake.ID) (string, error) {
 	return token.SignedString(getApiSecret())
 }
 
-func ExtractUserId(c *gin.Context) (snowflake.ID, error) {
-	token, err := parseToken(c)
+func GetUserId(tokenStr string) (snowflake.ID, error) {
+	token, err := parseToken(tokenStr)
 
 	if err != nil {
 		return 0, err
@@ -44,24 +43,14 @@ func ExtractUserId(c *gin.Context) (snowflake.ID, error) {
 	return userId, nil
 }
 
-func IsValidToken(c *gin.Context) error {
-	_, err := parseToken(c)
-	return err
-}
-
-func parseToken(c *gin.Context) (*jwt.Token, error) {
-	return jwt.Parse(extractToken(c), func(token *jwt.Token) (interface{}, error) {
+func parseToken(tokenStr string) (*jwt.Token, error) {
+	return jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
 		return getApiSecret(), nil
 	})
-}
-
-func extractToken(c *gin.Context) string {
-	cookie, _ := c.Cookie("Authorization")
-	return cookie
 }
 
 func getApiSecret() []byte {

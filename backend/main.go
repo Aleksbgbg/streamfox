@@ -17,11 +17,11 @@ func main() {
 	auth.POST("/login", controllers.Login)
 
 	api := router.Group("/api")
-	api.Use(controllers.JwtAuthMiddleware)
+	api.Use(controllers.ExtractUserMiddleware)
 
-	api.GET("/user", controllers.GetUser)
+	api.GET("/user", controllers.RequireUserMiddleware, controllers.GetUser)
 
-	api.POST("/videos", controllers.CreateVideo)
+	api.POST("/videos", controllers.RequireUserMiddleware, controllers.CreateVideo)
 	api.GET("/videos", controllers.GetVideos)
 
 	specificVideo := api.Group("/videos/:id")
@@ -29,8 +29,8 @@ func main() {
 	specificVideo.GET("/info", controllers.GetVideoInfo)
 	specificVideo.GET("/thumbnail", controllers.GetVideoThumbnail)
 	specificVideo.GET("/stream", controllers.GetVideoStream)
-	specificVideo.PUT("/settings", controllers.UpdateVideo)
-	specificVideo.PUT("/stream", controllers.UploadVideo)
+	specificVideo.PUT("/settings", controllers.RequireUserMiddleware, controllers.UpdateVideo)
+	specificVideo.PUT("/stream", controllers.RequireUserMiddleware, controllers.UploadVideo)
 
 	router.Run(":5000")
 }

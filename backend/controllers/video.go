@@ -21,14 +21,9 @@ type VideoCreatedInfo struct {
 }
 
 func CreateVideo(c *gin.Context) {
-	userId, err := utils.ExtractUserId(c)
+	user := getUserParam(c)
 
-	if err != nil {
-		errorPredefined(c, USER_FETCH_FAILED)
-		return
-	}
-
-	video, err := models.NewVideo(userId)
+	video, err := models.NewVideo(user)
 
 	if err != nil {
 		errorPredefined(c, DATABASE_WRITE_FAILED)
@@ -81,16 +76,10 @@ func UpdateVideo(c *gin.Context) {
 		return
 	}
 
-	userId, err := utils.ExtractUserId(c)
-
-	if err != nil {
-		errorPredefined(c, USER_FETCH_FAILED)
-		return
-	}
-
+	user := getUserParam(c)
 	video := getVideoParam(c)
 
-	if !video.IsCreator(userId) {
+	if !video.IsCreator(user) {
 		errorPredefined(c, VIDEO_NOT_OWNED)
 		return
 	}
@@ -98,7 +87,7 @@ func UpdateVideo(c *gin.Context) {
 	video.Name = update.Name
 	video.Description = *update.Description
 	video.Visibility = *update.Visibility
-	err = video.Save()
+	err := video.Save()
 
 	if err != nil {
 		errorPredefined(c, DATABASE_WRITE_FAILED)
@@ -109,16 +98,10 @@ func UpdateVideo(c *gin.Context) {
 }
 
 func UploadVideo(c *gin.Context) {
-	userId, err := utils.ExtractUserId(c)
-
-	if err != nil {
-		errorPredefined(c, USER_FETCH_FAILED)
-		return
-	}
-
+	user := getUserParam(c)
 	video := getVideoParam(c)
 
-	if !video.IsCreator(userId) {
+	if !video.IsCreator(user) {
 		errorPredefined(c, VIDEO_NOT_OWNED)
 		return
 	}
@@ -138,7 +121,7 @@ func UploadVideo(c *gin.Context) {
 	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 
 	videoDir := fmt.Sprintf("%s/videos/%s", dataRoot, video.IdSnowflake().Base58())
-	err = os.MkdirAll(videoDir, os.ModePerm)
+	err := os.MkdirAll(videoDir, os.ModePerm)
 
 	if err != nil {
 		errorPredefined(c, DATA_CREATION_FAILED)
@@ -242,15 +225,8 @@ func GetVideoInfo(c *gin.Context) {
 	}
 
 	if video.Visibility == models.PRIVATE {
-		userId, err := utils.ExtractUserId(c)
-
-		if err != nil {
-			errorPredefined(c, USER_FETCH_FAILED)
-			return
-		}
-
-		if !video.IsCreator(userId) {
-			errorPredefined(c, VIDEO_NOT_OWNED)
+		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
+			c.Status(http.StatusForbidden)
 			return
 		}
 	}
@@ -267,15 +243,8 @@ func GetVideoThumbnail(c *gin.Context) {
 	}
 
 	if video.Visibility == models.PRIVATE {
-		userId, err := utils.ExtractUserId(c)
-
-		if err != nil {
-			errorPredefined(c, USER_FETCH_FAILED)
-			return
-		}
-
-		if !video.IsCreator(userId) {
-			errorPredefined(c, VIDEO_NOT_OWNED)
+		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
+			c.Status(http.StatusForbidden)
 			return
 		}
 	}
@@ -295,15 +264,8 @@ func GetVideoStream(c *gin.Context) {
 	}
 
 	if video.Visibility == models.PRIVATE {
-		userId, err := utils.ExtractUserId(c)
-
-		if err != nil {
-			errorPredefined(c, USER_FETCH_FAILED)
-			return
-		}
-
-		if !video.IsCreator(userId) {
-			errorPredefined(c, VIDEO_NOT_OWNED)
+		if !hasUserParam(c) || !video.IsCreator(getUserParam(c)) {
+			c.Status(http.StatusForbidden)
 			return
 		}
 	}

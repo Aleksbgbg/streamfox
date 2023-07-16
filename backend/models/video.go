@@ -1,6 +1,8 @@
 package models
 
-import "github.com/bwmarrin/snowflake"
+import (
+	"github.com/bwmarrin/snowflake"
+)
 
 type VideoStatus int8
 
@@ -46,7 +48,7 @@ type Video struct {
 	Statistics
 }
 
-func NewVideo(creatorId snowflake.ID) (*Video, error) {
+func NewVideo(creator *User) (*Video, error) {
 	video := Video{
 		Base: Base{
 			Id: idgen.Generate().Int64(),
@@ -55,7 +57,7 @@ func NewVideo(creatorId snowflake.ID) (*Video, error) {
 			Status: CREATED,
 		},
 		Settings: Settings{
-			CreatorId:  creatorId.Int64(),
+			CreatorId:  creator.Id,
 			Name:       "Untitled Video",
 			Visibility: PUBLIC,
 		},
@@ -85,8 +87,8 @@ func (video *Video) IdSnowflake() snowflake.ID {
 	return snowflake.ParseInt64(video.Id)
 }
 
-func (video *Video) IsCreator(userId snowflake.ID) bool {
-	return video.CreatorId == userId.Int64()
+func (video *Video) IsCreator(user *User) bool {
+	return video.CreatorId == user.Id
 }
 
 func (video *Video) Save() error {

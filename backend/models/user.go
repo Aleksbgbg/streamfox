@@ -36,10 +36,10 @@ func ValidateCredentials(username, password string) (string, error) {
 	return token, nil
 }
 
-func FetchUser(id snowflake.ID) (User, error) {
+func FetchUser(id snowflake.ID) (*User, error) {
 	user := User{}
 	err := db.First(&user, id.Int64()).Error
-	return user, err
+	return &user, err
 }
 
 func UsernameExists(username string) bool {

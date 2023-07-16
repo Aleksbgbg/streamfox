@@ -16,6 +16,7 @@ const (
 	SERVER_ERROR ErrorType = iota
 	VALIDATION_ERROR
 	AUTHORIZATION_ERROR
+	FORBIDDEN_ERROR
 )
 
 func toHttpError(errorType ErrorType) (e int) {
@@ -26,6 +27,8 @@ func toHttpError(errorType ErrorType) (e int) {
 		return http.StatusBadRequest
 	case AUTHORIZATION_ERROR:
 		return http.StatusUnauthorized
+	case FORBIDDEN_ERROR:
+		return http.StatusForbidden
 	}
 
 	log.Panicf("toHttpError failed because errorType %d is not handled", errorType)
@@ -39,7 +42,7 @@ func errorMessage(c *gin.Context, errorType ErrorType, message any) {
 type PredefinedError int
 
 const (
-	USER_FETCH_FAILED PredefinedError = iota
+	USER_REQUIRED PredefinedError = iota
 	DATABASE_READ_FAILED
 	DATABASE_WRITE_FAILED
 	DATA_CREATION_FAILED
@@ -52,8 +55,8 @@ const (
 
 func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string) {
 	switch predefinedError {
-	case USER_FETCH_FAILED:
-		return SERVER_ERROR, "Could not fetch current user."
+	case USER_REQUIRED:
+		return FORBIDDEN_ERROR, "No user was logged in but a user is required."
 	case DATABASE_READ_FAILED:
 		return SERVER_ERROR, "Could not read from database."
 	case DATABASE_WRITE_FAILED:

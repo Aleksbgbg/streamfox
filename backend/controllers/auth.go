@@ -8,8 +8,50 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const AUTHORIZATION_COOKIE = "Authorization"
+
 func authenticate(c *gin.Context, token string) {
-	c.SetCookie("Authorization", token, 0, "", "", false, false)
+	c.SetCookie(AUTHORIZATION_COOKIE, token, 0, "", "", false, false)
+}
+
+const USER_PARAM_KEY = "user"
+
+func ExtractUserMiddleware(c *gin.Context) {
+	tokenStr, err := c.Cookie(AUTHORIZATION_COOKIE)
+
+	if err != nil {
+		return
+	}
+
+	userId, err := utils.GetUserId(tokenStr)
+
+	if err != nil {
+		return
+	}
+
+	user, err := models.FetchUser(userId)
+
+	if err != nil {
+		return
+	}
+
+	c.Set(USER_PARAM_KEY, user)
+}
+
+func RequireUserMiddleware(c *gin.Context) {
+	if !hasUserParam(c) {
+		errorPredefined(c, USER_REQUIRED)
+		c.Abort()
+	}
+}
+
+func hasUserParam(c *gin.Context) bool {
+	_, exists := c.Get(USER_PARAM_KEY)
+	return exists
+}
+
+func getUserParam(c *gin.Context) *models.User {
+	return c.MustGet(USER_PARAM_KEY).(*models.User)
 }
 
 type RegisterInput struct {

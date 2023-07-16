@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 	"streamfox-backend/models"
-	"streamfox-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,19 +20,6 @@ func getUserInfo(user *models.User) UserInfo {
 }
 
 func GetUser(c *gin.Context) {
-	userId, err := utils.ExtractUserId(c)
-
-	if err != nil {
-		errorPredefined(c, USER_FETCH_FAILED)
-		return
-	}
-
-	user, err := models.FetchUser(userId)
-
-	if err != nil {
-		errorPredefined(c, USER_FETCH_FAILED)
-		return
-	}
-
-	c.JSON(http.StatusOK, getUserInfo(&user))
+	user := getUserParam(c)
+	c.JSON(http.StatusOK, getUserInfo(user))
 }
