@@ -74,9 +74,18 @@ func EnsureCompleteVideoMiddleware(c *gin.Context) {
 func EnsureVisibleVideoMiddleware(c *gin.Context) {
 	video := getVideoParam(c)
 
-	if video.Visibility == models.PRIVATE && (!hasUserParam(c) || !video.IsCreator(getUserParam(c))) {
-		c.Status(http.StatusForbidden)
-		c.Abort()
+	if video.Visibility == models.PRIVATE {
+		if !hasUserParam(c) {
+			errorPredefined(c, USER_REQUIRED)
+			c.Abort()
+			return
+		}
+
+		if !video.IsCreator(getUserParam(c)) {
+			errorPredefined(c, ACCESS_FORBIDDEN)
+			c.Abort()
+			return
+		}
 	}
 }
 

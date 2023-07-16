@@ -122,7 +122,7 @@ func Login(c *gin.Context) {
 	token, err := models.ValidateCredentials(input.Username, input.Password)
 
 	if err != nil {
-		errorMessage(c, AUTHORIZATION_ERROR, "Invalid credentials.")
+		errorMessage(c, VALIDATION_ERROR, "Invalid credentials.")
 		return
 	}
 

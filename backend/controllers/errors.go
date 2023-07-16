@@ -15,8 +15,9 @@ type ErrorType int
 const (
 	SERVER_ERROR ErrorType = iota
 	VALIDATION_ERROR
-	AUTHORIZATION_ERROR
+	AUTHENTICATION_ERROR
 	FORBIDDEN_ERROR
+	NOT_FOUND_ERROR
 )
 
 func toHttpError(errorType ErrorType) (e int) {
@@ -25,10 +26,12 @@ func toHttpError(errorType ErrorType) (e int) {
 		return http.StatusInternalServerError
 	case VALIDATION_ERROR:
 		return http.StatusBadRequest
-	case AUTHORIZATION_ERROR:
+	case AUTHENTICATION_ERROR:
 		return http.StatusUnauthorized
 	case FORBIDDEN_ERROR:
 		return http.StatusForbidden
+	case NOT_FOUND_ERROR:
+		return http.StatusNotFound
 	}
 
 	log.Panicf("toHttpError failed because errorType %d is not handled", errorType)
@@ -51,12 +54,13 @@ const (
 	VIDEO_ID_NON_EXISTENT
 	VIDEO_NOT_OWNED
 	VIDEO_UPLOAD_INCOMPLETE
+	ACCESS_FORBIDDEN
 )
 
 func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string) {
 	switch predefinedError {
 	case USER_REQUIRED:
-		return FORBIDDEN_ERROR, "No user was logged in but a user is required."
+		return AUTHENTICATION_ERROR, "No user was logged in but a user is required."
 	case DATABASE_READ_FAILED:
 		return SERVER_ERROR, "Could not read from database."
 	case DATABASE_WRITE_FAILED:
@@ -68,11 +72,13 @@ func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string)
 	case VIDEO_ID_INVALID:
 		return VALIDATION_ERROR, "Video ID is invalid."
 	case VIDEO_ID_NON_EXISTENT:
-		return VALIDATION_ERROR, "Video does not exist."
+		return NOT_FOUND_ERROR, "Video does not exist."
 	case VIDEO_NOT_OWNED:
-		return AUTHORIZATION_ERROR, "Cannot make modifications to a video you do not own."
+		return FORBIDDEN_ERROR, "Cannot make modifications to a video you do not own."
 	case VIDEO_UPLOAD_INCOMPLETE:
-		return AUTHORIZATION_ERROR, "Video upload has not yet completed."
+		return FORBIDDEN_ERROR, "Video upload has not yet completed."
+	case ACCESS_FORBIDDEN:
+		return FORBIDDEN_ERROR, "You are not allowed access to this resource."
 	}
 
 	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefinedError)
