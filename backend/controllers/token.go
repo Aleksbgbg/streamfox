@@ -1,15 +1,16 @@
-package utils
+package controllers
 
 import (
 	"fmt"
+	"streamfox-backend/utils"
 	"time"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/dgrijalva/jwt-go"
 )
 
-func GenerateToken(userId snowflake.ID) (string, error) {
-	tokenLifespan := GetEnvVarInt(AUTH_TOKEN_LIFESPAN_HRS)
+func generateToken(userId snowflake.ID) (string, error) {
+	tokenLifespan := utils.GetEnvVarInt(utils.AUTH_TOKEN_LIFESPAN_HRS)
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
@@ -21,7 +22,7 @@ func GenerateToken(userId snowflake.ID) (string, error) {
 	return token.SignedString(getApiSecret())
 }
 
-func GetUserId(tokenStr string) (snowflake.ID, error) {
+func getUserId(tokenStr string) (snowflake.ID, error) {
 	token, err := parseToken(tokenStr)
 
 	if err != nil {
@@ -54,5 +55,5 @@ func parseToken(tokenStr string) (*jwt.Token, error) {
 }
 
 func getApiSecret() []byte {
-	return []byte(GetEnvVar(AUTH_API_SECRET))
+	return []byte(utils.GetEnvVar(utils.AUTH_API_SECRET))
 }

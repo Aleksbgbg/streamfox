@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 	"streamfox-backend/models"
-	"streamfox-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +14,7 @@ func setAuthCookie(c *gin.Context, token string) {
 }
 
 func authenticate(c *gin.Context, user *models.User) error {
-	token, err := utils.GenerateToken(user.IdSnowflake())
+	token, err := generateToken(user.IdSnowflake())
 
 	if err != nil {
 		return err
@@ -34,7 +33,7 @@ func ExtractUserMiddleware(c *gin.Context) {
 		return
 	}
 
-	userId, err := utils.GetUserId(tokenStr)
+	userId, err := getUserId(tokenStr)
 
 	if err != nil {
 		return
