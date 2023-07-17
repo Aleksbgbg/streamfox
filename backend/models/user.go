@@ -103,7 +103,7 @@ func (user *User) Absorb(anonymous *User) error {
 		return err
 	}
 
-	err = db.Unscoped().Delete(anonymous).Error
+	err = db.Delete(anonymous).Error
 
 	return err
 }
