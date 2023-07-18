@@ -232,7 +232,7 @@ func GetVideos(c *gin.Context) {
 		return
 	}
 
-	var videoInfos []VideoInfo
+	videoInfos := make([]VideoInfo, 0)
 	for _, video := range videos {
 		videoInfos = append(videoInfos, getVideoInfo(&video))
 	}
