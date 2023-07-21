@@ -32,6 +32,14 @@ export function videoStream(id: VideoId): string {
   return apiUrl(`/videos/${id}/stream`);
 }
 
+export async function requiredWatchTimeMs(id: VideoId): Promise<number> {
+  return Number.parseFloat((await axios.get(apiUrl(`/videos/${id}/required-watch-time-ms`))).data);
+}
+
+export function notifyStillWatching(id: VideoId): Promise<void> {
+  return axios.post(apiUrl(`/videos/${id}/still-watching`));
+}
+
 export function uploadVideo(
   id: VideoId,
   video: ArrayBuffer,
@@ -68,6 +76,10 @@ export interface VideoInfo {
   views: number;
   likes: number;
   dislikes: number;
+}
+
+export async function getVideoInfo(id: VideoId): Promise<VideoInfo> {
+  return (await axios.get(apiUrl(`/videos/${id}/info`))).data;
 }
 
 export async function getVideos(): Promise<VideoInfo[]> {

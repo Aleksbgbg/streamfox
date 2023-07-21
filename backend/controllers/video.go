@@ -182,8 +182,16 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
+	info, err := os.Stat(filepath)
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, "Could not get video size.")
+		return
+	}
+
 	video.MimeType = probe.MimeType
 	video.DurationSecs = probe.DurationSecs
+	video.SizeBytes = info.Size()
 	video.Status = models.PROCESSING
 
 	err = codec.GenerateThumbnail(videoDir)
@@ -210,18 +218,24 @@ type VideoInfo struct {
 	Dislikes     int64             `json:"dislikes"`
 }
 
-func getVideoInfo(video *models.Video) VideoInfo {
-	return VideoInfo{
+func getVideoInfo(video *models.Video) (*VideoInfo, error) {
+	views, err := models.CountViews(video)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &VideoInfo{
 		Id:           video.IdSnowflake().Base58(),
 		Creator:      getUserInfo(&video.Creator),
 		DurationSecs: video.DurationSecs,
 		Name:         video.Name,
 		Description:  video.Description,
 		Visibility:   video.Visibility,
-		Views:        video.Views,
+		Views:        views,
 		Likes:        video.Likes,
 		Dislikes:     video.Dislikes,
-	}
+	}, nil
 }
 
 func GetVideos(c *gin.Context) {
@@ -232,9 +246,17 @@ func GetVideos(c *gin.Context) {
 		return
 	}
 
-	videoInfos := make([]VideoInfo, 0)
+	videoInfos := make([]*VideoInfo, 0)
 	for _, video := range videos {
-		videoInfos = append(videoInfos, getVideoInfo(&video))
+		videoInfo, err := getVideoInfo(&video)
+
+		if err != nil {
+			c.Error(err)
+			errorPredefined(c, DATABASE_READ_FAILED)
+			return
+		}
+
+		videoInfos = append(videoInfos, videoInfo)
 	}
 
 	c.JSON(http.StatusOK, videoInfos)
@@ -242,7 +264,15 @@ func GetVideos(c *gin.Context) {
 
 func GetVideoInfo(c *gin.Context) {
 	video := getVideoParam(c)
-	c.JSON(http.StatusOK, getVideoInfo(video))
+
+	videoInfo, err := getVideoInfo(video)
+
+	if err != nil {
+		errorPredefined(c, DATABASE_READ_FAILED)
+		return
+	}
+
+	c.JSON(http.StatusOK, videoInfo)
 }
 
 func GetVideoThumbnail(c *gin.Context) {
@@ -254,10 +284,72 @@ func GetVideoThumbnail(c *gin.Context) {
 }
 
 func GetVideoStream(c *gin.Context) {
+	user := getUserParam(c)
 	video := getVideoParam(c)
 	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, video.IdSnowflake().Base58())
 
 	c.File(filepath)
 	c.Header("Content-Type", video.MimeType)
+
+	bytesStreamed := int64(c.Writer.Size())
+
+	if bytesStreamed <= 0 {
+		return
+	}
+
+	err := video.ProcessStream(user, bytesStreamed)
+
+	if err != nil {
+		c.Error(err)
+	}
+}
+
+func GetRequiredWatchTimeMs(c *gin.Context) {
+	user := getUserParam(c)
+	video := getVideoParam(c)
+
+	code, requiredWatchTime, err := video.RequiredWatchTimeMs(user)
+
+	switch code {
+	case models.WATCH_TIME_FAILURE:
+		c.Error(err)
+		errorMessage(c, SERVER_ERROR, "Could not get required watch time.")
+	case models.WATCH_TIME_ALREADY_WATCHED:
+		c.JSON(http.StatusOK, -1)
+	case models.WATCH_TIME_SUCCESS:
+		c.JSON(http.StatusOK, requiredWatchTime)
+	}
+}
+
+func StillWatching(c *gin.Context) {
+	user := getUserParam(c)
+	video := getVideoParam(c)
+
+	result, err := video.TryAddView(user)
+
+	if err != nil {
+		c.Error(err)
+		errorMessage(c, SERVER_ERROR, "Could not process still watching request.")
+		return
+	}
+
+	switch result.Code {
+	case models.ADD_VIEW_SUCCESS:
+		c.Status(http.StatusNoContent)
+	case models.ADD_VIEW_DUPLICATE:
+		errorMessage(c, VALIDATION_ERROR, "View has already been counted.")
+	case models.ADD_VIEW_TIME_NOT_PASSED:
+		errorMessage(
+			c,
+			VALIDATION_ERROR,
+			fmt.Sprintf("You need to watch another %dms.", result.TimeLeftMs),
+		)
+	case models.ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH:
+		errorMessage(
+			c,
+			VALIDATION_ERROR,
+			fmt.Sprintf("You need to stream another %d bytes.", result.BytesLeft),
+		)
+	}
 }

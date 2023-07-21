@@ -103,9 +103,50 @@ func (user *User) Absorb(anonymous *User) error {
 		return err
 	}
 
-	err = db.Delete(anonymous).Error
+	err = db.Model(&View{}).
+		Where(View{UserId: anonymous.Id}).
+		Update("user_id", user.Id).
+		Error
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	anonWatch, err := watchOrNil(anonymous)
+
+	if err != nil {
+		return err
+	}
+
+	if anonWatch != nil {
+		userWatch, err := watchOrNil(user)
+
+		if err != nil {
+			return err
+		}
+
+		if userWatch == nil {
+			userWatch = &Watch{}
+		}
+
+		userWatch.UserId = user.Id
+		userWatch.VideoId = anonWatch.VideoId
+		userWatch.StartedAt = anonWatch.StartedAt
+		userWatch.BytesStreamed = anonWatch.BytesStreamed
+		err = userWatch.save()
+
+		if err != nil {
+			return err
+		}
+
+		err = db.Delete(anonWatch).Error
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return db.Delete(anonymous).Error
 }
 
 func (user *User) Save() error {

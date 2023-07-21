@@ -1,12 +1,30 @@
 <script setup lang="ts">
-import { type Ref, onMounted, ref } from "vue";
+import { type Ref, computed, onMounted, onUnmounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import videojs from "video.js";
+import {
+  type VideoId,
+  notifyStillWatching,
+  requiredWatchTimeMs,
+  videoStream,
+} from "@/endpoints/video";
 import { getVolume, setVolume } from "@/settings/volume";
+import { type Optional, empty, getValue, hasValue } from "@/types/optional";
+import { CallbackTimer } from "@/utils/callback-timer";
 import { panic } from "@/utils/panic";
 
-defineProps<{
-  videoUrl: string;
-}>();
+const route = useRoute();
+const videoId = route.params.id as VideoId;
+const videoUrl = computed(() => videoStream(videoId));
+
+let timer: Optional<CallbackTimer> = empty();
+requiredWatchTimeMs(videoId).then((requiredWatchTimeMs) => {
+  if (requiredWatchTimeMs < 0) {
+    return;
+  }
+
+  timer = new CallbackTimer(requiredWatchTimeMs, () => notifyStillWatching(videoId));
+});
 
 const playerElement: Ref<HTMLVideoElement | null> = ref(null);
 
@@ -30,6 +48,23 @@ onMounted(() => {
   player.on("volumechange", function () {
     setVolume(player.volume());
   });
+
+  player.on("play", function () {
+    if (hasValue(timer)) {
+      getValue(timer).resume();
+    }
+  });
+  player.on("pause", function () {
+    if (hasValue(timer)) {
+      getValue(timer).pause();
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (hasValue(timer)) {
+    getValue(timer).cancel();
+  }
 });
 </script>
 

@@ -30,7 +30,9 @@ func Setup() {
 			utils.GetEnvVar(utils.DB_NAME),
 			utils.GetEnvVar(utils.DB_PORT),
 		)),
-		&gorm.Config{},
+		&gorm.Config{
+			TranslateError: true,
+		},
 	)
 
 	if err != nil {
@@ -39,6 +41,8 @@ func Setup() {
 
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Video{})
+	db.AutoMigrate(&View{})
+	db.AutoMigrate(&Watch{})
 
 	idgen, err = snowflake.NewNode(1)
 
