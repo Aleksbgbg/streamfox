@@ -49,6 +49,10 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     restart: unless-stopped
+    user: "root"
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+      - ./pgadmin/pgpass:/pgadmin4/pgpass
     depends_on:
       - postgres
     ports:
@@ -56,6 +60,12 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
       PGADMIN_DEFAULT_PASSWORD: admin
+    entrypoint: >
+      sh -c "
+      cp -f /pgadmin4/pgpass /var/lib/pgadmin;
+      chmod 600 /var/lib/pgadmin/pgpass;
+      /entrypoint.sh
+      "
 
 volumes:
   node-modules:

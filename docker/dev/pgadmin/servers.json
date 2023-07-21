@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Streamfox Server",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "Username": "postgres",
+      "MaintenanceDB": "postgres",
+      "SSLMode": "disable",
+      "PassFile": "../../pgpass"
+    }
+  }
+}
