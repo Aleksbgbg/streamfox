@@ -19,7 +19,7 @@ services:
   backend:
     image: "streamfox/backend"
     build:
-      context: backend
+      context: ../backend
       dockerfile: ../docker/backend.Dockerfile
     volumes:
       - ../backend:/backend
