@@ -5,7 +5,7 @@ services:
     user: "root"
     working_dir: /home/node/app
     volumes:
-      - ../frontend:/home/node/app
+      - ../../frontend:/home/node/app
       - node-modules:/home/node/app/node_modules
     depends_on:
       - backend
@@ -19,10 +19,10 @@ services:
   backend:
     image: "streamfox/backend"
     build:
-      context: ../backend
-      dockerfile: ../docker/backend.Dockerfile
+      context: ../../backend
+      dockerfile: ../docker/dev/backend.Dockerfile
     volumes:
-      - ../backend:/backend
+      - ../../backend:/backend
     depends_on:
       postgres:
         condition: service_healthy
