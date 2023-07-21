@@ -4,12 +4,14 @@ import { resolve } from "path";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 import eslint from "vite-plugin-eslint";
+import svgLoader from "vite-svg-loader";
 
 dotenv.config();
 
 export default defineConfig({
   plugins: [
     vue(),
+    svgLoader(),
     eslint(),
     checker({
       vueTsc: true,
