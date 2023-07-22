@@ -233,8 +233,8 @@ func getVideoInfo(video *models.Video) (*VideoInfo, error) {
 		Description:  video.Description,
 		Visibility:   video.Visibility,
 		Views:        views,
-		Likes:        video.Likes,
-		Dislikes:     video.Dislikes,
+		Likes:        0,
+		Dislikes:     0,
 	}, nil
 }
 

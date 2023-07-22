@@ -41,17 +41,10 @@ type Settings struct {
 	Visibility  Visibility
 }
 
-type Statistics struct {
-	Views    int64
-	Likes    int64
-	Dislikes int64
-}
-
 type Video struct {
 	Base
 	Metadata
 	Settings
-	Statistics
 }
 
 func NewVideo(creator *User) (*Video, error) {
