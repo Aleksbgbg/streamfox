@@ -3,10 +3,10 @@ import VNavbar from "@/views/navbar.vue";
 </script>
 
 <template lang="pug">
-#app.grid.grid-rows-6.bg-polar-dark.text-white.h-screen
-  header.row-end-1.bg-polar-darkest
+#app.flex.flex-col.bg-polar-dark.text-white.overflow-hidden.h-screen
+  header.bg-polar-darkest
     v-navbar
-  main.row-start-1.row-end-7.overflow-auto
+  main.grow.overflow-auto
     router-view
 </template>
 

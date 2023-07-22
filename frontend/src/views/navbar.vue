@@ -8,12 +8,12 @@ const store = useUserStore();
 </script>
 
 <template lang="pug">
-nav.flex.h-20.p-5
+nav.flex.items-center.p-5
   router-link(:to="{ name: 'home' }")
     h1.font-bold.text-2xl Streamfox
   .flex-grow
     c-upload-button
-  .self-center.flex.items-center(v-if="hasValue(store.user)")
+  .flex.items-center(v-if="hasValue(store.user)")
     i.bi-question-square
     p.ml-2 {{ getValue(store.user).username }}
     button(
@@ -22,7 +22,7 @@ nav.flex.h-20.p-5
     )
       span Log Out
       i.bi-box-arrow-in-right
-  .self-center(v-else)
+  div(v-else)
     router-link(
       class="hover:bg-polar-light rounded px-3 py-2 ml-2"
       :to="{ name: 'login' }"
