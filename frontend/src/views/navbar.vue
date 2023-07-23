@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import logo from "@/assets/logo.svg?component";
 import CUploadButton from "@/components/upload-button.vue";
 import { useUserStore } from "@/store/user";
 import { getValue, hasValue } from "@/types/optional";
@@ -9,8 +10,9 @@ const store = useUserStore();
 
 <template lang="pug">
 nav.flex.items-center.p-5
-  router-link(:to="{ name: 'home' }")
-    h1.font-bold.text-2xl Streamfox
+  router-link.flex.items-center(:to="{ name: 'home' }")
+    logo.fill-snow-lightest.w-14.-mt-4
+    h1.font-bold.text-2xl.-ml-4 Streamfox
   .flex-grow
     c-upload-button
   .flex.items-center(v-if="hasValue(store.user)")
