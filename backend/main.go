@@ -10,9 +10,15 @@ import (
 func main() {
 	models.Setup()
 
+	const API_PREFIX = "/api"
+
 	router := gin.Default()
 
-	api := router.Group("/api")
+	if gin.Mode() == gin.DebugMode {
+		router.Use(controllers.ProxyFrontendMiddleware(API_PREFIX))
+	}
+
+	api := router.Group(API_PREFIX)
 	api.Use(controllers.ExtractUserMiddleware)
 
 	auth := api.Group("/auth")

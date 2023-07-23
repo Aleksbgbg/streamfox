@@ -1,3 +1,5 @@
+github.com/abrander/ginproxy v0.0.0-20160203200526-17006b6b1609 h1:ReXPSzsWdHF+sFW6UnenEn2ID9QkvHot3qN37Le+0ZU=
+github.com/abrander/ginproxy v0.0.0-20160203200526-17006b6b1609/go.mod h1:jU8qFFvmcxkQDsxfMnAm8fUGIlbjrnF5gJq/9Mz0mxQ=
 github.com/bwmarrin/snowflake v0.3.0 h1:xm67bEhkKh6ij1790JB83OujPR5CzNe8QuQqAgISZN0=
 github.com/bwmarrin/snowflake v0.3.0/go.mod h1:NdZxfVWX+oR6y2K0o6qAYv6gIOP9rjG0/E9WsDpxqwE=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=

@@ -3,6 +3,7 @@ module streamfox-backend
 go 1.20
 
 require (
+	github.com/abrander/ginproxy v0.0.0-20160203200526-17006b6b1609 // indirect
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/bytedance/sonic v1.9.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect

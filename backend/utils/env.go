@@ -19,6 +19,9 @@ const (
 
 	AUTH_API_SECRET
 	AUTH_TOKEN_LIFESPAN_HRS
+
+	DEBUG_FORWARD_HOST
+	DEBUG_FORWARD_PORT
 )
 
 func GetEnvVar(key EnvKey) string {

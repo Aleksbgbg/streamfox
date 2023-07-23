@@ -16,11 +16,13 @@ func _() {
 	_ = x[DB_NAME-5]
 	_ = x[AUTH_API_SECRET-6]
 	_ = x[AUTH_TOKEN_LIFESPAN_HRS-7]
+	_ = x[DEBUG_FORWARD_HOST-8]
+	_ = x[DEBUG_FORWARD_PORT-9]
 }
 
-const _EnvKey_name = "DATA_ROOTDB_HOSTDB_PORTDB_USERDB_PASSWORDDB_NAMEAUTH_API_SECRETAUTH_TOKEN_LIFESPAN_HRS"
+const _EnvKey_name = "DATA_ROOTDB_HOSTDB_PORTDB_USERDB_PASSWORDDB_NAMEAUTH_API_SECRETAUTH_TOKEN_LIFESPAN_HRSDEBUG_FORWARD_HOSTDEBUG_FORWARD_PORT"
 
-var _EnvKey_index = [...]uint8{0, 9, 16, 23, 30, 41, 48, 63, 86}
+var _EnvKey_index = [...]uint8{0, 9, 16, 23, 30, 41, 48, 63, 86, 104, 122}
 
 func (i EnvKey) String() string {
 	if i < 0 || i >= EnvKey(len(_EnvKey_index)-1) {
