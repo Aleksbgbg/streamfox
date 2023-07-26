@@ -1,7 +1,12 @@
 package controllers
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	"image/draw"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"net/http"
 	"os"
@@ -281,6 +286,67 @@ func GetVideoThumbnail(c *gin.Context) {
 	filepath := fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, video.IdSnowflake().Base58())
 
 	c.File(filepath)
+}
+
+func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image.Image, error) {
+	reader, err := os.Open(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer reader.Close()
+
+	return decoder(reader)
+}
+
+func GetVideoPreview(c *gin.Context) {
+	video := getVideoParam(c)
+	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
+
+	thumbnail, err := loadImage(
+		jpeg.Decode,
+		fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, video.IdSnowflake().Base58()),
+	)
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, fmt.Sprintf("loading thumbnail failed: %v", err))
+		return
+	}
+
+	logo, err := loadImage(png.Decode, "logo_preview.png")
+
+	if err != nil {
+		errorMessage(c, SERVER_ERROR, fmt.Sprintf("loading logo failed: %v", err))
+		return
+	}
+
+	rect := thumbnail.Bounds()
+	preview := image.NewRGBA(rect)
+	for x := rect.Min.X; x <= rect.Max.X; x++ {
+		for y := rect.Min.Y; y <= rect.Max.Y; y++ {
+			preview.Set(x, y, thumbnail.At(x, y))
+		}
+	}
+
+	drawStart := image.Pt(thumbnail.Bounds().Dx()-logo.Bounds().Dx()-10, 10)
+	draw.Draw(
+		preview,
+		image.Rectangle{drawStart, drawStart.Add(logo.Bounds().Size())},
+		logo,
+		logo.Bounds().Min,
+		draw.Over,
+	)
+
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, preview, nil)
+
+	if err != nil {
+		errorPredefined(c, FILE_IO_FAILED)
+		return
+	}
+
+	c.Data(http.StatusOK, "image/jpeg", buf.Bytes())
 }
 
 func GetVideoStream(c *gin.Context) {

@@ -97,7 +97,7 @@ func GenerateHtmlMetadataMiddleware(c *gin.Context) {
 		"Title":        video.Name,
 		"Description":  video.Description,
 		"Url":          fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path),
-		"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/thumbnail", baseUrl, videoId),
+		"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/preview", baseUrl, videoId),
 		"StreamUrl":    fmt.Sprintf("%s/api/videos/%s/stream", baseUrl, videoId),
 		"MimeType":     video.MimeType,
 	})

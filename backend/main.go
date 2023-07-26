@@ -51,6 +51,12 @@ func main() {
 		controllers.GetVideoThumbnail,
 	)
 	specificVideo.GET(
+		"/preview",
+		controllers.EnsureCompleteVideoMiddleware,
+		controllers.EnsureVisibleVideoMiddleware,
+		controllers.GetVideoPreview,
+	)
+	specificVideo.GET(
 		"/stream",
 		controllers.EnsureCompleteVideoMiddleware,
 		controllers.EnsureVisibleVideoMiddleware,
