@@ -35,7 +35,7 @@ func ProxyFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
 
 var metadataInsertionMarker = []byte("<!-- metadata -->")
 var watchPageRegex = regexp.MustCompile(`/watch/(.*)$`)
-var metadataTemplate, _ = template.New("watch_metadata").Parse(`
+var watchPageMetadataTemplate, _ = template.New("").Parse(`
 <meta name="description" content="{{.Description}}">
 
 <meta property="og:site_name" content="Streamfox">
@@ -48,6 +48,16 @@ var metadataTemplate, _ = template.New("watch_metadata").Parse(`
 <meta property="og:video:url" content="{{.StreamUrl}}">
 <meta property="og:video:secure_url" content="{{.StreamUrl}}">
 <meta property="og:video:type" content="{{.MimeType}}">
+`)
+var homePageMetadataTemplate, _ = template.New("").Parse(`
+<meta name="description" content="{{.Description}}">
+
+<meta property="og:site_name" content="Streamfox">
+<meta property="og:title" content="Streamfox">
+<meta property="og:description" content="{{.Description}}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{.Url}}">
+<meta property="og:image" content="{{.ThumbnailUrl}}">
 `)
 
 func formatBaseUrl(c *gin.Context) string {
@@ -69,38 +79,44 @@ func GenerateHtmlMetadataMiddleware(c *gin.Context) {
 		return
 	}
 
+	baseUrl := formatBaseUrl(c)
+	var metadata bytes.Buffer
+
+	url := fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path)
+
 	match := watchPageRegex.FindStringSubmatch(c.Request.URL.Path)
 
-	if len(match) != 2 {
-		return
+	if len(match) == 2 {
+		videoId := match[1]
+		snowflake, err := snowflake.ParseBase58([]byte(videoId))
+
+		if err != nil {
+			c.Error(err)
+			return
+		}
+
+		video, err := models.FetchVideo(snowflake)
+
+		if err != nil {
+			c.Error(err)
+			return
+		}
+
+		watchPageMetadataTemplate.Execute(&metadata, gin.H{
+			"Title":        video.Name,
+			"Description":  video.Description,
+			"Url":          url,
+			"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/preview", baseUrl, videoId),
+			"StreamUrl":    fmt.Sprintf("%s/api/videos/%s/stream", baseUrl, videoId),
+			"MimeType":     video.MimeType,
+		})
+	} else {
+		homePageMetadataTemplate.Execute(&metadata, gin.H{
+			"Description":  "Streamfox is an open-source video streaming service.",
+			"Url":          url,
+			"ThumbnailUrl": fmt.Sprintf("%s/thumbnail.png", baseUrl),
+		})
 	}
-
-	videoId := match[1]
-	snowflake, err := snowflake.ParseBase58([]byte(videoId))
-
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	video, err := models.FetchVideo(snowflake)
-
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	baseUrl := formatBaseUrl(c)
-
-	var metadata bytes.Buffer
-	metadataTemplate.Execute(&metadata, gin.H{
-		"Title":        video.Name,
-		"Description":  video.Description,
-		"Url":          fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path),
-		"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/preview", baseUrl, videoId),
-		"StreamUrl":    fmt.Sprintf("%s/api/videos/%s/stream", baseUrl, videoId),
-		"MimeType":     video.MimeType,
-	})
 
 	b := bytes.Replace(baseBuffer.body.Bytes(), metadataInsertionMarker, metadata.Bytes(), 1)
 	baseBuffer.body = bytes.NewBuffer(b)
