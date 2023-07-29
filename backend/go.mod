@@ -5,9 +5,9 @@ go 1.20
 require (
 	github.com/abrander/ginproxy v0.0.0-20160203200526-17006b6b1609
 	github.com/bwmarrin/snowflake v0.3.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.14.1
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.10.0
 	gopkg.in/vansante/go-ffprobe.v2 v2.1.1
