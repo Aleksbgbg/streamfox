@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"image/draw"
@@ -30,8 +31,7 @@ func CreateVideo(c *gin.Context) {
 
 	video, err := models.NewVideo(user)
 
-	if err != nil {
-		errorPredefined(c, DATABASE_WRITE_FAILED)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 		return
 	}
 
@@ -48,16 +48,14 @@ const VIDEO_PARAM_KEY = "video"
 func ExtractVideoMiddleware(c *gin.Context) {
 	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
 
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_INVALID)
-		c.Abort()
+	if ok := checkUserError(c, err, errVideoInvalidId); !ok {
+		return
 	}
 
 	video, err := models.FetchVideo(videoId)
 
-	if err != nil {
-		errorPredefined(c, VIDEO_ID_NON_EXISTENT)
-		c.Abort()
+	if ok := checkUserError(c, err, errVideoIdNonExistent); !ok {
+		return
 	}
 
 	c.Set(VIDEO_PARAM_KEY, video)
@@ -71,8 +69,7 @@ func EnsureCompleteVideoMiddleware(c *gin.Context) {
 	video := getVideoParam(c)
 
 	if video.Status < models.COMPLETE {
-		errorPredefined(c, VIDEO_UPLOAD_INCOMPLETE)
-		c.Abort()
+		userError(c, errVideoUploadIncomplete)
 	}
 }
 
@@ -81,14 +78,12 @@ func EnsureVisibleVideoMiddleware(c *gin.Context) {
 
 	if video.Visibility == models.PRIVATE {
 		if !hasUserParam(c) {
-			errorPredefined(c, USER_REQUIRED)
-			c.Abort()
+			userError(c, errUserRequired)
 			return
 		}
 
 		if !video.IsCreator(getUserParam(c)) {
-			errorPredefined(c, ACCESS_FORBIDDEN)
-			c.Abort()
+			userError(c, errGenericAccessForbidden)
 			return
 		}
 	}
@@ -99,8 +94,7 @@ func EnsureIsOwnerMiddleware(c *gin.Context) {
 	video := getVideoParam(c)
 
 	if !video.IsCreator(user) {
-		errorPredefined(c, VIDEO_NOT_OWNED)
-		c.Abort()
+		userError(c, errVideoNotOwned)
 	}
 }
 
@@ -113,8 +107,7 @@ type VideoUpdateInfo struct {
 func UpdateVideo(c *gin.Context) {
 	var update VideoUpdateInfo
 
-	if err := c.ShouldBindJSON(&update); err != nil {
-		errorMessage(c, VALIDATION_ERROR, formatErrors(err))
+	if ok := checkValidationError(c, c.ShouldBindJSON(&update)); !ok {
 		return
 	}
 
@@ -124,8 +117,7 @@ func UpdateVideo(c *gin.Context) {
 	video.Visibility = *update.Visibility
 	err := video.Save()
 
-	if err != nil {
-		errorPredefined(c, DATABASE_WRITE_FAILED)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 		return
 	}
 
@@ -136,11 +128,7 @@ func UploadVideo(c *gin.Context) {
 	video := getVideoParam(c)
 
 	if video.Status > models.UPLOADING {
-		errorMessage(
-			c,
-			VALIDATION_ERROR,
-			"Cannot rewrite video after uploading has completed successfully.",
-		)
+		userError(c, errVideoCannotOverwrite)
 		return
 	}
 
@@ -152,25 +140,28 @@ func UploadVideo(c *gin.Context) {
 	videoDir := fmt.Sprintf("%s/videos/%s", dataRoot, video.IdSnowflake().Base58())
 	err := os.MkdirAll(videoDir, os.ModePerm)
 
-	if err != nil {
-		errorPredefined(c, DATA_CREATION_FAILED)
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
 	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, video.IdSnowflake().Base58())
 	file, err := os.Create(filepath)
-	if err != nil {
-		errorPredefined(c, DATA_CREATION_FAILED)
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
 	_, err = io.Copy(file, c.Request.Body)
-	file.Close()
 
-	if err != nil {
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		file.Close()
 		os.Remove(filepath)
+		return
+	}
 
-		errorPredefined(c, FILE_IO_FAILED)
+	err = file.Close()
+
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		os.Remove(filepath)
 		return
 	}
 
@@ -179,18 +170,17 @@ func UploadVideo(c *gin.Context) {
 	if err != nil {
 		os.Remove(filepath)
 
-		if _, ok := err.(*codec.InvalidVideoTypeError); ok {
-			errorMessage(c, VALIDATION_ERROR, "Invalid video format.")
+		if errors.Is(err, codec.ErrInvalidVideoType) {
+			userError(c, errVideoInvalidFormat)
 		} else {
-			errorMessage(c, SERVER_ERROR, "Unable to probe video.")
+			serverError(c, err, errVideoProbe)
 		}
 		return
 	}
 
 	info, err := os.Stat(filepath)
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, "Could not get video size.")
+	if ok := checkServerError(c, err, errVideoGetSize); !ok {
 		return
 	}
 
@@ -201,8 +191,7 @@ func UploadVideo(c *gin.Context) {
 
 	err = codec.GenerateThumbnail(videoDir)
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, fmt.Sprintf("Error in generating thumbnail: %s.", err.Error()))
+	if ok := checkServerError(c, err, errVideoGenerateThumbnail); !ok {
 		return
 	}
 
@@ -246,8 +235,7 @@ func getVideoInfo(video *models.Video) (*VideoInfo, error) {
 func GetVideos(c *gin.Context) {
 	videos, err := models.FetchAllVideos()
 
-	if err != nil {
-		errorPredefined(c, DATABASE_READ_FAILED)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 		return
 	}
 
@@ -255,9 +243,7 @@ func GetVideos(c *gin.Context) {
 	for _, video := range videos {
 		videoInfo, err := getVideoInfo(&video)
 
-		if err != nil {
-			c.Error(err)
-			errorPredefined(c, DATABASE_READ_FAILED)
+		if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 			return
 		}
 
@@ -272,8 +258,7 @@ func GetVideoInfo(c *gin.Context) {
 
 	videoInfo, err := getVideoInfo(video)
 
-	if err != nil {
-		errorPredefined(c, DATABASE_READ_FAILED)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 		return
 	}
 
@@ -309,15 +294,13 @@ func GetVideoPreview(c *gin.Context) {
 		fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, video.IdSnowflake().Base58()),
 	)
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, fmt.Sprintf("loading thumbnail failed: %v", err))
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
 	logo, err := loadImage(png.Decode, "logo_preview.png")
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, fmt.Sprintf("loading logo failed: %v", err))
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
@@ -341,8 +324,7 @@ func GetVideoPreview(c *gin.Context) {
 	buf := new(bytes.Buffer)
 	err = jpeg.Encode(buf, preview, nil)
 
-	if err != nil {
-		errorPredefined(c, FILE_IO_FAILED)
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
@@ -366,9 +348,7 @@ func GetVideoStream(c *gin.Context) {
 
 	err := video.ProcessStream(user, bytesStreamed)
 
-	if err != nil {
-		c.Error(err)
-	}
+	recordError(c, err)
 }
 
 func GetRequiredWatchTimeMs(c *gin.Context) {
@@ -379,8 +359,7 @@ func GetRequiredWatchTimeMs(c *gin.Context) {
 
 	switch code {
 	case models.WATCH_TIME_FAILURE:
-		c.Error(err)
-		errorMessage(c, SERVER_ERROR, "Could not get required watch time.")
+		serverError(c, err, errVideoGetWatchTime)
 	case models.WATCH_TIME_ALREADY_WATCHED:
 		c.JSON(http.StatusOK, -1)
 	case models.WATCH_TIME_SUCCESS:
@@ -394,9 +373,7 @@ func StillWatching(c *gin.Context) {
 
 	result, err := video.TryAddView(user)
 
-	if err != nil {
-		c.Error(err)
-		errorMessage(c, SERVER_ERROR, "Could not process still watching request.")
+	if ok := checkServerError(c, err, errVideoProcessStillWatching); !ok {
 		return
 	}
 
@@ -404,18 +381,10 @@ func StillWatching(c *gin.Context) {
 	case models.ADD_VIEW_SUCCESS:
 		c.Status(http.StatusNoContent)
 	case models.ADD_VIEW_DUPLICATE:
-		errorMessage(c, VALIDATION_ERROR, "View has already been counted.")
+		userError(c, errVideoViewAlreadyCounted)
 	case models.ADD_VIEW_TIME_NOT_PASSED:
-		errorMessage(
-			c,
-			VALIDATION_ERROR,
-			fmt.Sprintf("You need to watch another %dms.", result.TimeLeftMs),
-		)
+		validationError(c, fmt.Sprintf("You need to watch another %dms.", result.TimeLeftMs))
 	case models.ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH:
-		errorMessage(
-			c,
-			VALIDATION_ERROR,
-			fmt.Sprintf("You need to stream another %d bytes.", result.BytesLeft),
-		)
+		validationError(c, fmt.Sprintf("You need to stream another %d bytes.", result.BytesLeft))
 	}
 }

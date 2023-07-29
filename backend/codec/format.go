@@ -2,6 +2,7 @@ package codec
 
 import (
 	"context"
+	"errors"
 	"math"
 	"time"
 
@@ -107,11 +108,7 @@ type ProbeResult struct {
 	DurationSecs int32
 }
 
-type InvalidVideoTypeError struct{}
-
-func (e *InvalidVideoTypeError) Error() string {
-	return "invalid video type"
-}
+var ErrInvalidVideoType = errors.New("invalid video type")
 
 func Probe(path string) (*ProbeResult, error) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
@@ -126,7 +123,7 @@ func Probe(path string) (*ProbeResult, error) {
 	mimeType, ok := formatToMimeType[formatName]
 
 	if !ok {
-		return nil, &InvalidVideoTypeError{}
+		return nil, ErrInvalidVideoType
 	}
 
 	return &ProbeResult{

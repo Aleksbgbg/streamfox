@@ -55,17 +55,13 @@ func GenerateAnonymousUserMiddleware(c *gin.Context) {
 
 	user, err := models.GenerateAnonymousUser()
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, "Error in generating user.")
-		c.Abort()
+	if ok := checkServerError(c, err, errAuthGeneratingUser); !ok {
 		return
 	}
 
 	err = authenticate(c, user)
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, "Error in generating token.")
-		c.Abort()
+	if ok := checkServerError(c, err, errAuthGeneratingToken); !ok {
 		return
 	}
 
@@ -73,20 +69,14 @@ func GenerateAnonymousUserMiddleware(c *gin.Context) {
 }
 
 func RequireUserMiddleware(c *gin.Context) {
-	if hasUserParam(c) {
-		return
+	if !hasUserParam(c) {
+		userError(c, errUserRequired)
 	}
-
-	errorPredefined(c, USER_REQUIRED)
-	c.Abort()
 }
 
 func EnsureNotAnonymousMiddleware(c *gin.Context) {
-	user := getUserParam(c)
-
-	if user.IsAnonymous() {
-		errorPredefined(c, USER_REQUIRED)
-		c.Abort()
+	if getUserParam(c).IsAnonymous() {
+		userError(c, errUserRequired)
 	}
 }
 
@@ -123,22 +113,17 @@ type RegisterInput struct {
 func Register(c *gin.Context) {
 	var input RegisterInput
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		errorMessage(c, VALIDATION_ERROR, formatErrors(err))
+	if ok := checkValidationError(c, c.ShouldBindJSON(&input)); !ok {
 		return
 	}
 
 	if models.UsernameExists(input.Username) {
-		errorMessage(c, VALIDATION_ERROR, gin.H{"username": [...]string{"Username must not be taken."}})
+		validationError(c, gin.H{"username": [...]string{"Username must not be taken."}})
 		return
 	}
 
 	if models.EmailExists(input.EmailAddress) {
-		errorMessage(
-			c,
-			VALIDATION_ERROR,
-			gin.H{"emailAddress": [...]string{"Email Address must not be taken."}},
-		)
+		validationError(c, gin.H{"emailAddress": [...]string{"Email Address must not be taken."}})
 		return
 	}
 
@@ -149,23 +134,19 @@ func Register(c *gin.Context) {
 	}
 	err := user.Save()
 
-	if err != nil {
-		errorPredefined(c, DATABASE_WRITE_FAILED)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 		return
 	}
 
 	err = absorbAnonymousUser(c, user)
 
-	if err != nil {
-		errorPredefined(c, USER_MERGE_FAILED)
+	if ok := checkServerError(c, err, errUserMergeFailed); !ok {
 		return
 	}
 
 	err = authenticate(c, user)
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, "Error in generating token.")
-		c.Abort()
+	if ok := checkServerError(c, err, errAuthGeneratingToken); !ok {
 		return
 	}
 
@@ -180,30 +161,25 @@ type LoginInput struct {
 func Login(c *gin.Context) {
 	var input LoginInput
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		errorMessage(c, VALIDATION_ERROR, formatErrors(err))
+	if ok := checkValidationError(c, c.ShouldBindJSON(&input)); !ok {
 		return
 	}
 
 	user, err := models.ValidateCredentials(input.Username, input.Password)
 
-	if err != nil {
-		errorMessage(c, VALIDATION_ERROR, "Invalid credentials.")
+	if ok := checkUserError(c, err, errAuthInvalidCredentials); !ok {
 		return
 	}
 
 	err = absorbAnonymousUser(c, user)
 
-	if err != nil {
-		errorPredefined(c, USER_MERGE_FAILED)
+	if ok := checkServerError(c, err, errUserMergeFailed); !ok {
 		return
 	}
 
 	err = authenticate(c, user)
 
-	if err != nil {
-		errorMessage(c, SERVER_ERROR, "Error in generating token.")
-		c.Abort()
+	if ok := checkServerError(c, err, errAuthGeneratingToken); !ok {
 		return
 	}
 

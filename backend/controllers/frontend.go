@@ -90,15 +90,13 @@ func GenerateHtmlMetadataMiddleware(c *gin.Context) {
 		videoId := match[1]
 		snowflake, err := snowflake.ParseBase58([]byte(videoId))
 
-		if err != nil {
-			c.Error(err)
+		if ok := recordError(c, err); !ok {
 			return
 		}
 
 		video, err := models.FetchVideo(snowflake)
 
-		if err != nil {
-			c.Error(err)
+		if ok := recordError(c, err); !ok {
 			return
 		}
 

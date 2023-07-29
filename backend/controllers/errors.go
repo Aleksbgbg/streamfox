@@ -10,87 +10,197 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type ErrorType int
+type errType int
 
 const (
-	SERVER_ERROR ErrorType = iota
-	VALIDATION_ERROR
-	AUTHENTICATION_ERROR
-	FORBIDDEN_ERROR
-	NOT_FOUND_ERROR
+	errValidation errType = iota
+	errAuthentication
+	errForbidden
+	errNotFound
+	errServer
 )
 
-func toHttpError(errorType ErrorType) (e int) {
-	switch errorType {
-	case SERVER_ERROR:
-		return http.StatusInternalServerError
-	case VALIDATION_ERROR:
+func toHttpError(e errType) int {
+	switch e {
+	case errValidation:
 		return http.StatusBadRequest
-	case AUTHENTICATION_ERROR:
+	case errAuthentication:
 		return http.StatusUnauthorized
-	case FORBIDDEN_ERROR:
+	case errForbidden:
 		return http.StatusForbidden
-	case NOT_FOUND_ERROR:
+	case errNotFound:
 		return http.StatusNotFound
+	case errServer:
+		return http.StatusInternalServerError
 	}
 
-	log.Panicf("toHttpError failed because errorType %d is not handled", errorType)
-	return
+	log.Panicf("toHttpError failed because errorType %d is not handled", e)
+	return 0
 }
 
-func errorMessage(c *gin.Context, errorType ErrorType, message any) {
+func errorMessage(c *gin.Context, errorType errType, message any) {
 	c.JSON(toHttpError(errorType), gin.H{"errors": message})
 }
 
-type PredefinedError int
+type predefinedError int
 
 const (
-	USER_REQUIRED PredefinedError = iota
-	DATABASE_READ_FAILED
-	DATABASE_WRITE_FAILED
-	DATA_CREATION_FAILED
-	FILE_IO_FAILED
-	VIDEO_ID_INVALID
-	VIDEO_ID_NON_EXISTENT
-	VIDEO_NOT_OWNED
-	VIDEO_UPLOAD_INCOMPLETE
-	ACCESS_FORBIDDEN
-	USER_MERGE_FAILED
+	errAuthInvalidCredentials predefinedError = iota
+	errVideoInvalidId
+	errVideoInvalidFormat
+	errVideoCannotOverwrite
+	errVideoViewAlreadyCounted
+
+	errUserRequired
+
+	errGenericAccessForbidden
+	errVideoNotOwned
+	errVideoUploadIncomplete
+
+	errVideoIdNonExistent
+
+	errGenericDatabaseIo
+	errGenericFileIo
+	errAuthGeneratingToken
+	errAuthGeneratingUser
+	errUserMergeFailed
+	errVideoProbe
+	errVideoGetSize
+	errVideoGenerateThumbnail
+	errVideoGetWatchTime
+	errVideoProcessStillWatching
 )
 
-func getPredefinedError(predefinedError PredefinedError) (e ErrorType, s string) {
-	switch predefinedError {
-	case USER_REQUIRED:
-		return AUTHENTICATION_ERROR, "No user was logged in but a user is required."
-	case DATABASE_READ_FAILED:
-		return SERVER_ERROR, "Could not read from database."
-	case DATABASE_WRITE_FAILED:
-		return SERVER_ERROR, "Could not write to database."
-	case DATA_CREATION_FAILED:
-		return SERVER_ERROR, "Could not create data files."
-	case FILE_IO_FAILED:
-		return SERVER_ERROR, "Could not write to file."
-	case VIDEO_ID_INVALID:
-		return VALIDATION_ERROR, "Video ID is invalid."
-	case VIDEO_ID_NON_EXISTENT:
-		return NOT_FOUND_ERROR, "Video does not exist."
-	case VIDEO_NOT_OWNED:
-		return FORBIDDEN_ERROR, "Cannot make modifications to a video you do not own."
-	case VIDEO_UPLOAD_INCOMPLETE:
-		return FORBIDDEN_ERROR, "Video upload has not yet completed."
-	case ACCESS_FORBIDDEN:
-		return FORBIDDEN_ERROR, "You are not allowed access to this resource."
-	case USER_MERGE_FAILED:
-		return SERVER_ERROR, "Could not update authenticated user with anonymous statistics."
+func getPredefinedError(predefined predefinedError) (errType, string) {
+	switch predefined {
+	case errAuthInvalidCredentials:
+		return errValidation, "Invalid credentials."
+	case errVideoInvalidId:
+		return errValidation, "Video ID is invalid."
+	case errVideoInvalidFormat:
+		return errValidation, "Invalid video format."
+	case errVideoCannotOverwrite:
+		return errValidation, "Cannot overwrite video after uploading has completed successfully."
+	case errVideoViewAlreadyCounted:
+		return errValidation, "View has already been counted."
+
+	case errUserRequired:
+		return errAuthentication, "No user was logged in but a user is required."
+
+	case errGenericAccessForbidden:
+		return errForbidden, "You are not allowed access to this resource."
+	case errVideoNotOwned:
+		return errForbidden, "Cannot make modifications to a video you do not own."
+	case errVideoUploadIncomplete:
+		return errForbidden, "Video upload has not yet completed."
+
+	case errVideoIdNonExistent:
+		return errNotFound, "Video does not exist."
+
+	case errGenericDatabaseIo:
+		return errServer, "Database transaction failed."
+	case errGenericFileIo:
+		return errServer, "File input / output failed."
+	case errAuthGeneratingToken:
+		return errServer, "Error in generating token."
+	case errAuthGeneratingUser:
+		return errServer, "Error in generating user."
+	case errUserMergeFailed:
+		return errServer, "Could not update authenticated user with anonymous statistics."
+	case errVideoProbe:
+		return errServer, "Unable to probe video."
+	case errVideoGetSize:
+		return errServer, "Could not get video size."
+	case errVideoGenerateThumbnail:
+		return errServer, "Error in generating thumbnail."
+	case errVideoGetWatchTime:
+		return errServer, "Could not get required watch time."
+	case errVideoProcessStillWatching:
+		return errServer, "Could not process still watching request."
 	}
 
-	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefinedError)
-	return
+	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefined)
+	return 0, ""
 }
 
-func errorPredefined(c *gin.Context, predefinedError PredefinedError) {
-	errorType, message := getPredefinedError(predefinedError)
+func validationError(c *gin.Context, errors any) {
+	errorMessage(c, errValidation, errors)
+	c.Abort()
+}
+
+func userError(c *gin.Context, predefined predefinedError) {
+	errorType, message := getPredefinedError(predefined)
 	errorMessage(c, errorType, message)
+	c.Abort()
+}
+
+func serverError(c *gin.Context, err error, predefined predefinedError) {
+	errorType, message := getPredefinedError(predefined)
+	c.Error(fmt.Errorf("'%s': %v", message, err))
+	errorMessage(c, errorType, message)
+	c.Abort()
+}
+
+func recordError(c *gin.Context, err error) bool {
+	if err == nil {
+		return true
+	}
+
+	c.Error(err)
+	return false
+}
+
+func checkValidationError(c *gin.Context, err error) bool {
+	if err == nil {
+		return true
+	}
+
+	errorMessage(c, errValidation, formatErrors(err))
+	c.Abort()
+	return false
+}
+
+func checkUserError(c *gin.Context, err error, predefined predefinedError) bool {
+	if err == nil {
+		return true
+	}
+
+	errorType, message := getPredefinedError(predefined)
+	errorMessage(c, errorType, message)
+	c.Abort()
+	return false
+}
+
+func checkServerError(c *gin.Context, err error, predefined predefinedError) bool {
+	if err == nil {
+		return true
+	}
+
+	errorType, message := getPredefinedError(predefined)
+	c.Error(fmt.Errorf("'%s': %v", message, err))
+	errorMessage(c, errorType, message)
+	c.Abort()
+	return false
+}
+
+func formatErrors(err error) any {
+	if _, ok := err.(validator.ValidationErrors); !ok {
+		return err.Error()
+	}
+
+	errors := map[string][]string{}
+
+	for _, value := range err.(validator.ValidationErrors) {
+		name := utils.ToLowerCamelCase(value.Field())
+
+		if _, found := errors[value.Field()]; !found {
+			errors[name] = []string{}
+		}
+
+		errors[name] = append(errors[name], prettyFormat(value))
+	}
+
+	return errors
 }
 
 func prettyFormat(err validator.FieldError) string {
@@ -138,26 +248,4 @@ func prettyFormat(err validator.FieldError) string {
 	}
 
 	return err.Error()
-}
-
-type errorMap = map[string][]string
-
-func formatErrors(err error) any {
-	if _, ok := err.(validator.ValidationErrors); !ok {
-		return err.Error()
-	}
-
-	errors := make(errorMap)
-
-	for _, value := range err.(validator.ValidationErrors) {
-		name := utils.ToLowerCamelCase(value.Field())
-
-		if _, found := errors[value.Field()]; !found {
-			errors[name] = []string{}
-		}
-
-		errors[name] = append(errors[name], prettyFormat(value))
-	}
-
-	return errors
 }
