@@ -16,23 +16,6 @@ services:
     command: >
       sh -c "npm i && npm run dev"
 
-  backend:
-    image: "streamfox/backend"
-    build:
-      context: ../../backend
-      dockerfile: ../docker/dev/backend.Dockerfile
-    volumes:
-      - ../../backend:/backend
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - "5000:5000"
-    environment:
-      DATA_ROOT: /data
-      DB_HOST: postgres
-      DEBUG_FORWARD_HOST: frontend
-
   postgres:
     image: postgres
     restart: unless-stopped
