@@ -12,8 +12,8 @@ import (
 	"net/http"
 	"os"
 	"streamfox-backend/codec"
+	"streamfox-backend/files"
 	"streamfox-backend/models"
-	"streamfox-backend/utils"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
@@ -135,17 +135,9 @@ func UploadVideo(c *gin.Context) {
 	video.Status = models.UPLOADING
 	defer video.Save()
 
-	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
+	videoId := video.IdSnowflake().Base58()
 
-	videoDir := fmt.Sprintf("%s/videos/%s", dataRoot, video.IdSnowflake().Base58())
-	err := os.MkdirAll(videoDir, os.ModePerm)
-
-	if ok := checkServerError(c, err, errGenericFileIo); !ok {
-		return
-	}
-
-	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, video.IdSnowflake().Base58())
-	file, err := os.Create(filepath)
+	file, filepath, err := files.VideoHandle(files.Stream, videoId)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
@@ -165,7 +157,7 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	probe, err := codec.Probe(filepath)
+	probe, err := codec.Probe(videoId)
 
 	if err != nil {
 		os.Remove(filepath)
@@ -189,7 +181,7 @@ func UploadVideo(c *gin.Context) {
 	video.SizeBytes = info.Size()
 	video.Status = models.PROCESSING
 
-	err = codec.GenerateThumbnail(videoDir)
+	err = codec.GenerateThumbnail(videoId)
 
 	if ok := checkServerError(c, err, errVideoGenerateThumbnail); !ok {
 		return
@@ -266,11 +258,7 @@ func GetVideoInfo(c *gin.Context) {
 }
 
 func GetVideoThumbnail(c *gin.Context) {
-	video := getVideoParam(c)
-	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
-	filepath := fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, video.IdSnowflake().Base58())
-
-	c.File(filepath)
+	c.File(files.VideoPath(files.Thumbnail, getVideoParam(c).IdSnowflake().Base58()))
 }
 
 func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image.Image, error) {
@@ -287,11 +275,10 @@ func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image
 
 func GetVideoPreview(c *gin.Context) {
 	video := getVideoParam(c)
-	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
 
 	thumbnail, err := loadImage(
 		jpeg.Decode,
-		fmt.Sprintf("%s/videos/%s/thumbnail", dataRoot, video.IdSnowflake().Base58()),
+		files.VideoPath(files.Thumbnail, video.IdSnowflake().Base58()),
 	)
 
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
@@ -334,10 +321,8 @@ func GetVideoPreview(c *gin.Context) {
 func GetVideoStream(c *gin.Context) {
 	user := getUserParam(c)
 	video := getVideoParam(c)
-	dataRoot := utils.GetEnvVar(utils.DATA_ROOT)
-	filepath := fmt.Sprintf("%s/videos/%s/video", dataRoot, video.IdSnowflake().Base58())
 
-	c.File(filepath)
+	c.File(files.VideoPath(files.Stream, video.IdSnowflake().Base58()))
 	c.Header("Content-Type", video.MimeType)
 
 	bytesStreamed := int64(c.Writer.Size())

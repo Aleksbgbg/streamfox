@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"streamfox-backend/files"
 	"strings"
 )
 
-func GenerateThumbnail(videoDir string) error {
+func GenerateThumbnail(videoId string) error {
 	args := strings.Fields(fmt.Sprintf(
-		"ffmpeg -loglevel error -y -i %s/video -vframes 1 -q:v 2 -vf scale=-1:225 -f mjpeg %s/thumbnail",
-		videoDir,
-		videoDir,
+		"ffmpeg -loglevel error -y -i %s -vframes 1 -q:v 2 -vf scale=-1:225 -f mjpeg %s",
+		files.VideoPath(files.Stream, videoId),
+		files.VideoPath(files.Thumbnail, videoId),
 	))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stderr = os.Stdout

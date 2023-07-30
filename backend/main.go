@@ -1,18 +1,29 @@
 package main
 
 import (
+	"log"
 	"streamfox-backend/controllers"
+	"streamfox-backend/files"
 	"streamfox-backend/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Panicf("Error loading .env file: %v", err)
+	}
+
+	files.Setup()
 	models.Setup()
 
 	const API_PREFIX = "/api"
 
 	router := gin.Default()
+	router.Use(controllers.ServerErrorLoggerMiddleware)
 
 	router.Use(controllers.GenerateHtmlMetadataMiddleware)
 	if gin.Mode() == gin.DebugMode {
