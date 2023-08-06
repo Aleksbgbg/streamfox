@@ -5,13 +5,11 @@ import (
 	"log"
 	"streamfox-backend/utils"
 
-	"github.com/bwmarrin/snowflake"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
-var idgen *snowflake.Node
 
 func Setup() {
 	var err error
@@ -38,9 +36,9 @@ func Setup() {
 	db.AutoMigrate(&View{})
 	db.AutoMigrate(&Watch{})
 
-	idgen, err = snowflake.NewNode(1)
+	err = setupIdGen()
 
 	if err != nil {
-		log.Fatal("Could not setup snowflake:", err)
+		log.Panicf("could not setup ID generator: %v", err)
 	}
 }

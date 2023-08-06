@@ -2,14 +2,14 @@ package controllers
 
 import (
 	"fmt"
+	"streamfox-backend/models"
 	"streamfox-backend/utils"
 	"time"
 
-	"github.com/bwmarrin/snowflake"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func generateToken(userId snowflake.ID) (string, error) {
+func generateToken(userId models.Id) (string, error) {
 	tokenLifespan := utils.GetEnvVarInt(utils.AUTH_TOKEN_LIFESPAN_HRS)
 
 	claims := jwt.MapClaims{}
@@ -22,23 +22,23 @@ func generateToken(userId snowflake.ID) (string, error) {
 	return token.SignedString(getApiSecret())
 }
 
-func getUserId(tokenStr string) (snowflake.ID, error) {
+func getUserId(tokenStr string) (models.Id, error) {
 	token, err := parseToken(tokenStr)
 
 	if err != nil {
-		return 0, err
+		return models.NilId, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok || !token.Valid {
-		return 0, nil
+		return models.NilId, nil
 	}
 
-	userId, err := snowflake.ParseString(claims["user_id"].(string))
+	userId, err := models.IdFromString(claims["user_id"].(string))
 
 	if err != nil {
-		return 0, err
+		return models.NilId, err
 	}
 
 	return userId, nil

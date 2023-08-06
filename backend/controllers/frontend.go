@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/abrander/ginproxy"
-	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
 )
 
@@ -87,14 +86,13 @@ func GenerateHtmlMetadataMiddleware(c *gin.Context) {
 	match := watchPageRegex.FindStringSubmatch(c.Request.URL.Path)
 
 	if len(match) == 2 {
-		videoId := match[1]
-		snowflake, err := snowflake.ParseBase58([]byte(videoId))
+		videoId, err := models.IdFromString(match[1])
 
 		if ok := recordError(c, err); !ok {
 			return
 		}
 
-		video, err := models.FetchVideo(snowflake)
+		video, err := models.FetchVideo(videoId)
 
 		if ok := recordError(c, err); !ok {
 			return

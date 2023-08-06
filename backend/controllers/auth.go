@@ -14,7 +14,7 @@ func setAuthCookie(c *gin.Context, token string) {
 }
 
 func authenticate(c *gin.Context, user *models.User) error {
-	token, err := generateToken(user.IdSnowflake())
+	token, err := generateToken(user.Id)
 
 	if err != nil {
 		return err

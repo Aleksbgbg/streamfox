@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math"
 	"streamfox-backend/files"
+	"streamfox-backend/models"
 	"time"
 
 	"gopkg.in/vansante/go-ffprobe.v2"
@@ -111,7 +112,7 @@ type ProbeResult struct {
 
 var ErrInvalidVideoType = errors.New("invalid video type")
 
-func Probe(videoId string) (*ProbeResult, error) {
+func Probe(videoId models.Id) (*ProbeResult, error) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 

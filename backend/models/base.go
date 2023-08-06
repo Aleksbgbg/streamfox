@@ -5,7 +5,7 @@ import (
 )
 
 type Base struct {
-	Id int64 `gorm:"primaryKey; autoIncrement:false"`
+	Id Id `gorm:"primaryKey; autoIncrement:false"`
 	RowMetadata
 }
 

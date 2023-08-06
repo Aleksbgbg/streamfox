@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/bwmarrin/snowflake"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +33,7 @@ type Metadata struct {
 }
 
 type Settings struct {
-	CreatorId   int64
+	CreatorId   Id
 	Creator     User
 	Name        string `gorm:"type:text"`
 	Description string `gorm:"type:text"`
@@ -50,7 +49,7 @@ type Video struct {
 func NewVideo(creator *User) (*Video, error) {
 	video := Video{
 		Base: Base{
-			Id: idgen.Generate().Int64(),
+			Id: NewId(),
 		},
 		Metadata: Metadata{
 			Status: CREATED,
@@ -67,9 +66,9 @@ func NewVideo(creator *User) (*Video, error) {
 	return &video, err
 }
 
-func FetchVideo(id snowflake.ID) (*Video, error) {
+func FetchVideo(id Id) (*Video, error) {
 	video := Video{}
-	err := db.Preload("Creator").First(&video, id.Int64()).Error
+	err := db.Preload("Creator").First(&video, id).Error
 	return &video, err
 }
 
@@ -80,10 +79,6 @@ func FetchAllVideos() ([]Video, error) {
 		Find(&videos, &Video{Metadata: Metadata{Status: COMPLETE}, Settings: Settings{Visibility: PUBLIC}}).
 		Error
 	return videos, err
-}
-
-func (video *Video) IdSnowflake() snowflake.ID {
-	return snowflake.ParseInt64(video.Id)
 }
 
 func (video *Video) IsCreator(user *User) bool {

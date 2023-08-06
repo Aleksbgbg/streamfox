@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 
-	"github.com/bwmarrin/snowflake"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -30,9 +29,9 @@ func ValidateCredentials(username, password string) (*User, error) {
 	return user, nil
 }
 
-func FetchUser(id snowflake.ID) (*User, error) {
+func FetchUser(id Id) (*User, error) {
 	user := User{}
-	err := db.First(&user, id.Int64()).Error
+	err := db.First(&user, id).Error
 	return &user, err
 }
 
@@ -65,10 +64,6 @@ type User struct {
 	Username     *string `gorm:"type:varchar(32); unique;"`
 	EmailAddress *string `gorm:"type:text; unique;"`
 	Password     *string `gorm:"type:char(60);"`
-}
-
-func (user *User) IdSnowflake() snowflake.ID {
-	return snowflake.ParseInt64(user.Id)
 }
 
 func (user *User) IsAnonymous() bool {
@@ -150,7 +145,7 @@ func (user *User) Absorb(anonymous *User) error {
 }
 
 func (user *User) Save() error {
-	user.Id = idgen.Generate().Int64()
+	user.Id = NewId()
 	err := db.Create(&user).Error
 	return err
 }

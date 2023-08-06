@@ -5,10 +5,11 @@ import (
 	"os"
 	"os/exec"
 	"streamfox-backend/files"
+	"streamfox-backend/models"
 	"strings"
 )
 
-func GenerateThumbnail(videoId string) error {
+func GenerateThumbnail(videoId models.Id) error {
 	args := strings.Fields(fmt.Sprintf(
 		"ffmpeg -loglevel error -y -i %s -vframes 1 -q:v 2 -vf scale=-1:225 -f mjpeg %s",
 		files.VideoPath(files.Stream, videoId),

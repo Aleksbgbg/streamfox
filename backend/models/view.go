@@ -7,10 +7,10 @@ import (
 type View struct {
 	Base
 
-	UserId int64 `gorm:"not null"`
+	UserId Id `gorm:"not null"`
 	User   User
 
-	VideoId int64 `gorm:"not null"`
+	VideoId Id `gorm:"not null"`
 	Video   Video
 
 	StartedAt     time.Time `gorm:"not null"`
@@ -21,7 +21,7 @@ func recordView(view View) error {
 	return db.Create(&view).Error
 }
 
-func viewAlreadyCounted(viewId int64) (bool, error) {
+func viewAlreadyCounted(viewId Id) (bool, error) {
 	var count int64
 	err := db.Model(&View{}).Where(&View{Base: Base{Id: viewId}}).Count(&count).Error
 

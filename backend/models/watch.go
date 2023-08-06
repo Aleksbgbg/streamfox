@@ -9,13 +9,13 @@ import (
 )
 
 type Watch struct {
-	UserId int64 `gorm:"primaryKey; autoIncrement:false"`
+	UserId Id `gorm:"primaryKey; autoIncrement:false"`
 	User   User
 
-	VideoId int64 `gorm:"not null"`
+	VideoId Id `gorm:"not null"`
 	Video   Video
 
-	ViewId int64 `gorm:"not null"`
+	ViewId Id `gorm:"not null"`
 
 	RowMetadata
 
@@ -37,7 +37,7 @@ func watchFor(user *User, video *Video) (*Watch, error) {
 	err := db.Where(Watch{UserId: user.Id}).
 		Attrs(Watch{
 			VideoId:       video.Id,
-			ViewId:        idgen.Generate().Int64(),
+			ViewId:        NewId(),
 			StartedAt:     time.Now(),
 			BytesStreamed: new(int64),
 		}).
@@ -50,7 +50,7 @@ func watchFor(user *User, video *Video) (*Watch, error) {
 
 	if watch.VideoId != video.Id {
 		watch.VideoId = video.Id
-		watch.ViewId = idgen.Generate().Int64()
+		watch.ViewId = NewId()
 		watch.StartedAt = time.Now()
 		watch.BytesStreamed = new(int64)
 		err = watch.save()

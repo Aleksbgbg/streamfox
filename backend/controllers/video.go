@@ -15,7 +15,6 @@ import (
 	"streamfox-backend/files"
 	"streamfox-backend/models"
 
-	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,7 +35,7 @@ func CreateVideo(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, VideoCreatedInfo{
-		Id:          video.IdSnowflake().Base58(),
+		Id:          video.Id.String(),
 		Name:        video.Name,
 		Description: video.Description,
 		Visibility:  video.Visibility,
@@ -46,7 +45,7 @@ func CreateVideo(c *gin.Context) {
 const VIDEO_PARAM_KEY = "video"
 
 func ExtractVideoMiddleware(c *gin.Context) {
-	videoId, err := snowflake.ParseBase58([]byte(c.Param("id")))
+	videoId, err := models.IdFromString(c.Param("id"))
 
 	if ok := checkUserError(c, err, errVideoInvalidId); !ok {
 		return
@@ -135,9 +134,7 @@ func UploadVideo(c *gin.Context) {
 	video.Status = models.UPLOADING
 	defer video.Save()
 
-	videoId := video.IdSnowflake().Base58()
-
-	file, filepath, err := files.VideoHandle(files.Stream, videoId)
+	file, filepath, err := files.VideoHandle(files.Stream, video.Id)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
@@ -157,7 +154,7 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	probe, err := codec.Probe(videoId)
+	probe, err := codec.Probe(video.Id)
 
 	if err != nil {
 		os.Remove(filepath)
@@ -181,7 +178,7 @@ func UploadVideo(c *gin.Context) {
 	video.SizeBytes = info.Size()
 	video.Status = models.PROCESSING
 
-	err = codec.GenerateThumbnail(videoId)
+	err = codec.GenerateThumbnail(video.Id)
 
 	if ok := checkServerError(c, err, errVideoGenerateThumbnail); !ok {
 		return
@@ -212,7 +209,7 @@ func getVideoInfo(video *models.Video) (*VideoInfo, error) {
 	}
 
 	return &VideoInfo{
-		Id:           video.IdSnowflake().Base58(),
+		Id:           video.Id.String(),
 		Creator:      getUserInfo(&video.Creator),
 		DurationSecs: video.DurationSecs,
 		Name:         video.Name,
@@ -258,7 +255,7 @@ func GetVideoInfo(c *gin.Context) {
 }
 
 func GetVideoThumbnail(c *gin.Context) {
-	c.File(files.VideoPath(files.Thumbnail, getVideoParam(c).IdSnowflake().Base58()))
+	c.File(files.VideoPath(files.Thumbnail, getVideoParam(c).Id))
 }
 
 func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image.Image, error) {
@@ -278,7 +275,7 @@ func GetVideoPreview(c *gin.Context) {
 
 	thumbnail, err := loadImage(
 		jpeg.Decode,
-		files.VideoPath(files.Thumbnail, video.IdSnowflake().Base58()),
+		files.VideoPath(files.Thumbnail, video.Id),
 	)
 
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
@@ -322,7 +319,7 @@ func GetVideoStream(c *gin.Context) {
 	user := getUserParam(c)
 	video := getVideoParam(c)
 
-	c.File(files.VideoPath(files.Stream, video.IdSnowflake().Base58()))
+	c.File(files.VideoPath(files.Stream, video.Id))
 	c.Header("Content-Type", video.MimeType)
 
 	bytesStreamed := int64(c.Writer.Size())
