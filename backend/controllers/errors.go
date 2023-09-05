@@ -249,14 +249,3 @@ func prettyFormat(err validator.FieldError) string {
 
 	return err.Error()
 }
-
-func ServerErrorLoggerMiddleware(c *gin.Context) {
-	c.Next()
-
-	if c.Writer.Status() == http.StatusInternalServerError {
-		for i, e := range c.Errors {
-			fmt.Printf("Error %d:\n", i)
-			fmt.Printf("%+v", e)
-		}
-	}
-}

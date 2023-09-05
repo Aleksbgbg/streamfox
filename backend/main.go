@@ -23,7 +23,6 @@ func main() {
 	const API_PREFIX = "/api"
 
 	router := gin.Default()
-	router.Use(controllers.ServerErrorLoggerMiddleware)
 
 	router.Use(controllers.GenerateHtmlMetadataMiddleware)
 	if gin.Mode() == gin.DebugMode {
