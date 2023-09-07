@@ -11,10 +11,12 @@ import (
 )
 
 func main() {
-	err := godotenv.Load(".env")
-
-	if err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		log.Panicf("Error loading .env file: %v", err)
+	}
+
+	if err := controllers.SetupApiSecret(); err != nil {
+		log.Panicf("Error setting up API secret: %v", err)
 	}
 
 	files.Setup()

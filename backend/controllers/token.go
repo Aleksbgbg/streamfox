@@ -1,13 +1,50 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"streamfox-backend/models"
 	"streamfox-backend/utils"
 	"time"
 
+	"github.com/dchest/uniuri"
 	"github.com/golang-jwt/jwt/v5"
 )
+
+var apiSecret []byte
+
+func SetupApiSecret() error {
+	const API_SECRET_FILE = "auth_api_secret"
+
+	if _, err := os.Stat(API_SECRET_FILE); err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+
+		file, err := os.Create(API_SECRET_FILE)
+
+		if err != nil {
+			return err
+		}
+
+		_, err = file.Write([]byte(uniuri.New()))
+
+		if err != nil {
+			return err
+		}
+	}
+
+	secret, err := os.ReadFile(API_SECRET_FILE)
+
+	if err != nil {
+		return err
+	}
+
+	apiSecret = secret
+
+	return nil
+}
 
 func generateToken(userId models.Id) (string, error) {
 	tokenLifespan := utils.GetEnvVarInt(utils.AUTH_TOKEN_LIFESPAN_HRS)
@@ -19,7 +56,7 @@ func generateToken(userId models.Id) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(getApiSecret())
+	return token.SignedString(apiSecret)
 }
 
 func getUserId(tokenStr string) (models.Id, error) {
@@ -50,10 +87,6 @@ func parseToken(tokenStr string) (*jwt.Token, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return getApiSecret(), nil
+		return apiSecret, nil
 	})
-}
-
-func getApiSecret() []byte {
-	return []byte(utils.GetEnvVar(utils.AUTH_API_SECRET))
 }
