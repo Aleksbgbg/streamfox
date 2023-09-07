@@ -3,7 +3,7 @@ import { type ApiResponse, apiUrl, get, post, put, request } from "@/endpoints/r
 import type { User } from "@/endpoints/user";
 import type { Id } from "@/types/id";
 import { panic } from "@/utils/panic";
-import { type ProgressReportFunc, createProgressReporter } from "@/utils/upload-progress-reporter";
+import { type ProgressReportFunc, createProgressReporter } from "@/utils/upload-progress";
 
 export type VideoId = Id;
 
