@@ -8,7 +8,13 @@ import { type Optional, empty, getValue, hasValue } from "@/types/optional";
 const route = useRoute();
 const videoId = route.params.id as VideoId;
 const video: Ref<Optional<VideoInfo>> = ref(empty());
-getVideoInfo(videoId).then((info) => (video.value = info));
+getVideoInfo(videoId).then((response) => {
+  if (!response.success()) {
+    return;
+  }
+
+  video.value = response.value();
+});
 </script>
 
 <template lang="pug">

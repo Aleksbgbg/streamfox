@@ -11,7 +11,13 @@ interface Video {
 const videos: Video[] = reactive([]);
 
 onBeforeMount(async () => {
-  for (const info of await getVideos()) {
+  const response = await getVideos();
+
+  if (!response.success()) {
+    return;
+  }
+
+  for (const info of response.value()) {
     videos.push({
       info,
       thumbnail: videoThumbnail(info.id),

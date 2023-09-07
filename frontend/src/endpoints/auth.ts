@@ -1,7 +1,8 @@
-import axios, { type AxiosResponse } from "axios";
-import { apiUrl } from "@/endpoints/url";
+import { ApiResponse, post } from "@/endpoints/request";
 
-export type Authorization = AxiosResponse<{ token: string }>;
+export interface Authorization {
+  token: string;
+}
 
 export interface Registration {
   username: string;
@@ -10,8 +11,8 @@ export interface Registration {
   repeatPassword: string;
 }
 
-export function register(data: Registration): Promise<Authorization> {
-  return axios.post(apiUrl("/auth/register"), data);
+export function register(data: Registration): Promise<ApiResponse<Registration, Authorization>> {
+  return post("/auth/register", data);
 }
 
 export interface Credentials {
@@ -19,6 +20,6 @@ export interface Credentials {
   password: string;
 }
 
-export function requestLogin(data: Credentials): Promise<Authorization> {
-  return axios.post(apiUrl("/auth/login"), data);
+export function requestLogin(data: Credentials): Promise<ApiResponse<Credentials, Authorization>> {
+  return post("/auth/login", data);
 }

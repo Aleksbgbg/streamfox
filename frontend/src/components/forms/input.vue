@@ -12,7 +12,7 @@ interface Props {
   placeholder?: string;
   type?: string;
   modelValue: string;
-  errors: string[];
+  errors?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,7 +29,7 @@ label.justify-self-end.mt-2(:for="label")
 .flex.flex-col
   input(
     class="bg-polar-darkest text-white placeholder-snow-dark placeholder:italic focus:border-aurora-green focus:outline-none leading-normal rounded border py-2 px-3"
-    :class="[errors.length === 0 ? 'border-polar-lightest' : 'border-aurora-red']"
+    :class="[(errors && errors.length > 0) ? 'border-aurora-red' : 'border-polar-lightest']"
     :id="label" :label="label" :placeholder="placeholder" :type="type"
     :value="modelValue"
     @input="$emit('update:modelValue', asInputElement($event.target).value)"

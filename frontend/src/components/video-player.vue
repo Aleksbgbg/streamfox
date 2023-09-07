@@ -18,7 +18,13 @@ const videoId = route.params.id as VideoId;
 const videoUrl = computed(() => videoStream(videoId));
 
 let timer: Optional<CallbackTimer> = empty();
-requiredWatchTimeMs(videoId).then((requiredWatchTimeMs) => {
+requiredWatchTimeMs(videoId).then((response) => {
+  if (!response.success()) {
+    return;
+  }
+
+  const requiredWatchTimeMs = response.transform(Number.parseFloat);
+
   if (requiredWatchTimeMs < 0) {
     return;
   }

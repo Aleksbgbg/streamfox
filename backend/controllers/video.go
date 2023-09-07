@@ -365,8 +365,8 @@ func StillWatching(c *gin.Context) {
 	case models.ADD_VIEW_DUPLICATE:
 		userError(c, errVideoViewAlreadyCounted)
 	case models.ADD_VIEW_TIME_NOT_PASSED:
-		validationError(c, fmt.Sprintf("You need to watch another %dms.", result.TimeLeftMs))
+		validationErrorGeneric(c, fmt.Sprintf("You need to watch another %dms.", result.TimeLeftMs))
 	case models.ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH:
-		validationError(c, fmt.Sprintf("You need to stream another %d bytes.", result.BytesLeft))
+		validationErrorGeneric(c, fmt.Sprintf("You need to stream another %d bytes.", result.BytesLeft))
 	}
 }

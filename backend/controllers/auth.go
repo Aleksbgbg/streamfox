@@ -118,12 +118,12 @@ func Register(c *gin.Context) {
 	}
 
 	if models.UsernameExists(input.Username) {
-		validationError(c, gin.H{"username": [...]string{"Username must not be taken."}})
+		validationError(c, errorMap{"username": []string{"Username must not be taken."}})
 		return
 	}
 
 	if models.EmailExists(input.EmailAddress) {
-		validationError(c, gin.H{"emailAddress": [...]string{"Email Address must not be taken."}})
+		validationError(c, errorMap{"emailAddress": []string{"Email Address must not be taken."}})
 		return
 	}
 

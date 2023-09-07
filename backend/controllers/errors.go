@@ -38,7 +38,28 @@ func toHttpError(e errType) int {
 	return 0
 }
 
-func errorMessage(c *gin.Context, errorType errType, message any) {
+type errorMap map[string][]string
+
+type errorResponse struct {
+	Generic  []string `json:"generic"`
+	Specific errorMap `json:"specific"`
+}
+
+func genericError(message string) errorResponse {
+	return errorResponse{
+		Generic:  []string{message},
+		Specific: errorMap{},
+	}
+}
+
+func specificErrors(specific errorMap) errorResponse {
+	return errorResponse{
+		Generic:  []string{},
+		Specific: specific,
+	}
+}
+
+func errorMessage(c *gin.Context, errorType errType, message errorResponse) {
 	c.JSON(toHttpError(errorType), gin.H{"errors": message})
 }
 
@@ -123,21 +144,26 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 	return 0, ""
 }
 
-func validationError(c *gin.Context, errors any) {
-	errorMessage(c, errValidation, errors)
+func validationError(c *gin.Context, errors errorMap) {
+	errorMessage(c, errValidation, specificErrors(errors))
+	c.Abort()
+}
+
+func validationErrorGeneric(c *gin.Context, err string) {
+	errorMessage(c, errValidation, genericError(err))
 	c.Abort()
 }
 
 func userError(c *gin.Context, predefined predefinedError) {
 	errorType, message := getPredefinedError(predefined)
-	errorMessage(c, errorType, message)
+	errorMessage(c, errorType, genericError(message))
 	c.Abort()
 }
 
 func serverError(c *gin.Context, err error, predefined predefinedError) {
 	errorType, message := getPredefinedError(predefined)
 	c.Error(fmt.Errorf("'%s': %v", message, err))
-	errorMessage(c, errorType, message)
+	errorMessage(c, errorType, genericError(message))
 	c.Abort()
 }
 
@@ -166,7 +192,7 @@ func checkUserError(c *gin.Context, err error, predefined predefinedError) bool 
 	}
 
 	errorType, message := getPredefinedError(predefined)
-	errorMessage(c, errorType, message)
+	errorMessage(c, errorType, genericError(message))
 	c.Abort()
 	return false
 }
@@ -178,17 +204,17 @@ func checkServerError(c *gin.Context, err error, predefined predefinedError) boo
 
 	errorType, message := getPredefinedError(predefined)
 	c.Error(fmt.Errorf("'%s': %v", message, err))
-	errorMessage(c, errorType, message)
+	errorMessage(c, errorType, genericError(message))
 	c.Abort()
 	return false
 }
 
-func formatErrors(err error) any {
+func formatErrors(err error) errorResponse {
 	if _, ok := err.(validator.ValidationErrors); !ok {
-		return err.Error()
+		return genericError(err.Error())
 	}
 
-	errors := map[string][]string{}
+	errors := errorMap{}
 
 	for _, value := range err.(validator.ValidationErrors) {
 		name := utils.ToLowerCamelCase(value.Field())
@@ -200,7 +226,7 @@ func formatErrors(err error) any {
 		errors[name] = append(errors[name], prettyFormat(value))
 	}
 
-	return errors
+	return specificErrors(errors)
 }
 
 func prettyFormat(err validator.FieldError) string {
