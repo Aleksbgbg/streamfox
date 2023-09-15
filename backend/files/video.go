@@ -36,6 +36,6 @@ func VideoPath(file VideoFile, videoId models.Id) string {
 
 func VideoHandle(file VideoFile, videoId models.Id) (*os.File, string, error) {
 	path := VideoPath(file, videoId)
-	handle, err := os.OpenFile(path, os.O_CREATE, defaultPerm)
+	handle, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, defaultPerm)
 	return handle, path, err
 }
