@@ -26,7 +26,7 @@ func ProxyFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
 		c.Next()
 
 		if (c.Writer.Status() == http.StatusNotFound) &&
-			!strings.Contains(c.Request.URL.Path, apiPrefix) {
+			!strings.HasPrefix(c.Request.URL.Path, apiPrefix) {
 			g.Handler(c)
 		}
 	}
