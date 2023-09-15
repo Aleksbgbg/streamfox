@@ -3,7 +3,6 @@ package models
 import (
 	"errors"
 	"fmt"
-	"math"
 
 	"gorm.io/gorm"
 )
@@ -112,32 +111,14 @@ func (video *Video) ProcessStream(user *User, bytesStreamed int64) error {
 	return nil
 }
 
-type RequiredWatchTimeCode int
-
-const (
-	WATCH_TIME_FAILURE RequiredWatchTimeCode = iota
-	WATCH_TIME_ALREADY_WATCHED
-	WATCH_TIME_SUCCESS
-)
-
-func (video *Video) RequiredWatchTimeMs(user *User) (RequiredWatchTimeCode, int32, error) {
+func (video *Video) CalculateWatchConditions(user *User) (WatchConditions, error) {
 	watch, err := watchFor(user, video)
 
 	if err != nil {
-		return WATCH_TIME_FAILURE, 0, fmt.Errorf("could not get watch: %v", err)
+		return WatchConditions{}, fmt.Errorf("could not get watch: %v", err)
 	}
 
-	counted, err := viewAlreadyCounted(watch.ViewId)
-
-	if err != nil {
-		return WATCH_TIME_FAILURE, 0, err
-	}
-
-	if counted {
-		return WATCH_TIME_ALREADY_WATCHED, 0, nil
-	}
-
-	return WATCH_TIME_SUCCESS, watchTimeRemainingMs(watch, video), nil
+	return calculateWatchConditions(watch, video), nil
 }
 
 type TryAddResultCode int
@@ -153,8 +134,7 @@ const (
 type TryAddResult struct {
 	Code TryAddResultCode
 
-	TimeLeftMs int32
-	BytesLeft  int64
+	Conditions WatchConditions
 }
 
 func (video *Video) TryAddView(user *User) (TryAddResult, error) {
@@ -179,18 +159,19 @@ func (video *Video) TryAddView(user *User) (TryAddResult, error) {
 		return TryAddResult{Code: ADD_VIEW_DUPLICATE}, nil
 	}
 
-	remaining := watchTimeRemainingMs(watch, video)
+	conditions := calculateWatchConditions(watch, video)
 
-	if remaining > 0 {
-		return TryAddResult{Code: ADD_VIEW_TIME_NOT_PASSED, TimeLeftMs: remaining}, nil
+	if conditions.RemainingBytes > 0 {
+		return TryAddResult{
+			Code:       ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH,
+			Conditions: conditions,
+		}, nil
 	}
 
-	requiredBytes := int64(math.Ceil(float64(video.SizeBytes) * WATCH_PERCENTAGE_REQUIRED))
-
-	if *watch.BytesStreamed < requiredBytes {
+	if conditions.RemainingTime.Milliseconds() > 0 {
 		return TryAddResult{
-			Code:      ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH,
-			BytesLeft: (requiredBytes - *watch.BytesStreamed),
+			Code:       ADD_VIEW_TIME_NOT_PASSED,
+			Conditions: conditions,
 		}, nil
 	}
 

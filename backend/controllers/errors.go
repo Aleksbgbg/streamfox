@@ -88,7 +88,7 @@ const (
 	errVideoProbe
 	errVideoGetSize
 	errVideoGenerateThumbnail
-	errVideoGetWatchTime
+	errVideoGetWatchConditions
 	errVideoProcessStillWatching
 )
 
@@ -134,8 +134,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errServer, "Could not get video size."
 	case errVideoGenerateThumbnail:
 		return errServer, "Error in generating thumbnail."
-	case errVideoGetWatchTime:
-		return errServer, "Could not get required watch time."
+	case errVideoGetWatchConditions:
+		return errServer, "Could not get required watch conditions."
 	case errVideoProcessStillWatching:
 		return errServer, "Could not process still watching request."
 	}

@@ -4,37 +4,51 @@ import { useRoute } from "vue-router";
 import videojs from "video.js";
 import {
   type VideoId,
-  notifyStillWatching,
-  requiredWatchTimeMs,
+  type WatchConditions,
+  getWatchConditions,
+  postView,
   videoStream,
 } from "@/endpoints/video";
 import { getVolume, setVolume } from "@/settings/volume";
-import { type Optional, empty, getValue, hasValue } from "@/types/optional";
+import { type Optional, empty, getValue, tryApply } from "@/types/optional";
 import { CallbackTimer } from "@/utils/callback-timer";
 import { panic } from "@/utils/panic";
 
 const route = useRoute();
 const videoId = route.params.id as VideoId;
+
 const videoUrl = computed(() => videoStream(videoId));
 
+let watchConditions: Optional<WatchConditions> = empty();
+const conditionsTracker = {
+  viewClaimed: false,
+  percentage: 0,
+  completedTime: false,
+};
 let timer: Optional<CallbackTimer> = empty();
-requiredWatchTimeMs(videoId).then((response) => {
+
+async function checkWatchConditions() {
+  if (
+    conditionsTracker.viewClaimed ||
+    conditionsTracker.percentage < getValue(watchConditions).percentage ||
+    !conditionsTracker.completedTime
+  ) {
+    return;
+  }
+
+  const response = await postView(videoId);
+
   if (!response.success()) {
+    console.error("unable to count view: ", response.err());
     return;
   }
 
-  const requiredWatchTimeMs = response.transform(Number.parseFloat);
-
-  if (requiredWatchTimeMs < 0) {
-    return;
-  }
-
-  timer = new CallbackTimer(requiredWatchTimeMs, () => notifyStillWatching(videoId));
-});
+  conditionsTracker.viewClaimed = true;
+}
 
 const playerElement: Ref<HTMLVideoElement | null> = ref(null);
 
-onMounted(() => {
+onMounted(async () => {
   const player = videojs(playerElement.value ?? panic("player is null"), {
     autoplay: true,
     controls: true,
@@ -55,23 +69,31 @@ onMounted(() => {
     setVolume(player.volume());
   });
 
-  player.on("play", function () {
-    if (hasValue(timer)) {
-      getValue(timer).resume();
-    }
-  });
-  player.on("pause", function () {
-    if (hasValue(timer)) {
-      getValue(timer).pause();
-    }
-  });
-});
+  const response = await getWatchConditions(videoId);
 
-onUnmounted(() => {
-  if (hasValue(timer)) {
-    getValue(timer).cancel();
+  if (!response.success()) {
+    return;
+  }
+
+  watchConditions = response.value();
+
+  timer = new CallbackTimer(watchConditions.remainingTimeMs, () => {
+    conditionsTracker.completedTime = true;
+    checkWatchConditions();
+  });
+  player.on("play", () => getValue(timer).resume());
+  player.on("pause", () => getValue(timer).pause());
+  player.on("progress", () => {
+    conditionsTracker.percentage = player.bufferedPercent();
+    checkWatchConditions();
+  });
+
+  if (!player.paused()) {
+    timer.resume();
   }
 });
+
+onUnmounted(() => tryApply(timer, (timer) => timer.cancel()));
 </script>
 
 <template lang="pug">

@@ -333,23 +333,30 @@ func GetVideoStream(c *gin.Context) {
 	recordError(c, err)
 }
 
-func GetRequiredWatchTimeMs(c *gin.Context) {
+type WatchConditionsResponse struct {
+	Percentage      float64 `json:"percentage"`
+	RemainingBytes  uint64  `json:"remainingBytes"`
+	RemainingTimeMs uint64  `json:"remainingTimeMs"`
+}
+
+func GetWatchConditions(c *gin.Context) {
 	user := getUserParam(c)
 	video := getVideoParam(c)
 
-	code, requiredWatchTime, err := video.RequiredWatchTimeMs(user)
+	conditions, err := video.CalculateWatchConditions(user)
 
-	switch code {
-	case models.WATCH_TIME_FAILURE:
-		serverError(c, err, errVideoGetWatchTime)
-	case models.WATCH_TIME_ALREADY_WATCHED:
-		c.JSON(http.StatusOK, -1)
-	case models.WATCH_TIME_SUCCESS:
-		c.JSON(http.StatusOK, requiredWatchTime)
+	if ok := checkServerError(c, err, errVideoGetWatchConditions); !ok {
+		return
 	}
+
+	c.JSON(http.StatusOK, WatchConditionsResponse{
+		Percentage:      models.WatchPercentageRequired,
+		RemainingBytes:  conditions.RemainingBytes,
+		RemainingTimeMs: uint64(conditions.RemainingTime.Milliseconds()),
+	})
 }
 
-func StillWatching(c *gin.Context) {
+func PostView(c *gin.Context) {
 	user := getUserParam(c)
 	video := getVideoParam(c)
 
@@ -364,9 +371,18 @@ func StillWatching(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 	case models.ADD_VIEW_DUPLICATE:
 		userError(c, errVideoViewAlreadyCounted)
-	case models.ADD_VIEW_TIME_NOT_PASSED:
-		validationErrorGeneric(c, fmt.Sprintf("You need to watch another %dms.", result.TimeLeftMs))
 	case models.ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH:
-		validationErrorGeneric(c, fmt.Sprintf("You need to stream another %d bytes.", result.BytesLeft))
+		validationErrorGeneric(
+			c,
+			fmt.Sprintf("You need to stream another %d bytes.", result.Conditions.RemainingBytes),
+		)
+	case models.ADD_VIEW_TIME_NOT_PASSED:
+		validationErrorGeneric(
+			c,
+			fmt.Sprintf(
+				"You need to watch another %dms.",
+				result.Conditions.RemainingTime.Milliseconds(),
+			),
+		)
 	}
 }

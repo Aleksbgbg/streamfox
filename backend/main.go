@@ -76,18 +76,18 @@ func main() {
 		controllers.GetVideoStream,
 	)
 	specificVideo.GET(
-		"/required-watch-time-ms",
+		"/watch-conditions",
 		controllers.EnsureCompleteVideoMiddleware,
 		controllers.EnsureVisibleVideoMiddleware,
 		controllers.GenerateAnonymousUserMiddleware,
-		controllers.GetRequiredWatchTimeMs,
+		controllers.GetWatchConditions,
 	)
 	specificVideo.POST(
-		"/still-watching",
+		"/views",
 		controllers.EnsureCompleteVideoMiddleware,
 		controllers.EnsureVisibleVideoMiddleware,
 		controllers.GenerateAnonymousUserMiddleware,
-		controllers.StillWatching,
+		controllers.PostView,
 	)
 	specificVideo.PUT(
 		"/settings",

@@ -32,12 +32,18 @@ export function videoStream(id: VideoId): string {
   return apiUrl(`/videos/${id}/stream`);
 }
 
-export function requiredWatchTimeMs(id: VideoId): Promise<ApiResponse<void, string>> {
-  return get(`/videos/${id}/required-watch-time-ms`);
+export interface WatchConditions {
+  percentage: number;
+  remainingBytes: number;
+  remainingTimeMs: number;
 }
 
-export function notifyStillWatching(id: VideoId): Promise<ApiResponse<void, void>> {
-  return post(`/videos/${id}/still-watching`);
+export function getWatchConditions(id: VideoId): Promise<ApiResponse<void, WatchConditions>> {
+  return get(`/videos/${id}/watch-conditions`);
+}
+
+export function postView(id: VideoId): Promise<ApiResponse<void, void>> {
+  return post(`/videos/${id}/views`);
 }
 
 export function uploadVideo(
