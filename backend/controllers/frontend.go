@@ -23,10 +23,7 @@ func DevFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
 		),
 	)
 	return func(c *gin.Context) {
-		c.Next()
-
-		if (c.Writer.Status() == http.StatusNotFound) &&
-			!strings.HasPrefix(c.Request.URL.Path, apiPrefix) {
+		if !strings.HasPrefix(c.Request.URL.Path, apiPrefix) {
 			g.Handler(c)
 		}
 	}
