@@ -74,7 +74,7 @@ func GenerateHtmlMetadataMiddleware(c *gin.Context) {
 
 	c.Next()
 
-	if c.Writer.Header().Get("Content-Type") != "text/html" {
+	if !strings.HasPrefix(c.Writer.Header().Get("Content-Type"), "text/html") {
 		return
 	}
 
