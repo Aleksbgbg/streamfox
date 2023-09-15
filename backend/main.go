@@ -28,7 +28,7 @@ func main() {
 
 	router.Use(controllers.GenerateHtmlMetadataMiddleware)
 	if gin.Mode() == gin.DebugMode {
-		router.Use(controllers.ProxyFrontendMiddleware(API_PREFIX))
+		router.Use(controllers.DevFrontendMiddleware(API_PREFIX))
 	}
 
 	api := router.Group(API_PREFIX)

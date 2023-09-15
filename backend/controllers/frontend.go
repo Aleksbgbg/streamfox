@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ProxyFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
+func DevFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
 	g, _ := ginproxy.NewGinProxy(
 		fmt.Sprintf(
 			"http://%s:%s",
