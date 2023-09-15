@@ -23,12 +23,15 @@ func main() {
 	models.Setup()
 
 	const API_PREFIX = "/api"
+	const FRONTEND_PATH = "frontend"
 
 	router := gin.Default()
 
 	router.Use(controllers.GenerateHtmlMetadataMiddleware)
 	if gin.Mode() == gin.DebugMode {
 		router.NoRoute(controllers.DevFrontendMiddleware(API_PREFIX))
+	} else {
+		router.NoRoute(controllers.ProdFrontendMiddleware(FRONTEND_PATH))
 	}
 
 	api := router.Group(API_PREFIX)

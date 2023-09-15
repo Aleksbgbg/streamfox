@@ -2,9 +2,13 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"streamfox-backend/models"
 	"streamfox-backend/utils"
@@ -13,6 +17,18 @@ import (
 	"github.com/abrander/ginproxy"
 	"github.com/gin-gonic/gin"
 )
+
+func ProdFrontendMiddleware(frontendPath string) gin.HandlerFunc {
+	fileServer := gin.WrapH(http.FileServer(http.Dir(frontendPath)))
+	return func(c *gin.Context) {
+		requestedPath := filepath.Join(frontendPath, c.Request.URL.Path)
+		if _, err := os.Stat(requestedPath); errors.Is(err, fs.ErrNotExist) {
+			http.ServeFile(c.Writer, c.Request, filepath.Join(frontendPath, "index.html"))
+		} else {
+			fileServer(c)
+		}
+	}
+}
 
 func DevFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
 	g, _ := ginproxy.NewGinProxy(
