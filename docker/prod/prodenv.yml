@@ -1,0 +1,30 @@
+version: "3"
+services:
+  server:
+    image: "streamfox/server"
+    build:
+      context: ../..
+      dockerfile: docker/prod/server.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      GIN_MODE: release
+      DATA_ROOT: /streamfox/data
+      DB_HOST: postgres
+
+  postgres:
+    image: postgres
+    restart: unless-stopped
+    hostname: postgres
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

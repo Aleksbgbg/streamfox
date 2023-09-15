@@ -1,0 +1,6 @@
+# Backend
+**/auth_api_secret
+
+# Frontend
+**/node_modules
+**/dist
