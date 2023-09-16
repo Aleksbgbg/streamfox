@@ -10,10 +10,11 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "5000:5000"
+      - "8801:8801"
     environment:
       GIN_MODE: release
       APP_DATA_ROOT: /streamfox/data
+      APP_PORT: 8801
       DB_HOST: postgres
 
   postgres:

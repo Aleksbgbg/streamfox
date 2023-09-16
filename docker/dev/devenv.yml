@@ -11,9 +11,11 @@ services:
     depends_on:
       - backend
     ports:
-      - "5173:5173"
+      - "8702:8702"
     environment:
+      APP_PORT: 8702
       DEBUG_FORWARD_HOST: backend
+      DEBUG_FORWARD_PORT: 8701
     command: >
       sh -c "npm i && npm run dev"
 
@@ -29,11 +31,13 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "5000:5000"
+      - "8701:8701"
     environment:
       APP_DATA_ROOT: /data
+      APP_PORT: 8701
       DB_HOST: postgres
       DEBUG_FORWARD_HOST: frontend
+      DEBUG_FORWARD_PORT: 8702
 
   postgres:
     image: postgres
@@ -59,7 +63,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "8000:80"
+      - "8703:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
       PGADMIN_DEFAULT_PASSWORD: admin

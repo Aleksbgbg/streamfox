@@ -24,5 +24,5 @@ COPY --from=0 /streamfox/backend /streamfox/backend
 COPY --from=1 /streamfox/frontend /streamfox/frontend
 COPY backend/.env backend/logo_preview.png /streamfox/
 
-EXPOSE 5000
+EXPOSE 8801
 CMD ["/streamfox/backend"]

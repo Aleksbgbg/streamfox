@@ -8,5 +8,5 @@ RUN go install github.com/silenceper/gowatch@latest
 
 RUN apk update && apk add --no-cache ffmpeg
 
-EXPOSE 5000
+EXPOSE 8701
 CMD ["gowatch"]
