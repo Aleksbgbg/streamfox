@@ -73,7 +73,7 @@ var homePageMetadataTemplate, _ = template.New("").Parse(`
 `)
 
 func formatBaseUrl(c *gin.Context) string {
-	return fmt.Sprintf("%s://%s", utils.GetEnvVar(utils.SCHEME), c.Request.Host)
+	return fmt.Sprintf("%s://%s", utils.GetEnvVar(utils.APP_SCHEME), c.Request.Host)
 }
 
 func GenerateHtmlMetadataMiddleware(c *gin.Context) {

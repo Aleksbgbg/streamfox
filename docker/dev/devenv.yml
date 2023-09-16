@@ -31,7 +31,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      DATA_ROOT: /data
+      APP_DATA_ROOT: /data
       DB_HOST: postgres
       DEBUG_FORWARD_HOST: frontend
 

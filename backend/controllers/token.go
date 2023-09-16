@@ -47,7 +47,7 @@ func SetupApiSecret() error {
 }
 
 func generateToken(userId models.Id) (string, error) {
-	tokenLifespan := utils.GetEnvVarInt(utils.AUTH_TOKEN_LIFESPAN_HRS)
+	tokenLifespan := utils.GetEnvVarInt(utils.APP_TOKEN_LIFESPAN_HRS)
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true

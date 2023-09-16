@@ -13,7 +13,7 @@ services:
       - "5000:5000"
     environment:
       GIN_MODE: release
-      DATA_ROOT: /streamfox/data
+      APP_DATA_ROOT: /streamfox/data
       DB_HOST: postgres
 
   postgres:

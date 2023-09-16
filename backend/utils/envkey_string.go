@@ -8,21 +8,21 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[DATA_ROOT-0]
-	_ = x[DB_HOST-1]
-	_ = x[DB_PORT-2]
-	_ = x[DB_USER-3]
-	_ = x[DB_PASSWORD-4]
-	_ = x[DB_NAME-5]
-	_ = x[AUTH_TOKEN_LIFESPAN_HRS-6]
-	_ = x[SCHEME-7]
+	_ = x[APP_DATA_ROOT-0]
+	_ = x[APP_TOKEN_LIFESPAN_HRS-1]
+	_ = x[APP_SCHEME-2]
+	_ = x[DB_HOST-3]
+	_ = x[DB_PORT-4]
+	_ = x[DB_USER-5]
+	_ = x[DB_PASSWORD-6]
+	_ = x[DB_NAME-7]
 	_ = x[DEBUG_FORWARD_HOST-8]
 	_ = x[DEBUG_FORWARD_PORT-9]
 }
 
-const _EnvKey_name = "DATA_ROOTDB_HOSTDB_PORTDB_USERDB_PASSWORDDB_NAMEAUTH_TOKEN_LIFESPAN_HRSSCHEMEDEBUG_FORWARD_HOSTDEBUG_FORWARD_PORT"
+const _EnvKey_name = "APP_DATA_ROOTAPP_TOKEN_LIFESPAN_HRSAPP_SCHEMEDB_HOSTDB_PORTDB_USERDB_PASSWORDDB_NAMEDEBUG_FORWARD_HOSTDEBUG_FORWARD_PORT"
 
-var _EnvKey_index = [...]uint8{0, 9, 16, 23, 30, 41, 48, 71, 77, 95, 113}
+var _EnvKey_index = [...]uint8{0, 13, 35, 45, 52, 59, 66, 77, 84, 102, 120}
 
 func (i EnvKey) String() string {
 	if i < 0 || i >= EnvKey(len(_EnvKey_index)-1) {

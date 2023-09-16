@@ -11,7 +11,7 @@ const defaultPerm = os.ModePerm
 var root string
 
 func Setup() {
-	root = utils.GetEnvVar(utils.DATA_ROOT)
+	root = utils.GetEnvVar(utils.APP_DATA_ROOT)
 	os.Mkdir(root, defaultPerm)
 
 	for _, subdir := range [...]string{videoBase} {
