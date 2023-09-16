@@ -2,6 +2,7 @@ version: "3"
 services:
   server:
     image: "streamfox/server"
+    restart: unless-stopped
     build:
       context: ../..
       dockerfile: docker/prod/server.Dockerfile

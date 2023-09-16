@@ -2,6 +2,7 @@ version: "3"
 services:
   frontend:
     image: "node:alpine"
+    restart: unless-stopped
     user: "root"
     working_dir: /home/node/app
     volumes:
@@ -18,6 +19,7 @@ services:
 
   backend:
     image: "streamfox/backend"
+    restart: unless-stopped
     build:
       context: ../../backend
       dockerfile: ../docker/dev/backend.Dockerfile
