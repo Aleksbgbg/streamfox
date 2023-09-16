@@ -13,7 +13,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      FORWARD_HOST: backend
+      DEBUG_FORWARD_HOST: backend
     command: >
       sh -c "npm i && npm run dev"
 

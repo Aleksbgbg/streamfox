@@ -28,7 +28,7 @@ export default defineConfig({
       usePolling: true,
     },
     proxy: {
-      "/api": `http://${process.env.FORWARD_HOST}:5000`,
+      "/api": `http://${process.env.DEBUG_FORWARD_HOST}:5000`,
     },
   },
 });
