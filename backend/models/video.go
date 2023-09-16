@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -45,7 +46,15 @@ type Video struct {
 	Settings
 }
 
-func NewVideo(creator *User) (*Video, error) {
+func nameOrDefault(name string) string {
+	if strings.TrimSpace(name) == "" {
+		return "Untitled Video"
+	} else {
+		return name
+	}
+}
+
+func NewVideo(creator *User, name string) (*Video, error) {
 	video := Video{
 		Base: Base{
 			Id: NewId(),
@@ -55,7 +64,7 @@ func NewVideo(creator *User) (*Video, error) {
 		},
 		Settings: Settings{
 			CreatorId:  creator.Id,
-			Name:       "Untitled Video",
+			Name:       nameOrDefault(name),
 			Visibility: PUBLIC,
 		},
 	}

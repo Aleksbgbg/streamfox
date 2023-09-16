@@ -13,6 +13,10 @@ export enum Visibility {
   Public,
 }
 
+export interface CreateVideoInfo {
+  name: string;
+}
+
 export interface VideoCreatedInfo {
   id: VideoId;
   name: string;
@@ -20,8 +24,10 @@ export interface VideoCreatedInfo {
   visibility: Visibility;
 }
 
-export function createVideo(): Promise<ApiResponse<void, VideoCreatedInfo>> {
-  return post("/videos", null);
+export function createVideo(
+  info: CreateVideoInfo
+): Promise<ApiResponse<CreateVideoInfo, VideoCreatedInfo>> {
+  return post("/videos", info);
 }
 
 export function videoThumbnail(id: VideoId): string {

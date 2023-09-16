@@ -43,11 +43,17 @@ const meta = reactive({
 
 const roundedDataRate = computed(() => (Math.round(upload.dataRate * 100) / 100).toFixed(2));
 
+function removeExtension(filename: string): string {
+  return filename.replace(/\.[^/.]+$/, "");
+}
+
 async function fileSelected() {
   createErr.value = emptyApiErr();
   uploadErr.value = emptyApiErr();
 
-  const createResponse = await createVideo();
+  const file = fileInput.value?.files?.[0] ?? panic("no file found");
+
+  const createResponse = await createVideo({ name: removeExtension(file.name) });
 
   if (!createResponse.success()) {
     createErr.value = createResponse.err();
@@ -55,8 +61,6 @@ async function fileSelected() {
   }
 
   video.value = createResponse.value();
-
-  const file = fileInput.value?.files?.[0] ?? panic("no file found");
   meta.filename = file.name;
 
   const reader = new FileReader();
