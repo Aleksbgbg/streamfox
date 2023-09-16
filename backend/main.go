@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"streamfox-backend/controllers"
 	"streamfox-backend/files"
 	"streamfox-backend/models"
+	"streamfox-backend/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -105,5 +107,5 @@ func main() {
 		controllers.UploadVideo,
 	)
 
-	router.Run(":5000")
+	router.Run(fmt.Sprintf(":%s", utils.GetEnvVar(utils.APP_PORT)))
 }
