@@ -241,6 +241,8 @@ func prettyFormat(err validator.FieldError) string {
 		return fmt.Sprintf("%s must be identical to %s.", fieldName, utils.AddSpaces(err.Param()))
 	case "printascii":
 		return fmt.Sprintf("%s must contain valid characters (printable ASCII only).", fieldName)
+	case "ne_ignore_case":
+		return fmt.Sprintf("%s is not allowed to be any variation of '%s'.", fieldName, err.Param())
 	case "min", "max":
 		value := err.Value()
 
