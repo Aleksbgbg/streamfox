@@ -46,7 +46,7 @@ func DevFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
 }
 
 var metadataInsertionMarker = []byte("<!-- metadata -->")
-var watchPageRegex = regexp.MustCompile(`/watch/(.*)$`)
+var watchPageRegex = regexp.MustCompile(`^/watch/(\w*)`)
 var watchPageMetadataTemplate, _ = template.New("").Parse(`
 <meta name="description" content="{{.Description}}">
 
