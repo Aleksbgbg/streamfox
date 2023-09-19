@@ -97,8 +97,9 @@ onUnmounted(() => tryApply(timer, (timer) => timer.cancel()));
 </script>
 
 <template lang="pug">
-video.video-js.vjs-theme-sea(ref="playerElement")
-  source(:src="videoUrl" type="video/mp4")
+div
+  video.video-js.vjs-theme-sea(ref="playerElement")
+    source(:src="videoUrl" type="video/mp4")
 </template>
 
 <style lang="stylus">
