@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import logo from "@/assets/logo.svg?component";
 import CUploadButton from "@/components/upload-button.vue";
+import CUserBadge from "@/components/user/badge.vue";
 import { useUserStore } from "@/store/user";
 import { getValue, hasValue } from "@/types/optional";
 import { logout } from "@/utils/auth";
@@ -16,10 +17,9 @@ nav.flex.items-center.p-5
   .flex-grow
     c-upload-button
   .flex.items-center(v-if="hasValue(store.user)")
-    i.bi-question-square
-    p.ml-2 {{ getValue(store.user).username }}
+    c-user-badge(:user="getValue(store.user)")
     button(
-      class="hover:bg-polar-light rounded px-3 py-2 ml-2"
+      class="hover:bg-polar-light rounded px-3 py-2"
       @click="logout"
     )
       span Log Out
