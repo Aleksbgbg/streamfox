@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Ref, ref } from "vue";
 import { useRoute } from "vue-router";
+import CUserBadge from "@/components/user/badge.vue";
 import CVideoPlayer from "@/components/video-player.vue";
 import { type VideoId, type VideoInfo, getVideoInfo } from "@/endpoints/video";
 import { type Optional, empty, getValue, hasValue } from "@/types/optional";
@@ -18,12 +19,12 @@ getVideoInfo(videoId).then((response) => {
 </script>
 
 <template lang="pug">
-.h-full.w-full.p-5
-  .flex.flex-col.h-full.w-full.shadow-xl
-    c-video-player.flex-1
-    .flex.bg-theme-light.p-5
-      h2.flex-1.font-semibold.text-lg {{ $route.params.id }}
-      p(
-        v-if="hasValue(video)"
-      ) {{ getValue(video).views }} {{ getValue(video).views === 1 ? 'view' : 'views' }}
+.flex.flex-col.h-full.overflow-hidden
+  c-video-player.flex-1
+  .bg-polar-dark.w-full.p-5(v-if="hasValue(video)")
+    .flex.w-full
+      h2.flex-1.font-semibold.text-lg {{ getValue(video).name }}
+      p {{ getValue(video).views }} {{ getValue(video).views === 1 ? 'view' : 'views' }}
+    c-user-badge.mt-2(:user="getValue(video).creator")
+    p.mt-2(v-if="getValue(video).description.length > 0") {{ getValue(video).description }}
 </template>
