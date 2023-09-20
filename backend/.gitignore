@@ -3,4 +3,4 @@
 
 # Application data
 /auth_api_secret
-/data
+/data*
