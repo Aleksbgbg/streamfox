@@ -14,6 +14,7 @@ import (
 	"streamfox-backend/codec"
 	"streamfox-backend/files"
 	"streamfox-backend/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -203,6 +204,7 @@ type VideoInfo struct {
 	Id           string            `json:"id"`
 	Creator      UserInfo          `json:"creator"`
 	DurationSecs int32             `json:"duration_secs"`
+	UploadedAt   time.Time         `json:"uploadedAt"`
 	Name         string            `json:"name"`
 	Description  string            `json:"description"`
 	Visibility   models.Visibility `json:"visibility"`
@@ -222,6 +224,7 @@ func getVideoInfo(video *models.Video) (*VideoInfo, error) {
 		Id:           video.Id.String(),
 		Creator:      getUserInfo(&video.Creator),
 		DurationSecs: video.DurationSecs,
+		UploadedAt:   video.CreatedAt,
 		Name:         video.Name,
 		Description:  video.Description,
 		Visibility:   video.Visibility,

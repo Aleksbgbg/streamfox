@@ -88,6 +88,7 @@ export interface VideoInfo {
   id: VideoId;
   creator: User;
   durationSecs: number;
+  uploadedAt: Date;
   name: string;
   description: string;
   visibility: Visibility;

@@ -1,6 +1,38 @@
 import axios, { AxiosError, type AxiosProgressEvent } from "axios";
 import { type Optional, empty, getValue, hasValue } from "@/types/optional";
 
+const ISO_8601_REGEX = /^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/;
+
+function isDate(value: unknown): boolean {
+  if (!value) {
+    return false;
+  }
+
+  return typeof value === "string" && ISO_8601_REGEX.test(value);
+}
+
+type GenericObject = { [key: string]: unknown };
+
+function handleDates(body: GenericObject) {
+  if (body === null || body === undefined || typeof body !== "object") {
+    return;
+  }
+
+  for (const key of Object.keys(body)) {
+    if (isDate(body[key])) {
+      body[key] = new Date(body[key] as string);
+    } else if (typeof body[key] === "object") {
+      handleDates(body[key] as GenericObject);
+    }
+  }
+}
+
+const instance = axios.create();
+instance.interceptors.response.use(function (response) {
+  handleDates(response.data);
+  return response;
+});
+
 export function apiUrl(path: string) {
   return import.meta.env.VITE_API_ENDPOINT + path;
 }
@@ -58,7 +90,7 @@ export async function request<TData, TResponse>(params: {
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
 }): Promise<ApiResponse<TData, TResponse>> {
   try {
-    const response = await axios({
+    const response = await instance({
       method: params.method,
       url: apiUrl(params.url),
       data: params.data,
