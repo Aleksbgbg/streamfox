@@ -21,7 +21,7 @@ export const router = createRouter({
     {
       path: "/watch/:id",
       name: "watch",
-      component: () => import("@/views/watch.vue"),
+      component: () => import("@/views/watch/watch.vue"),
     },
     {
       path: "/upload",
