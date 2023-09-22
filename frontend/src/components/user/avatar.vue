@@ -14,6 +14,6 @@ const l = Math.round(rng(25, 50));
 </script>
 
 <template lang="pug">
-div(class="rounded-full min-w-[25px] min-h-[25px]" :style="`background-color: hsl(${h}, ${s}%, ${l}%)`")
+div(class="rounded-full" :style="`background-color: hsl(${h}, ${s}%, ${l}%)`")
   span.inline-block.font-bold.text-center.w-full {{ user.username.charAt(0) }}
 </template>

@@ -9,6 +9,6 @@ const props = defineProps<{
 
 <template lang="pug">
 .flex
-  c-user-avatar(:user="user")
+  c-user-avatar(class="w-[25px] h-[25px]" :user="user")
   span.ml-2 {{ user.username }}
 </template>
