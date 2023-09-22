@@ -189,7 +189,7 @@ func UploadVideo(c *gin.Context) {
 	video.SizeBytes = info.Size()
 	video.Status = models.PROCESSING
 
-	err = codec.GenerateThumbnail(video.Id)
+	err = codec.GenerateThumbnail(video.Id, probe)
 
 	if ok := checkServerError(c, err, errVideoGenerateThumbnail); !ok {
 		return
