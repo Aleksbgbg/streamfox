@@ -79,6 +79,17 @@ services:
       /entrypoint.sh
       "
 
+  vscode:
+    image: streamfox/vscode
+    build:
+      context: .
+      dockerfile: vscode.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8704:3000"
+    volumes:
+      - ../..:/home/workspace/src
+
 volumes:
   node-modules:
     driver: local
