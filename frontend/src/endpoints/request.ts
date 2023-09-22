@@ -104,17 +104,20 @@ export async function request<TData, TResponse>(params: {
       if (err.response.data && err.response.data.errors) {
         return ApiResponse.failure(err.response.data.errors);
       } else {
+        console.error(e);
         return ApiResponse.failure({
           generic: ["Did not receive a valid response from the server."],
           specific: {},
         });
       }
     } else if (err.request) {
+      console.error(e);
       return ApiResponse.failure({
         generic: ["Did not receive a response from the server."],
         specific: {},
       });
     } else {
+      console.error(e);
       return ApiResponse.failure({
         generic: ["Unable to setup request."],
         specific: {},
