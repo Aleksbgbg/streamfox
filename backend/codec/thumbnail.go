@@ -11,7 +11,7 @@ import (
 
 func GenerateThumbnail(videoId models.Id) error {
 	args := strings.Fields(fmt.Sprintf(
-		"ffmpeg -loglevel error -y -i %s -vframes 1 -q:v 2 -vf scale=-1:225 -f mjpeg %s",
+		"ffmpeg -loglevel error -y -i %s -vframes 1 -q:v 2 -vf scale=416:234:force_original_aspect_ratio=decrease,pad=416:234:-1:-1:color=black -f mjpeg %s",
 		files.VideoPath(files.Stream, videoId),
 		files.VideoPath(files.Thumbnail, videoId),
 	))
