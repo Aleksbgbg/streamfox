@@ -11,6 +11,7 @@ import (
 )
 
 type deferredResponseWriter struct {
+	context  *gin.Context
 	response gin.ResponseWriter
 	body     *bytes.Buffer
 	status   int
@@ -45,7 +46,8 @@ func (w *deferredResponseWriter) Flush() {
 		w.response.Header().Set("Content-Length", fmt.Sprint(w.body.Len()))
 		_, err := w.response.Write(w.body.Bytes())
 		if err != nil {
-			panic(err)
+			w.context.Error(err)
+			return
 		}
 		w.body.Reset()
 	}

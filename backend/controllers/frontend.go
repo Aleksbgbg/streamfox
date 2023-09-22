@@ -78,6 +78,7 @@ func formatBaseUrl(c *gin.Context) string {
 
 func GenerateHtmlMetadataMiddleware(c *gin.Context) {
 	baseBuffer := &deferredResponseWriter{
+		context:  c,
 		response: c.Writer,
 		status:   http.StatusNotFound,
 		body:     &bytes.Buffer{},
