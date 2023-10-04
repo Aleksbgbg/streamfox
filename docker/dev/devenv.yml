@@ -33,7 +33,8 @@ services:
     ports:
       - "8701:8701"
     environment:
-      APP_DATA_ROOT: /data
+      APP_CONFIG_ROOT: /backend/streamfox_home_devenv/config
+      APP_DATA_ROOT: /backend/streamfox_home_devenv/data/streamfox
       APP_PORT: 8701
       DB_HOST: postgres
       DEBUG_FORWARD_HOST: frontend
@@ -44,9 +45,12 @@ services:
     restart: unless-stopped
     hostname: postgres
     user: postgres
+    volumes:
+      - ../../backend/streamfox_home_devenv/data/postgresql:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
+      PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s

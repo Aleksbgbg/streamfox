@@ -30,7 +30,7 @@ const (
 var fs = ParseFsTree(fsTree)
 
 func Setup() {
-	fs.AddVar(ConfigRoot, utils.GetEnvVar(utils.APP_DATA_ROOT))
+	fs.AddVar(ConfigRoot, utils.GetEnvVar(utils.APP_CONFIG_ROOT))
 	fs.AddVar(DataRoot, utils.GetEnvVar(utils.APP_DATA_ROOT))
 }
 

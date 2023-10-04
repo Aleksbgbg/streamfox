@@ -9,7 +9,8 @@ import (
 type EnvKey int
 
 const (
-	APP_DATA_ROOT EnvKey = iota
+	APP_CONFIG_ROOT EnvKey = iota
+	APP_DATA_ROOT
 	APP_TOKEN_LIFESPAN_HRS
 	APP_SCHEME
 	APP_PORT

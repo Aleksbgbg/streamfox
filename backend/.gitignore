@@ -2,5 +2,4 @@
 /backend*
 
 # Application data
-/auth_api_secret
-/data*
+/streamfox_home*

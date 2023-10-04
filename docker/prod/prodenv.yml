@@ -9,11 +9,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - ${STREAMFOX_HOME}:/streamfox/home
     ports:
       - "8801:8801"
     environment:
       GIN_MODE: release
-      APP_DATA_ROOT: /streamfox/data
+      APP_CONFIG_ROOT: /streamfox/home/config
+      APP_DATA_ROOT: /streamfox/home/data/streamfox
       APP_PORT: 8801
       DB_HOST: postgres
 
@@ -22,9 +25,12 @@ services:
     restart: unless-stopped
     hostname: postgres
     user: postgres
+    volumes:
+      - ${STREAMFOX_HOME}/data/postgresql:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
+      PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
