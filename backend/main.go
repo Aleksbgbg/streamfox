@@ -17,11 +17,12 @@ func main() {
 		log.Panicf("Error loading .env file: %v", err)
 	}
 
+	files.Setup()
+
 	if err := controllers.SetupApiSecret(); err != nil {
 		log.Panicf("Error setting up API secret: %v", err)
 	}
 
-	files.Setup()
 	models.Setup()
 
 	const API_PREFIX = "/api"

@@ -116,7 +116,12 @@ func Probe(videoId models.Id) (*ProbeResult, error) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	data, err := ffprobe.ProbeURL(ctx, files.VideoPath(files.Stream, videoId))
+	path, err := files.ResolvePathSingle(files.VideoStream, files.VideoId, videoId.String())
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := ffprobe.ProbeURL(ctx, path)
 	if err != nil {
 		return nil, err
 	}

@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"streamfox-backend/files"
 	"streamfox-backend/models"
 	"streamfox-backend/utils"
 	"time"
@@ -15,30 +15,23 @@ import (
 var apiSecret []byte
 
 func SetupApiSecret() error {
-	const API_SECRET_FILE = "auth_api_secret"
-
-	if _, err := os.Stat(API_SECRET_FILE); err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			return err
-		}
-
-		file, err := os.Create(API_SECRET_FILE)
-
-		if err != nil {
-			return err
-		}
-
-		_, err = file.Write([]byte(uniuri.New()))
-
-		if err != nil {
-			return err
-		}
-	}
-
-	secret, err := os.ReadFile(API_SECRET_FILE)
-
+	file, err := files.ResolvePathNone(files.AuthSecret)
 	if err != nil {
 		return err
+	}
+
+	secret, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+
+	if len(secret) == 0 {
+		secret = []byte(uniuri.New())
+
+		err = os.WriteFile(file, secret, files.DefaultPerm)
+		if err != nil {
+			return err
+		}
 	}
 
 	apiSecret = secret

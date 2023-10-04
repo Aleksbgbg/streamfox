@@ -145,7 +145,11 @@ func UploadVideo(c *gin.Context) {
 	video.Status = models.UPLOADING
 	defer video.Save()
 
-	file, filepath, err := files.VideoHandle(files.Stream, video.Id)
+	file, filepath, err := files.ResolveFileSingle(
+		files.VideoStream,
+		files.VideoId,
+		video.Id.String(),
+	)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
@@ -268,7 +272,18 @@ func GetVideoInfo(c *gin.Context) {
 }
 
 func GetVideoThumbnail(c *gin.Context) {
-	c.File(files.VideoPath(files.Thumbnail, getVideoParam(c).Id))
+	video := getVideoParam(c)
+
+	thumbnailPath, err := files.ResolvePathSingle(
+		files.VideoThumbnail,
+		files.VideoId,
+		video.Id.String(),
+	)
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		return
+	}
+
+	c.File(thumbnailPath)
 }
 
 func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image.Image, error) {
@@ -286,10 +301,16 @@ func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image
 func GetVideoPreview(c *gin.Context) {
 	video := getVideoParam(c)
 
-	thumbnail, err := loadImage(
-		jpeg.Decode,
-		files.VideoPath(files.Thumbnail, video.Id),
+	thumbnailPath, err := files.ResolvePathSingle(
+		files.VideoThumbnail,
+		files.VideoId,
+		video.Id.String(),
 	)
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		return
+	}
+
+	thumbnail, err := loadImage(jpeg.Decode, thumbnailPath)
 
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
@@ -332,7 +353,16 @@ func GetVideoStream(c *gin.Context) {
 	user := getUserParam(c)
 	video := getVideoParam(c)
 
-	c.File(files.VideoPath(files.Stream, video.Id))
+	streamPath, err := files.ResolvePathSingle(
+		files.VideoStream,
+		files.VideoId,
+		video.Id.String(),
+	)
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		return
+	}
+
+	c.File(streamPath)
 	c.Header("Content-Type", video.MimeType)
 
 	bytesStreamed := int64(c.Writer.Size())
@@ -341,7 +371,7 @@ func GetVideoStream(c *gin.Context) {
 		return
 	}
 
-	err := video.ProcessStream(user, bytesStreamed)
+	err = video.ProcessStream(user, bytesStreamed)
 
 	recordError(c, err)
 }
