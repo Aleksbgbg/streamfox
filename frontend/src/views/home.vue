@@ -17,12 +17,6 @@ onBeforeMount(async () => {
 </script>
 
 <template lang="pug">
-.grid.video-grid.gap-4.m-6
-  div(v-for="video of videos")
-    c-video-preview(:video="video")
+.grid.gap-4.m-6(class="grid-cols-[repeat(auto-fill,_minmax(416px,_1fr))]")
+  c-video-preview(v-for="video of videos" :video="video")
 </template>
-
-<style lang="stylus" scoped>
-.video-grid
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr))
-</style>
