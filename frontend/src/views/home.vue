@@ -17,6 +17,6 @@ onBeforeMount(async () => {
 </script>
 
 <template lang="pug">
-.grid.gap-4.m-6(class="grid-cols-[repeat(auto-fill,_minmax(416px,_1fr))]")
-  c-video-preview(v-for="video of videos" :video="video")
+.flex.flex-col.justify-items-center.gap-4.m-6(class="min-[368px]:grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))]")
+  c-video-preview(class="max-w-[416px]" v-for="video of videos" :video="video")
 </template>
