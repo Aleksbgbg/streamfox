@@ -21,17 +21,17 @@ export const router = createRouter({
     {
       path: "/watch/:id",
       name: "watch",
-      component: () => import("@/views/watch/watch.vue"),
+      component: () => import("@/views/video/watch.vue"),
     },
     {
       path: "/upload",
       name: "upload",
-      component: () => import("@/views/upload.vue"),
+      component: () => import("@/views/video/manage/upload.vue"),
     },
     {
       path: "/edit/:videoId",
       name: "edit",
-      component: () => import("@/views/edit.vue"),
+      component: () => import("@/views/video/manage/edit.vue"),
       props: true,
     },
   ],

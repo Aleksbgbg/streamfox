@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import CVideoPlayer from "@/components/video-player.vue";
 import { type VideoId, type VideoInfo, getVideoInfo } from "@/endpoints/video";
 import { type Optional, empty, getValue, hasValue } from "@/types/optional";
-import CVideoInfo from "@/views/watch/video-info.vue";
+import CVideoInfo from "@/views/video/info.vue";
 
 const route = useRoute();
 const videoId = route.params.id as VideoId;
