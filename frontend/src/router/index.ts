@@ -28,5 +28,11 @@ export const router = createRouter({
       name: "upload",
       component: () => import("@/views/upload.vue"),
     },
+    {
+      path: "/edit/:videoId",
+      name: "edit",
+      component: () => import("@/views/edit.vue"),
+      props: true,
+    },
   ],
 });
