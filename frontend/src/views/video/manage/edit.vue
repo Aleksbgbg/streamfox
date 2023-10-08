@@ -95,7 +95,7 @@ c-center-main
         .p-4
           .mb-2
             label.font-semibold(for="video-link") Video link
-            router-link.block.underline.text-theme-lightest(
+            router-link.block.underline.text-frost-cyan(
               id="video-link" :to="{ name: 'watch', params: { id: videoId } }"
             ) watch/{{ videoId }}
           div(v-if="route.query.filename")

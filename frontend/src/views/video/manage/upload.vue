@@ -96,7 +96,7 @@ c-center-main
         span.block.text-center Uploading...
         span.block.text-center {{ roundedDataRate }} MB/s
         .bg-white.h-2.w-64
-          .bg-theme-darkest.h-2(:style="{ width: `${upload.progressPercentage}%` }")
+          .bg-frost-blue.h-2(:style="{ width: `${upload.progressPercentage}%` }")
       .text-aurora-red.text-center.mt-2(v-if="uploadErr.generic.length > 0")
         p Your upload failed. Common reasons for this are unsupported file formats and videos bigger than 100MB.
         p See below:
