@@ -12,7 +12,7 @@ const store = useUserStore();
 <template lang="pug">
 nav.flex.items-center.p-5
   router-link.flex.items-center(:to="{ name: 'home' }")
-    logo.fill-snow-lightest.w-14.-mt-4
+    logo.fill-white.w-14.-mt-4
     h1.font-bold.text-2xl.-ml-4 Streamfox
   .flex-grow
     c-upload-button
