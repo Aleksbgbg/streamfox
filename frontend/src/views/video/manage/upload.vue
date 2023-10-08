@@ -15,6 +15,7 @@ const createErr: Ref<ApiErr<VideoCreatedInfo>> = ref(emptyApiErr());
 const uploadErr: Ref<ApiErr<void>> = ref(emptyApiErr());
 
 const upload = reactive({
+  created: false,
   inProgress: false,
   progressPercentage: 0,
   dataRate: 0,
@@ -38,14 +39,17 @@ async function fileSelected() {
 
   const file = fileInput.value?.files?.[0] ?? panic("no file found");
 
-  const createResponse = await createVideo({ name: removeExtension(file.name) });
+  if (!upload.created) {
+    const createResponse = await createVideo({ name: removeExtension(file.name) });
 
-  if (!createResponse.success()) {
-    createErr.value = createResponse.err();
-    return;
+    if (!createResponse.success()) {
+      createErr.value = createResponse.err();
+      return;
+    }
+
+    video.value = createResponse.value();
+    upload.created = true;
   }
-
-  video.value = createResponse.value();
 
   const reader = new FileReader();
   reader.onloadend = async function () {
