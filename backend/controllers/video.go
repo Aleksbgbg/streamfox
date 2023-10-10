@@ -19,10 +19,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CreateVideoInfo struct {
-	Name string `json:"name" binding:"max=256"`
-}
-
 type VideoCreatedInfo struct {
 	Id          string            `json:"id"`
 	Name        string            `json:"name"`
@@ -31,15 +27,9 @@ type VideoCreatedInfo struct {
 }
 
 func CreateVideo(c *gin.Context) {
-	var info CreateVideoInfo
-
-	if ok := checkValidationError(c, c.ShouldBindJSON(&info)); !ok {
-		return
-	}
-
 	user := getUserParam(c)
 
-	video, err := models.NewVideo(user, info.Name)
+	video, err := models.NewVideo(user)
 
 	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 		return

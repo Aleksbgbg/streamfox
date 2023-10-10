@@ -29,10 +29,6 @@ const video: Ref<VideoCreatedInfo> = ref({
 
 const roundedDataRate = computed(() => (Math.round(upload.dataRate * 100) / 100).toFixed(2));
 
-function removeExtension(filename: string): string {
-  return filename.replace(/\.[^/.]+$/, "");
-}
-
 async function fileSelected() {
   createErr.value = emptyApiErr();
   uploadErr.value = emptyApiErr();
@@ -40,7 +36,7 @@ async function fileSelected() {
   const file = fileInput.value?.files?.[0] ?? panic("no file found");
 
   if (!upload.created) {
-    const createResponse = await createVideo({ name: removeExtension(file.name) });
+    const createResponse = await createVideo();
 
     if (!createResponse.success()) {
       createErr.value = createResponse.err();
