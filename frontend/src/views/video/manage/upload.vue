@@ -4,7 +4,13 @@ import { useRouter } from "vue-router";
 import CForm from "@/components/forms/form.vue";
 import CCenterMain from "@/components/layout/center-main.vue";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
-import { type VideoCreatedInfo, Visibility, createVideo, uploadVideo } from "@/endpoints/video";
+import {
+  type VideoCreatedInfo,
+  Visibility,
+  createVideo,
+  updateVideo,
+  uploadVideo,
+} from "@/endpoints/video";
 import { panic } from "@/utils/panic";
 
 const router = useRouter();
@@ -28,6 +34,10 @@ const video: Ref<VideoCreatedInfo> = ref({
 });
 
 const roundedDataRate = computed(() => (Math.round(upload.dataRate * 100) / 100).toFixed(2));
+
+function removeExtension(filename: string): string {
+  return filename.replace(/\.[^/.]+$/, "");
+}
 
 async function fileSelected() {
   createErr.value = emptyApiErr();
@@ -64,6 +74,12 @@ async function fileSelected() {
       uploadErr.value = uploadResponse.err();
       return;
     }
+
+    await updateVideo(video.value.id, {
+      name: removeExtension(file.name),
+      description: video.value.description,
+      visibility: video.value.visibility,
+    });
 
     router.push({
       name: "edit",
