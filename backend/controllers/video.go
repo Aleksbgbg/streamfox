@@ -132,6 +132,25 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
+	contentRange, err := parseContentRange(c)
+	if ok := checkServerError(c, err, errGenericInvalidContentRange); !ok {
+		return
+	}
+
+	// If the content length has been determined by gin, ensure the user-specified range is accurate
+	if ((c.Request.ContentLength > 0) || ((c.Request.ContentLength == 0) && (c.Request.Body != nil))) &&
+		(contentRange.rangeSizeBytes != c.Request.ContentLength) {
+		userError(c, errGenericInvalidContentRange)
+		return
+	}
+
+	if contentRange.startByte == 0 {
+		video.SizeBytes = contentRange.contentSizeBytes
+	} else if contentRange.contentSizeBytes != video.SizeBytes {
+		userError(c, errGenericInvalidContentRange)
+		return
+	}
+
 	video.Status = models.UPLOADING
 	defer video.Save()
 
@@ -144,18 +163,24 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	_, err = io.Copy(file, c.Request.Body)
-
+	_, err = file.Seek(contentRange.startByte, 0)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		file.Close()
 		os.Remove(filepath)
 		return
 	}
 
-	err = file.Close()
-
+	_, err = io.Copy(file, c.Request.Body)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		file.Close()
 		os.Remove(filepath)
+		return
+	}
+
+	file.Close()
+
+	if (contentRange.endByte + 1) != contentRange.contentSizeBytes {
+		c.Status(http.StatusAccepted)
 		return
 	}
 
@@ -172,20 +197,14 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	info, err := os.Stat(filepath)
-
-	if ok := checkServerError(c, err, errVideoGetSize); !ok {
-		return
-	}
-
 	video.MimeType = probe.MimeType
 	video.DurationSecs = probe.DurationSecs
-	video.SizeBytes = info.Size()
 	video.Status = models.PROCESSING
 
 	err = codec.GenerateThumbnail(video.Id, probe)
 
 	if ok := checkServerError(c, err, errVideoGenerateThumbnail); !ok {
+		os.Remove(filepath)
 		return
 	}
 

@@ -66,7 +66,8 @@ func errorMessage(c *gin.Context, errorType errType, message errorResponse) {
 type predefinedError int
 
 const (
-	errAuthInvalidCredentials predefinedError = iota
+	errGenericInvalidContentRange predefinedError = iota
+	errAuthInvalidCredentials
 	errVideoInvalidId
 	errVideoInvalidFormat
 	errVideoCannotOverwrite
@@ -86,7 +87,6 @@ const (
 	errAuthGeneratingUser
 	errUserMergeFailed
 	errVideoProbe
-	errVideoGetSize
 	errVideoGenerateThumbnail
 	errVideoGetWatchConditions
 	errVideoProcessStillWatching
@@ -94,6 +94,8 @@ const (
 
 func getPredefinedError(predefined predefinedError) (errType, string) {
 	switch predefined {
+	case errGenericInvalidContentRange:
+		return errValidation, "Invalid Content-Range header."
 	case errAuthInvalidCredentials:
 		return errValidation, "Invalid credentials."
 	case errVideoInvalidId:
@@ -130,8 +132,6 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errServer, "Could not update authenticated user with anonymous statistics."
 	case errVideoProbe:
 		return errServer, "Unable to probe video."
-	case errVideoGetSize:
-		return errServer, "Could not get video size."
 	case errVideoGenerateThumbnail:
 		return errServer, "Error in generating thumbnail."
 	case errVideoGetWatchConditions:

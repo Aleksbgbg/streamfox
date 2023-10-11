@@ -1,4 +1,4 @@
-import axios, { AxiosError, type AxiosProgressEvent } from "axios";
+import axios, { AxiosError, type AxiosProgressEvent, type RawAxiosRequestHeaders } from "axios";
 import { type Optional, empty, getValue, hasValue } from "@/types/optional";
 
 const ISO_8601_REGEX = /^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/;
@@ -87,6 +87,7 @@ export async function request<TData, TResponse>(params: {
   method: "get" | "put" | "post" | "delete";
   url: string;
   data: TData;
+  headers?: RawAxiosRequestHeaders;
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
 }): Promise<ApiResponse<TData, TResponse>> {
   try {
@@ -94,6 +95,7 @@ export async function request<TData, TResponse>(params: {
       method: params.method,
       url: apiUrl(params.url),
       data: params.data,
+      headers: params.headers,
       onUploadProgress: params.onUploadProgress,
     });
     return ApiResponse.success(response.data);

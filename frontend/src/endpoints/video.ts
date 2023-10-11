@@ -2,8 +2,7 @@ import type { AxiosProgressEvent } from "axios";
 import { type ApiResponse, apiUrl, get, post, put, request } from "@/endpoints/request";
 import type { User } from "@/endpoints/user";
 import type { Id } from "@/types/id";
-import { panic } from "@/utils/panic";
-import { type ProgressReportFunc, createProgressReporter } from "@/utils/upload-progress";
+import type { UploadReportFunc } from "@/utils/upload-progress";
 
 export type VideoId = Id;
 
@@ -46,20 +45,27 @@ export function postView(id: VideoId): Promise<ApiResponse<void, void>> {
   return post(`/videos/${id}/views`);
 }
 
+export interface ContentRange {
+  start: number;
+  end: number;
+  size: number;
+}
+
 export function uploadVideo(
   id: VideoId,
   video: ArrayBuffer,
-  onReportProgress: ProgressReportFunc
+  range: ContentRange,
+  reportProgress: UploadReportFunc
 ): Promise<ApiResponse<void, void>> {
-  const reportProgress = createProgressReporter(onReportProgress);
   return request({
     method: "put",
     url: `/videos/${id}/stream`,
     data: video,
+    headers: { "Content-Range": `bytes ${range.start}-${range.end}/${range.size}` },
     onUploadProgress(progressEvent: AxiosProgressEvent) {
       reportProgress({
-        uploadedBytes: progressEvent.loaded,
-        totalBytes: progressEvent.total ?? panic("total video upload bytes unavailable"),
+        uploadedBytes: range.start + progressEvent.loaded,
+        totalBytes: range.size,
       });
     },
   });
