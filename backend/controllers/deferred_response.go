@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 
@@ -44,7 +45,7 @@ func (w *deferredResponseWriter) Flush() {
 	w.response.WriteHeader(w.status)
 	if w.body.Len() > 0 {
 		w.response.Header().Set("Content-Length", fmt.Sprint(w.body.Len()))
-		_, err := w.response.Write(w.body.Bytes())
+		_, err := io.Copy(w.response, w.body)
 		if err != nil {
 			w.context.Error(err)
 			return
