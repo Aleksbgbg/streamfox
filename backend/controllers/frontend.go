@@ -76,58 +76,60 @@ func formatBaseUrl(c *gin.Context) string {
 	return fmt.Sprintf("%s://%s", utils.GetEnvVar(utils.APP_SCHEME), c.Request.Host)
 }
 
-func GenerateHtmlMetadataMiddleware(c *gin.Context) {
-	baseBuffer := &deferredResponseWriter{
-		context:  c,
-		response: c.Writer,
-		status:   http.StatusNotFound,
-		body:     &bytes.Buffer{},
-	}
-	c.Writer = baseBuffer
-	defer baseBuffer.Flush()
+func GenerateHtmlMetadata(handler gin.HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		baseBuffer := &deferredResponseWriter{
+			context:  c,
+			response: c.Writer,
+			status:   http.StatusNotFound,
+			body:     &bytes.Buffer{},
+		}
+		c.Writer = baseBuffer
+		defer baseBuffer.Flush()
 
-	c.Next()
+		handler(c)
 
-	if !strings.HasPrefix(c.Writer.Header().Get("Content-Type"), "text/html") {
-		return
-	}
-
-	baseUrl := formatBaseUrl(c)
-	var metadata bytes.Buffer
-
-	url := fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path)
-
-	match := watchPageRegex.FindStringSubmatch(c.Request.URL.Path)
-
-	if len(match) == 2 {
-		videoId, err := models.IdFromString(match[1])
-
-		if ok := recordError(c, err); !ok {
+		if !strings.HasPrefix(c.Writer.Header().Get("Content-Type"), "text/html") {
 			return
 		}
 
-		video, err := models.FetchVideo(videoId)
+		baseUrl := formatBaseUrl(c)
+		var metadata bytes.Buffer
 
-		if ok := recordError(c, err); !ok {
-			return
+		url := fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path)
+
+		match := watchPageRegex.FindStringSubmatch(c.Request.URL.Path)
+
+		if len(match) == 2 {
+			videoId, err := models.IdFromString(match[1])
+
+			if ok := recordError(c, err); !ok {
+				return
+			}
+
+			video, err := models.FetchVideo(videoId)
+
+			if ok := recordError(c, err); !ok {
+				return
+			}
+
+			watchPageMetadataTemplate.Execute(&metadata, gin.H{
+				"Title":        video.Name,
+				"Description":  video.Description,
+				"Url":          url,
+				"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/preview", baseUrl, videoId),
+				"StreamUrl":    fmt.Sprintf("%s/api/videos/%s/stream", baseUrl, videoId),
+				"MimeType":     video.MimeType,
+			})
+		} else {
+			homePageMetadataTemplate.Execute(&metadata, gin.H{
+				"Description":  "Streamfox is an open-source video streaming service.",
+				"Url":          url,
+				"ThumbnailUrl": fmt.Sprintf("%s/thumbnail.png", baseUrl),
+			})
 		}
 
-		watchPageMetadataTemplate.Execute(&metadata, gin.H{
-			"Title":        video.Name,
-			"Description":  video.Description,
-			"Url":          url,
-			"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/preview", baseUrl, videoId),
-			"StreamUrl":    fmt.Sprintf("%s/api/videos/%s/stream", baseUrl, videoId),
-			"MimeType":     video.MimeType,
-		})
-	} else {
-		homePageMetadataTemplate.Execute(&metadata, gin.H{
-			"Description":  "Streamfox is an open-source video streaming service.",
-			"Url":          url,
-			"ThumbnailUrl": fmt.Sprintf("%s/thumbnail.png", baseUrl),
-		})
+		b := bytes.Replace(baseBuffer.body.Bytes(), metadataInsertionMarker, metadata.Bytes(), 1)
+		baseBuffer.body = bytes.NewBuffer(b)
 	}
-
-	b := bytes.Replace(baseBuffer.body.Bytes(), metadataInsertionMarker, metadata.Bytes(), 1)
-	baseBuffer.body = bytes.NewBuffer(b)
 }

@@ -30,11 +30,10 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(controllers.GenerateHtmlMetadataMiddleware)
 	if gin.Mode() == gin.DebugMode {
-		router.NoRoute(controllers.DevFrontendMiddleware(API_PREFIX))
+		router.NoRoute(controllers.GenerateHtmlMetadata(controllers.DevFrontendMiddleware(API_PREFIX)))
 	} else {
-		router.NoRoute(controllers.ProdFrontendMiddleware(FRONTEND_PATH))
+		router.NoRoute(controllers.GenerateHtmlMetadata(controllers.ProdFrontendMiddleware(FRONTEND_PATH)))
 	}
 
 	api := router.Group(API_PREFIX)
