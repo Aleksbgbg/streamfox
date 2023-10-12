@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"streamfox-backend/controllers"
 	"streamfox-backend/files"
 	"streamfox-backend/models"
@@ -13,6 +15,10 @@ import (
 )
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	if err := godotenv.Load(".env"); err != nil {
 		log.Panicf("Error loading .env file: %v", err)
 	}
