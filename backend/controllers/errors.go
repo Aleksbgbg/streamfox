@@ -69,8 +69,10 @@ const (
 	errGenericInvalidContentRange predefinedError = iota
 	errAuthInvalidCredentials
 	errVideoInvalidId
+	errVideoSubtitlesInvalidId
 	errVideoInvalidFormat
 	errVideoCannotOverwrite
+	errVideoSubtitlesCannotDoubleExtract
 	errVideoViewAlreadyCounted
 
 	errUserRequired
@@ -80,6 +82,7 @@ const (
 	errVideoUploadIncomplete
 
 	errVideoIdNonExistent
+	errVideoSubtitlesIdNonExistent
 
 	errGenericDatabaseIo
 	errGenericFileIo
@@ -88,6 +91,7 @@ const (
 	errUserMergeFailed
 	errVideoProbe
 	errVideoGenerateThumbnail
+	errVideoSubtitlesExtract
 	errVideoGetWatchConditions
 	errVideoProcessStillWatching
 )
@@ -100,10 +104,14 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errValidation, "Invalid credentials."
 	case errVideoInvalidId:
 		return errValidation, "Video ID is invalid."
+	case errVideoSubtitlesInvalidId:
+		return errValidation, "Subtitle ID is invalid."
 	case errVideoInvalidFormat:
 		return errValidation, "Invalid video format."
 	case errVideoCannotOverwrite:
 		return errValidation, "Cannot overwrite video after uploading has completed successfully."
+	case errVideoSubtitlesCannotDoubleExtract:
+		return errValidation, "Video subtitles have already been extracted."
 	case errVideoViewAlreadyCounted:
 		return errValidation, "View has already been counted."
 
@@ -119,6 +127,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 
 	case errVideoIdNonExistent:
 		return errNotFound, "Video does not exist."
+	case errVideoSubtitlesIdNonExistent:
+		return errNotFound, "Subtitle does not exist."
 
 	case errGenericDatabaseIo:
 		return errServer, "Database transaction failed."
@@ -134,6 +144,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errServer, "Unable to probe video."
 	case errVideoGenerateThumbnail:
 		return errServer, "Error in generating thumbnail."
+	case errVideoSubtitlesExtract:
+		return errServer, "Error in extracting subtitles."
 	case errVideoGetWatchConditions:
 		return errServer, "Could not get required watch conditions."
 	case errVideoProcessStillWatching:

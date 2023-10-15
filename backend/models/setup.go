@@ -31,6 +31,7 @@ func Setup() {
 		log.Fatal("Could not connect to database:", err)
 	}
 
+	db.AutoMigrate(&Subtitle{})
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Video{})
 	db.AutoMigrate(&View{})

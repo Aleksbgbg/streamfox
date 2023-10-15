@@ -107,5 +107,42 @@ func main() {
 		controllers.UploadVideo,
 	)
 
+	subtitles := specificVideo.Group("/subtitles")
+	subtitles.Use(controllers.EnsureCompleteVideoMiddleware, controllers.EnsureVisibleVideoMiddleware)
+	subtitles.GET("", controllers.GetAllSubtitles)
+	subtitles.POST(
+		"",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureIsOwnerMiddleware,
+		controllers.CreateSubtitle,
+	)
+	subtitles.GET(
+		"/info",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureIsOwnerMiddleware,
+		controllers.GetSubtitlesInfo,
+	)
+	subtitles.POST(
+		"/extract",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureIsOwnerMiddleware,
+		controllers.ExtractSubtitles,
+	)
+	specificSubtitle := subtitles.Group("/:subtitle-id")
+	specificSubtitle.Use(controllers.ExtractSubtitleMiddleware)
+	specificSubtitle.PUT(
+		"",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureIsOwnerMiddleware,
+		controllers.UpdateSubtitle,
+	)
+	specificSubtitle.DELETE(
+		"",
+		controllers.RequireUserMiddleware,
+		controllers.EnsureIsOwnerMiddleware,
+		controllers.DeleteSubtitle,
+	)
+	specificSubtitle.GET("/content", controllers.GetSubtitleContent)
+
 	router.Run(fmt.Sprintf(":%s", utils.GetEnvVar(utils.APP_PORT)))
 }

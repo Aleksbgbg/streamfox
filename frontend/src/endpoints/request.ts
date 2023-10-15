@@ -145,3 +145,7 @@ export function post<TData, TResponse>(
 ): Promise<ApiResponse<TData, TResponse>> {
   return request({ method: "post", url, data });
 }
+
+export function delete_(url: string): Promise<ApiResponse<void, void>> {
+  return request({ method: "delete", url, data: null });
+}

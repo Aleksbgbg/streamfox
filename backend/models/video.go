@@ -25,10 +25,11 @@ const (
 )
 
 type Metadata struct {
-	Status       VideoStatus
-	MimeType     string `gorm:"type:text"`
-	DurationSecs int32
-	SizeBytes    int64 `gorm:"not null"`
+	Status             VideoStatus
+	MimeType           string `gorm:"type:text"`
+	DurationSecs       int32
+	SizeBytes          int64 `gorm:"not null"`
+	SubtitlesExtracted bool  `gorm:"not null; default:false"`
 }
 
 type Settings struct {

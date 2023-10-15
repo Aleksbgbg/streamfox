@@ -14,18 +14,22 @@ const fsTree = `
 		<video_id>
 			stream #video_stream
 			thumbnail #video_thumbnail
+			subtitles
+				<subtitle_id>.vtt #video_subtitle
 `
 
 const (
 	ConfigRoot = "config_root"
 	DataRoot   = "data_root"
 	VideoId    = "video_id"
+	SubtitleId = "subtitle_id"
 )
 
 const (
 	AuthSecret     = "auth_secret"
 	VideoStream    = "video_stream"
 	VideoThumbnail = "video_thumbnail"
+	VideoSubtitle  = "video_subtitle"
 )
 
 var fs = ParseFsTree(fsTree)
