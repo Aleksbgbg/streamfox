@@ -18,11 +18,11 @@ type contentRange = struct {
 	contentSizeBytes int64
 }
 
-var noContentRange = fmt.Errorf("no Content-Range header was found")
-var invalidFormat = fmt.Errorf("Content-Range header was in an invalid format")
-var invalidRange = fmt.Errorf("Content-Range range needs to be bigger than 0")
-var invalidSize = fmt.Errorf("Content-Range size needs to be bigger than 0")
-var invalidEnd = fmt.Errorf("Content-Range end is bigger than content size")
+var errNoContentRange = fmt.Errorf("no Content-Range header was found")
+var errInvalidFormat = fmt.Errorf("Content-Range header was in an invalid format")
+var errInvalidRange = fmt.Errorf("Content-Range range needs to be bigger than 0")
+var errInvalidSize = fmt.Errorf("Content-Range size needs to be bigger than 0")
+var errInvalidEnd = fmt.Errorf("Content-Range end is bigger than content size")
 
 func parseContentRange(c *gin.Context) (contentRange, error) {
 	r := contentRange{}
@@ -30,13 +30,13 @@ func parseContentRange(c *gin.Context) (contentRange, error) {
 	header := c.GetHeader("Content-Range")
 
 	if len(header) == 0 {
-		return r, noContentRange
+		return r, errNoContentRange
 	}
 
 	match := contentRangeRegex.FindStringSubmatch(header)
 
 	if len(match) != 4 {
-		return r, invalidFormat
+		return r, errInvalidFormat
 	}
 
 	start := match[1]
@@ -62,15 +62,15 @@ func parseContentRange(c *gin.Context) (contentRange, error) {
 
 	r.rangeSize = r.endByte - r.startByte
 	if r.rangeSize < 0 {
-		return r, invalidRange
+		return r, errInvalidRange
 	}
 
 	if r.contentSizeBytes <= 0 {
-		return r, invalidSize
+		return r, errInvalidSize
 	}
 
 	if r.endByte >= r.contentSizeBytes {
-		return r, invalidEnd
+		return r, errInvalidEnd
 	}
 
 	r.rangeSizeBytes = r.rangeSize + 1
