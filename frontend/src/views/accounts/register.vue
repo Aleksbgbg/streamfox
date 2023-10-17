@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { type Ref, ref } from "vue";
 import { useRouter } from "vue-router";
-import CForm from "@/components/forms/form.vue";
 import CFormInput from "@/components/forms/input.vue";
-import CCenterMain from "@/components/layout/center-main.vue";
+import CFormLayout from "@/components/layout/form.vue";
 import { type Registration, register } from "@/endpoints/auth";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
 import { login } from "@/utils/auth";
@@ -35,8 +34,8 @@ async function submit() {
 </script>
 
 <template lang="pug">
-c-center-main
-  c-form(title="Register" @submit="submit")
+c-form-layout(title="Register")
+  form.flex.flex-col.items-center.my-4(@submit.prevent="submit")
     .grid.gap-4.mb-4(class="grid-cols-[auto_1fr] w-3/4")
       c-form-input(
         title="Username" v-model="registration.username"

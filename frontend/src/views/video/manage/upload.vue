@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { type Ref, computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import CForm from "@/components/forms/form.vue";
-import CCenterMain from "@/components/layout/center-main.vue";
+import CFormLayout from "@/components/layout/form.vue";
 import { type ApiErr, ApiResponse, emptyApiErr } from "@/endpoints/request";
 import {
   type VideoCreatedInfo,
@@ -120,25 +119,24 @@ async function fileSelected() {
 </script>
 
 <template lang="pug">
-c-center-main
-  c-form(title="Upload Video")
-    .flex.flex-col.items-center
-      input(
-        v-show="!upload.inProgress"
-        class="file:border-0 file:rounded-full file:font-semibold file:bg-snow-dark file:text-frost-deep hover:file:bg-snow-lightest hover:file:cursor-pointer file:py-2 file:px-4 file:mr-3"
-        type="file" ref="fileInput" @change="fileSelected"
-      )
-      p.text-aurora-red.mt-2(
-        v-if="createErr.generic.length > 0"
-        v-for="error of createErr.generic"
-      ) {{ error }}
-      div(v-if="upload.inProgress")
-        span.block.text-center Uploading...
-        span.block.text-center {{ roundedDataRateMBs }} MB/s
-        .bg-white.h-2.w-64
-          .bg-frost-blue.h-2(:style="{ width: `${upload.progressPercentage}%` }")
-      .text-aurora-red.text-center.mt-2(v-if="uploadErr.generic.length > 0")
-        p Your upload failed. Common reasons for this are unsupported file formats and videos bigger than 100MB.
-        p See below:
-        p(v-for="error of uploadErr.generic") {{ error }}
+c-form-layout(title="Upload Video")
+  .flex.flex-col.items-center.my-4
+    input(
+      v-show="!upload.inProgress"
+      class="file:border-0 file:rounded-full file:font-semibold file:bg-snow-dark file:text-frost-deep hover:file:bg-snow-lightest hover:file:cursor-pointer file:py-2 file:px-4 file:mr-3"
+      type="file" ref="fileInput" @change="fileSelected"
+    )
+    p.text-aurora-red.mt-2(
+      v-if="createErr.generic.length > 0"
+      v-for="error of createErr.generic"
+    ) {{ error }}
+    div(v-if="upload.inProgress")
+      span.block.text-center Uploading...
+      span.block.text-center {{ roundedDataRateMBs }} MB/s
+      .bg-white.h-2.w-64
+        .bg-frost-blue.h-2(:style="{ width: `${upload.progressPercentage}%` }")
+    .text-aurora-red.text-center.mt-2(v-if="uploadErr.generic.length > 0")
+      p Your upload failed. Common reasons for this are unsupported file formats and videos bigger than 100MB.
+      p See below:
+      p(v-for="error of uploadErr.generic") {{ error }}
 </template>
