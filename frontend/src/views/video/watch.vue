@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, ref } from "vue";
+import { type Ref, onBeforeMount, ref } from "vue";
 import CVideoPlayer from "@/components/video-player.vue";
 import { type VideoId, type VideoInfo, getVideoInfo } from "@/endpoints/video";
 import { type Optional, empty, getValue, hasValue } from "@/types/optional";
@@ -10,7 +10,10 @@ const props = defineProps<{
 }>();
 
 const video: Ref<Optional<VideoInfo>> = ref(empty());
-getVideoInfo(props.id).then((response) => {
+
+onBeforeMount(async () => {
+  const response = await getVideoInfo(props.id);
+
   if (!response.success()) {
     return;
   }
