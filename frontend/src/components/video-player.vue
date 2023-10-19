@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { type Ref, computed, onMounted, onUnmounted, ref } from "vue";
-import { useRoute } from "vue-router";
 import videojs from "video.js";
 import {
   type VideoId,
@@ -14,10 +13,11 @@ import { type Optional, empty, getValue, tryApply } from "@/types/optional";
 import { CallbackTimer } from "@/utils/callback-timer";
 import { panic } from "@/utils/panic";
 
-const route = useRoute();
-const videoId = route.params.id as VideoId;
+const props = defineProps<{
+  id: VideoId;
+}>();
 
-const videoUrl = computed(() => videoStream(videoId));
+const videoUrl = computed(() => videoStream(props.id));
 
 let watchConditions: Optional<WatchConditions> = empty();
 const conditionsTracker = {
@@ -36,7 +36,7 @@ async function checkWatchConditions() {
     return;
   }
 
-  const response = await postView(videoId);
+  const response = await postView(props.id);
 
   if (!response.success()) {
     console.error("unable to count view: ", response.err());
@@ -69,7 +69,7 @@ onMounted(async () => {
     setVolume(player.volume());
   });
 
-  const response = await getWatchConditions(videoId);
+  const response = await getWatchConditions(props.id);
 
   if (!response.success()) {
     return;
