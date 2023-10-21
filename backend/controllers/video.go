@@ -137,9 +137,7 @@ func UploadVideo(c *gin.Context) {
 		return
 	}
 
-	// If the content length has been determined by gin, ensure the user-specified range is accurate
-	if ((c.Request.ContentLength > 0) || ((c.Request.ContentLength == 0) && (c.Request.Body != nil))) &&
-		(contentRange.rangeSizeBytes != c.Request.ContentLength) {
+	if hasContentLength(c) && (contentRange.rangeSizeBytes != c.Request.ContentLength) {
 		userError(c, errGenericInvalidContentRange)
 		return
 	}
