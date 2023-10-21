@@ -1,11 +1,14 @@
 package files
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+var ErrPathKeyNotFound = errors.New("path not found")
 
 const DefaultPerm = os.ModePerm
 
@@ -97,7 +100,11 @@ func resolveVar(key string, vars, additionalVars VarMap) (string, error) {
 
 func (fs *Fs) ResolvePath(key string, additionalVars VarMap) (string, error) {
 	builder := strings.Builder{}
-	path := fs.keyToPath[key]
+	path, exists := fs.keyToPath[key]
+
+	if !exists {
+		return "", fmt.Errorf("key '%s' does not have an associated path: %w", key, ErrPathKeyNotFound)
+	}
 
 	varName := strings.Builder{}
 	isVar := false
