@@ -17,6 +17,7 @@ services:
       GIN_MODE: release
       APP_CONFIG_ROOT: /streamfox/home/config
       APP_DATA_ROOT: /streamfox/home/data/streamfox
+      APP_SCHEME: https
       APP_PORT: 8801
       DB_HOST: postgres
 
