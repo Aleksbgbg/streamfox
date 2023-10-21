@@ -152,26 +152,26 @@ func UploadVideo(c *gin.Context) {
 	video.Status = models.UPLOADING
 	defer video.Save()
 
-	file, filepath, err := files.ResolveFileSingle(
-		files.VideoStream,
-		files.VideoId,
-		video.Id.String(),
-	)
+	stream, err := files.NewResolver().AddVar(files.VideoId, video.Id).Resolve(files.VideoStream)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
+	file, err := stream.Open()
+	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		return
+	}
+	defer stream.AutoClose()
+
 	_, err = file.Seek(contentRange.startByte, 0)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
-		file.Close()
-		os.Remove(filepath)
+		stream.Remove()
 		return
 	}
 
 	_, err = io.Copy(file, c.Request.Body)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
-		file.Close()
-		os.Remove(filepath)
+		stream.Remove()
 		return
 	}
 
@@ -185,7 +185,7 @@ func UploadVideo(c *gin.Context) {
 	probe, err := codec.Probe(video.Id)
 
 	if err != nil {
-		os.Remove(filepath)
+		stream.Remove()
 
 		if errors.Is(err, codec.ErrInvalidVideoType) {
 			userError(c, errVideoInvalidFormat)
@@ -202,7 +202,7 @@ func UploadVideo(c *gin.Context) {
 	err = codec.GenerateThumbnail(video.Id, probe)
 
 	if ok := checkServerError(c, err, errVideoGenerateThumbnail); !ok {
-		os.Remove(filepath)
+		stream.Remove()
 		return
 	}
 
@@ -281,16 +281,14 @@ func GetVideoInfo(c *gin.Context) {
 func GetVideoThumbnail(c *gin.Context) {
 	video := getVideoParam(c)
 
-	thumbnailPath, err := files.ResolvePathSingle(
-		files.VideoThumbnail,
-		files.VideoId,
-		video.Id.String(),
-	)
+	thumbnail, err := files.NewResolver().
+		AddVar(files.VideoId, video.Id).
+		Resolve(files.VideoThumbnail)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
-	c.File(thumbnailPath)
+	c.File(thumbnail.Path())
 }
 
 func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image.Image, error) {
@@ -308,16 +306,14 @@ func loadImage(decoder func(io.Reader) (image.Image, error), path string) (image
 func GetVideoPreview(c *gin.Context) {
 	video := getVideoParam(c)
 
-	thumbnailPath, err := files.ResolvePathSingle(
-		files.VideoThumbnail,
-		files.VideoId,
-		video.Id.String(),
-	)
+	thumbnailFile, err := files.NewResolver().
+		AddVar(files.VideoId, video.Id).
+		Resolve(files.VideoThumbnail)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
-	thumbnail, err := loadImage(jpeg.Decode, thumbnailPath)
+	thumbnail, err := loadImage(jpeg.Decode, thumbnailFile.Path())
 
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
@@ -360,16 +356,12 @@ func GetVideoStream(c *gin.Context) {
 	user := getUserParam(c)
 	video := getVideoParam(c)
 
-	streamPath, err := files.ResolvePathSingle(
-		files.VideoStream,
-		files.VideoId,
-		video.Id.String(),
-	)
+	stream, err := files.NewResolver().AddVar(files.VideoId, video.Id).Resolve(files.VideoStream)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
 
-	c.File(streamPath)
+	c.File(stream.Path())
 	c.Header("Content-Type", video.MimeType)
 
 	bytesStreamed := int64(c.Writer.Size())

@@ -16,8 +16,8 @@ type Fs struct {
 	vars      VarMap
 }
 
-func ParseFsTree(tree string) *Fs {
-	fs := &Fs{
+func ParseFsTree(tree string) Fs {
+	fs := Fs{
 		keyToPath: map[string]string{},
 		vars:      VarMap{},
 	}

@@ -15,12 +15,12 @@ import (
 var apiSecret []byte
 
 func SetupApiSecret() error {
-	file, err := files.ResolvePathNone(files.AuthSecret)
+	file, err := files.NewResolver().Resolve(files.AuthSecret)
 	if err != nil {
 		return err
 	}
 
-	secret, err := os.ReadFile(file)
+	secret, err := os.ReadFile(file.Path())
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func SetupApiSecret() error {
 	if len(secret) == 0 {
 		secret = []byte(uniuri.New())
 
-		err = os.WriteFile(file, secret, files.DefaultPerm)
+		err = os.WriteFile(file.Path(), secret, files.DefaultPerm)
 		if err != nil {
 			return err
 		}

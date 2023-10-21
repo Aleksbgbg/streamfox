@@ -1,6 +1,7 @@
 package files
 
 import (
+	"fmt"
 	"os"
 	"streamfox-backend/utils"
 )
@@ -34,14 +35,59 @@ func Setup() {
 	fs.AddVar(DataRoot, utils.GetEnvVar(utils.APP_DATA_ROOT))
 }
 
-func ResolvePathNone(key string) (string, error) {
-	return fs.ResolvePath(key, VarMap{})
+type Resolver struct {
+	fs   *Fs
+	vars VarMap
 }
 
-func ResolvePathSingle(key, varKey, varValue string) (string, error) {
-	return fs.ResolvePath(key, VarMap{varKey: varValue})
+func NewResolver() *Resolver {
+	return &Resolver{fs: &fs, vars: VarMap{}}
 }
 
-func ResolveFileSingle(key, varKey, varValue string) (*os.File, string, error) {
-	return fs.ResolveFile(key, VarMap{varKey: varValue})
+func (r *Resolver) AddVar(key string, value any) *Resolver {
+	r.vars[key] = fmt.Sprint(value)
+	return r
+}
+
+func (r *Resolver) Resolve(key string) (*File, error) {
+	path, err := r.fs.ResolvePath(key, r.vars)
+	if err != nil {
+		return nil, err
+	}
+
+	return &File{path: path}, nil
+}
+
+type File struct {
+	path string
+	file *os.File
+}
+
+func (f *File) Path() string {
+	return f.path
+}
+
+func (f *File) Open() (*os.File, error) {
+	file, err := os.OpenFile(f.path, os.O_CREATE|os.O_RDWR, DefaultPerm)
+	if err != nil {
+		return nil, err
+	}
+
+	f.file = file
+
+	return file, nil
+}
+
+func (f *File) AutoClose() {
+	if f.file == nil {
+		return
+	}
+
+	f.file.Close()
+	f.file = nil
+}
+
+func (f *File) Remove() error {
+	f.AutoClose()
+	return os.Remove(f.path)
 }

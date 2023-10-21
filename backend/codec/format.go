@@ -113,15 +113,15 @@ type ProbeResult struct {
 var ErrInvalidVideoType = errors.New("invalid video type")
 
 func Probe(videoId models.Id) (*ProbeResult, error) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	path, err := files.ResolvePathSingle(files.VideoStream, files.VideoId, videoId.String())
+	file, err := files.NewResolver().AddVar(files.VideoId, videoId).Resolve(files.VideoStream)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := ffprobe.ProbeURL(ctx, path)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	data, err := ffprobe.ProbeURL(ctx, file.Path())
 	if err != nil {
 		return nil, err
 	}
