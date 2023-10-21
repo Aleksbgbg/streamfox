@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Ref, computed, onMounted, onUnmounted, ref } from "vue";
 import videojs from "video.js";
+import { getAllSubtitles, subtitleContentUrl } from "@/endpoints/subtitle";
 import {
   type VideoId,
   type WatchConditions,
@@ -69,27 +70,40 @@ onMounted(async () => {
     setVolume(player.volume());
   });
 
-  const response = await getWatchConditions(props.id);
+  const [subs, watch] = await Promise.all([
+    getAllSubtitles(props.id),
+    getWatchConditions(props.id),
+  ]);
 
-  if (!response.success()) {
-    return;
+  if (subs.success()) {
+    for (const subtitle of subs.value()) {
+      player.addRemoteTextTrack({
+        kind: "subtitles",
+        label: subtitle.name,
+        srclang: undefined,
+        src: subtitleContentUrl(props.id, subtitle.id),
+        default: false,
+      });
+    }
   }
 
-  watchConditions = response.value();
+  if (watch.success()) {
+    watchConditions = watch.value();
 
-  timer = new CallbackTimer(watchConditions.remainingTimeMs, () => {
-    conditionsTracker.completedTime = true;
-    checkWatchConditions();
-  });
-  player.on("play", () => getValue(timer).resume());
-  player.on("pause", () => getValue(timer).pause());
-  player.on("progress", () => {
-    conditionsTracker.percentage = player.bufferedPercent();
-    checkWatchConditions();
-  });
+    timer = new CallbackTimer(watchConditions.remainingTimeMs, () => {
+      conditionsTracker.completedTime = true;
+      checkWatchConditions();
+    });
+    player.on("play", () => getValue(timer).resume());
+    player.on("pause", () => getValue(timer).pause());
+    player.on("progress", () => {
+      conditionsTracker.percentage = player.bufferedPercent();
+      checkWatchConditions();
+    });
 
-  if (!player.paused()) {
-    timer.resume();
+    if (!player.paused()) {
+      timer.resume();
+    }
   }
 });
 
@@ -134,6 +148,9 @@ $foreground-fill = hsla(0, 0%, 100%, .5)
 
   .vjs-time-control
     line-height: 4em
+
+  .vjs-subs-caps-button .vjs-menu-content
+    margin-bottom: 10px
 
   .vjs-picture-in-picture-control
     display: none
