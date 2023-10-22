@@ -1,0 +1,15 @@
+server {
+  listen 8443 ssl;
+
+  ssl_certificate cert.pem;
+  ssl_certificate_key cert.key;
+
+  server_name streamfox.xyz *.streamfox.xyz;
+
+  client_max_body_size 100m;
+
+  location / {
+    proxy_pass http://localhost:8801;
+    proxy_set_header Host $host;
+  }
+}
