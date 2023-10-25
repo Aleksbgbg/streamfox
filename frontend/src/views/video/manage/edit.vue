@@ -62,31 +62,29 @@ async function save() {
 <template lang="pug">
 c-form-layout(title="Edit Video")
   form.flex.justify-center.gap-6.mx-5.my-4(@submit.prevent="save")
-    div
-      .grid.gap-4.mb-4(class="grid-cols-[auto_1fr] w-3/4")
-        c-form-input(
-          title="Name" v-model="video.name"
-          placeholder="Describe your video."
-          :errors="err.specific.name"
-        )
-        c-form-select(
-          title="Visibility" v-model.number="video.visibility"
-          :errors="err.specific.visibility"
-        )
-          option(:value="Visibility.Public") Public
-          option(:value="Visibility.Unlisted") Unlisted
-          option(:value="Visibility.Private") Private
-        c-form-textarea(
-          title="Description" v-model="video.description"
-          placeholder="Provide additional information about your video. "
-          :errors="err.specific.description"
-        )
-      .text-center.mb-5(v-if="err.generic.length > 0")
-        p.text-aurora-red(v-for="error of err.generic") {{ error }}
-      p.text-aurora-green.text-center.mb-5(v-if="updateComplete") Saved!
-      button(
-        class="float-right bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2"
-        type="submit"
+    .flex.flex-col.items-center.gap-3
+      c-form-input(
+        title="Name" v-model="video.name"
+        placeholder="Describe your video."
+        :errors="err.specific.name"
+      )
+      c-form-select(
+        title="Visibility" v-model.number="video.visibility"
+        :errors="err.specific.visibility"
+      )
+        option(:value="Visibility.Public") Public
+        option(:value="Visibility.Unlisted") Unlisted
+        option(:value="Visibility.Private") Private
+      c-form-textarea(
+        title="Description" v-model="video.description"
+        placeholder="Provide additional information about your video. "
+        :errors="err.specific.description"
+      )
+      div(v-if="err.generic.length > 0")
+        p.text-aurora-red.text-center(v-for="error of err.generic") {{ error }}
+      p.text-aurora-green.text-center(v-if="updateComplete") Saved!
+      button.self-end(
+        class="bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2"
       ) Save
     .col-start-3.bg-polar-darkest.drop-shadow-2xl
       img.rounded-t-md.w-full(:src="videoThumbnail(props.videoId)")

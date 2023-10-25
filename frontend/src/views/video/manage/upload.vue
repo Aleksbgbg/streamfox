@@ -120,7 +120,7 @@ async function fileSelected() {
 
 <template lang="pug">
 c-form-layout(title="Upload Video")
-  .flex.flex-col.items-center.my-4
+  .flex.flex-col.items-center.my-5
     input(
       v-show="!upload.inProgress"
       class="file:border-0 file:rounded-full file:font-semibold file:bg-snow-dark file:text-frost-deep hover:file:bg-snow-lightest hover:file:cursor-pointer file:py-2 file:px-4 file:mr-3"
