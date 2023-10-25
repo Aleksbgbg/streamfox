@@ -7,6 +7,10 @@ module.exports = {
         valid: "valid='true'",
         invalid: "invalid='true'",
       },
+      data: {
+        valid: "valid='true'",
+        invalid: "invalid='true'",
+      },
       colors: {
         "polar-darkest": "#2e3440",
         "polar-dark": "#3b4252",
