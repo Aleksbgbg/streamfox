@@ -3,6 +3,10 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      aria: {
+        valid: "valid='true'",
+        invalid: "invalid='true'",
+      },
       colors: {
         "polar-darkest": "#2e3440",
         "polar-dark": "#3b4252",
