@@ -35,12 +35,16 @@ async function submit() {
 c-form-layout(title="Login")
   form.flex.flex-col.items-center.gap-3.my-5(@submit.prevent="submit")
     c-form-input(
-      title="Username" v-model="credentials.username"
+      center
+      title="Username"
+      v-model="credentials.username"
       :errors="err.specific.username"
     )
     c-form-input(
+      center
+      title="Password"
       type="password"
-      title="Password" v-model="credentials.password"
+      v-model="credentials.password"
       :errors="err.specific.password"
     )
     div(v-if="err.generic.length > 0")

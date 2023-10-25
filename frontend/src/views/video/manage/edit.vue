@@ -64,8 +64,8 @@ c-form-layout(title="Edit Video")
   form.flex.justify-center.gap-6.mx-5.my-4(@submit.prevent="save")
     .flex.flex-col.items-center.gap-3
       c-form-input(
-        title="Name" v-model="video.name"
-        placeholder="Describe your video."
+        title="Name"
+        v-model="video.name"
         :errors="err.specific.name"
       )
       c-form-select(

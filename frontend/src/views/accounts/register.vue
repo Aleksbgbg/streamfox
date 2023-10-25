@@ -37,21 +37,29 @@ async function submit() {
 c-form-layout(title="Register")
   form.flex.flex-col.items-center.gap-3.my-5(@submit.prevent="submit")
     c-form-input(
-      title="Username" v-model="registration.username"
+      center
+      title="Username"
+      v-model="registration.username"
       :errors="err.specific.username"
     )
     c-form-input(
-      title="Email Address" v-model="registration.emailAddress"
+      center
+      title="Email Address"
+      v-model="registration.emailAddress"
       :errors="err.specific.emailAddress"
     )
     c-form-input(
+      center
       type="password"
-      title="Password" v-model="registration.password"
+      title="Password"
+      v-model="registration.password"
       :errors="err.specific.password"
     )
     c-form-input(
+      center
       type="password"
-      title="Repeat Password" v-model="registration.repeatPassword"
+      title="Repeat Password"
+      v-model="registration.repeatPassword"
       :errors="err.specific.repeatPassword"
     )
     div(v-if="err.generic.length > 0")
