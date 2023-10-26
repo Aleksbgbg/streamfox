@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, ref } from "vue";
+import { type Ref, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import CFormInput from "@/components/forms/input.vue";
 import CFormLayout from "@/components/layout/form.vue";
@@ -9,10 +9,10 @@ import { login } from "@/utils/auth";
 
 const router = useRouter();
 
-const credentials = {
+const credentials = reactive({
   username: "",
   password: "",
-};
+});
 
 const err: Ref<ApiErr<Credentials>> = ref(emptyApiErr());
 
