@@ -13,23 +13,30 @@ interface Props {
   modelValue: string;
   errors?: string[];
 }
-
 const props = defineProps<Props>();
 
 const label = computed(() => toLowerCamelCase(props.title));
+const valid = computed(() => !props.errors || props.errors.length === 0);
 </script>
 
 <template lang="pug">
-label.justify-self-end.mt-2(:for="label")
-  span {{ title }}
-  span.text-aurora-red *
-.flex.flex-col
-  textarea(
-    class="bg-polar-darkest text-white placeholder-snow-dark placeholder:italic focus:border-aurora-green focus:outline-none resize-none leading-normal rounded border py-2 px-3"
-    :class="[(errors && errors.length > 0) ? 'border-aurora-red' : 'border-polar-lightest']"
-    :id="label" :label="label" :placeholder="placeholder"
-    :value="modelValue"
-    @input="$emit('update:modelValue', asInputElement($event.target).value)"
+.flex.flex-col.w-full.h-full
+  .group.flex-grow.flex.flex-col.rounded.ring-1.ring-frost-blue.ring-inset(
+    class="data-invalid:[&:not(:focus-within)]:ring-aurora-red hover:ring-2 focus-within:ring-2 focus-within:ring-aurora-yellow"
+    :data-invalid="!valid"
   )
+    label.truncate.max-w-full.pl-3.pt-2(
+      class="group-focus-within:text-aurora-yellow-300"
+      :for="label"
+    ) {{ title }}
+    textarea.flex-grow.bg-transparent.resize-none.pl-3.py-2.mr-1.mb-1(
+      class="focus:outline-none"
+      :id="label"
+      :label="label"
+      :placeholder="placeholder"
+      :value="modelValue"
+      :aria-invalid="!valid"
+      @input="$emit('update:modelValue', asInputElement($event.target).value)"
+    )
   p.text-aurora-red(v-for="error of errors") {{ error }}
 </template>

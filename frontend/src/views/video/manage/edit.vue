@@ -78,8 +78,9 @@ c-form-layout(title="Edit Video")
         c-form-option(title="Unlisted" :value="Visibility.Unlisted")
         c-form-option(title="Private" :value="Visibility.Private")
       c-form-textarea(
-        title="Description" v-model="video.description"
-        placeholder="Provide additional information about your video. "
+        title="Description"
+        placeholder="Provide additional information about your video."
+        v-model="video.description"
         :errors="err.specific.description"
       )
       div(v-if="err.generic.length > 0")
