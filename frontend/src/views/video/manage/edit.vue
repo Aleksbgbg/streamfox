@@ -63,7 +63,16 @@ async function save() {
 <template lang="pug">
 c-form-layout(title="Edit Video")
   form.flex.justify-center.gap-6.mx-5.my-4(@submit.prevent="save")
-    .flex.flex-col.items-center.gap-3
+    .flex.flex-col.items-center(class="md:items-start")
+      img.mb-2(class="max-w-[416px]" :src="videoThumbnail(props.videoId)")
+      label.font-semibold(for="video-link") Video link
+      router-link.break-all.underline.text-frost-cyan.mb-2#video-link(
+        :to="{ name: 'watch', params: { id: videoId } }"
+      ) watch/{{ videoId }}
+      template(v-if="route.query.filename")
+        label.font-semibold(for="file") File
+        p.break-all#file {{ route.query.filename }}
+    .flex-grow.flex.flex-col.items-center.gap-3.min-w-0
       c-form-input(
         title="Name"
         v-model="video.name"
@@ -89,15 +98,4 @@ c-form-layout(title="Edit Video")
       button.self-end(
         class="bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2"
       ) Save
-    .col-start-3.bg-polar-darkest.drop-shadow-2xl
-      img.rounded-t-md.w-full(:src="videoThumbnail(props.videoId)")
-      .p-4
-        .mb-2
-          label.font-semibold(for="video-link") Video link
-          router-link.block.underline.text-frost-cyan(
-            id="video-link" :to="{ name: 'watch', params: { id: videoId } }"
-          ) watch/{{ videoId }}
-        div(v-if="route.query.filename")
-          label.font-semibold(for="file") File
-          p(id="file") {{ route.query.filename }}
 </template>
