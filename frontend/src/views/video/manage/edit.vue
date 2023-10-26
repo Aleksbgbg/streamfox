@@ -2,7 +2,8 @@
 import { type Ref, onBeforeMount, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import CFormInput from "@/components/forms/input.vue";
-import CFormSelect from "@/components/forms/select.vue";
+import CFormOption from "@/components/forms/select/option.vue";
+import CFormSelect from "@/components/forms/select/select.vue";
 import CFormTextarea from "@/components/forms/textarea.vue";
 import CFormLayout from "@/components/layout/form.vue";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
@@ -69,12 +70,13 @@ c-form-layout(title="Edit Video")
         :errors="err.specific.name"
       )
       c-form-select(
-        title="Visibility" v-model.number="video.visibility"
+        title="Visibility"
+        v-model.number="video.visibility"
         :errors="err.specific.visibility"
       )
-        option(:value="Visibility.Public") Public
-        option(:value="Visibility.Unlisted") Unlisted
-        option(:value="Visibility.Private") Private
+        c-form-option(title="Public" :value="Visibility.Public")
+        c-form-option(title="Unlisted" :value="Visibility.Unlisted")
+        c-form-option(title="Private" :value="Visibility.Private")
       c-form-textarea(
         title="Description" v-model="video.description"
         placeholder="Provide additional information about your video. "
