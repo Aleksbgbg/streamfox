@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import CFormInput from "@/components/forms/input.vue";
 import CFormOption from "@/components/forms/select/option.vue";
 import CFormSelect from "@/components/forms/select/select.vue";
+import CSuccess from "@/components/forms/success.vue";
 import CFormTextarea from "@/components/forms/textarea.vue";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
 import {
@@ -27,7 +28,7 @@ const video: VideoUpdateInfo = reactive({
   visibility: Visibility.Public,
 });
 
-const updateComplete = ref(false);
+const success = ref<InstanceType<typeof CSuccess> | null>(null);
 const err: Ref<ApiErr<VideoUpdateInfo>> = ref(emptyApiErr());
 
 onBeforeMount(async () => {
@@ -54,8 +55,7 @@ async function save() {
     return;
   }
 
-  updateComplete.value = true;
-  setTimeout(() => (updateComplete.value = false), 1000);
+  success.value?.show();
 }
 </script>
 
@@ -92,7 +92,7 @@ form.flex.flex-col.justify-center.gap-6.h-full.px-5.py-4(class="md:flex-row" @su
     )
     div(v-if="err.generic.length > 0")
       p.text-aurora-red.text-center(v-for="error of err.generic") {{ error }}
-    p.text-aurora-green.text-center(v-if="updateComplete") Saved!
+    c-success(message="Saved!" ref="success")
     button.self-end(
       class="bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2"
     ) Save
