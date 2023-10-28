@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { type Ref, computed, provide, ref, watch } from "vue";
+import CErrors from "@/components/forms/errors.vue";
 import {
   type SelectChild,
   type SelectControl,
@@ -98,5 +99,5 @@ div(:class="center ? 'w-80 max-w-full px-5' : 'w-full'")
     .absolute.w-full(v-show="toggled")
       ul
         slot
-  p.text-aurora-red(v-for="error of errors") {{ error }}
+  c-errors(:errors="errors")
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import CErrors from "@/components/forms/errors.vue";
 import { asInputElement } from "@/utils/cast";
 import { toLowerCamelCase } from "@/utils/strings";
 
@@ -40,5 +41,5 @@ div(:class="center ? 'w-80 max-w-full px-5' : 'w-full'")
       :aria-invalid="!valid"
       @input="$emit('update:modelValue', asInputElement($event.target).value)"
     )
-  p.text-aurora-red(v-for="error of errors") {{ error }}
+  c-errors(:errors="errors")
 </template>

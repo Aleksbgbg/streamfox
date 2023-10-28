@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Ref, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormLayout from "@/components/layout/form.vue";
 import { type Registration, register } from "@/endpoints/auth";
@@ -62,8 +63,7 @@ c-form-layout(title="Register")
       v-model="registration.repeatPassword"
       :errors="err.specific.repeatPassword"
     )
-    div(v-if="err.generic.length > 0")
-      p.text-aurora-red(v-for="error of err.generic") {{ error }}
+    c-errors(center :errors="err.generic")
     button(
       class="bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2"
     ) Register Account
