@@ -27,7 +27,7 @@ export default defineConfig({
     port: parseInt(process.env.APP_PORT, 10),
     strictPort: true,
     watch: {
-      usePolling: true,
+      usePolling: process.env.DEBUG_POLL.toLowerCase() === "true",
     },
     proxy: {
       "/api": `http://${process.env.DEBUG_FORWARD_HOST}:${process.env.DEBUG_FORWARD_PORT}`,
