@@ -70,22 +70,10 @@ onMounted(async () => {
     setVolume(player.volume());
   });
 
-  const [subs, watch] = await Promise.all([
-    getAllSubtitles(props.id),
+  const [watch, subs] = await Promise.all([
     getWatchConditions(props.id),
+    getAllSubtitles(props.id),
   ]);
-
-  if (subs.success()) {
-    for (const subtitle of subs.value()) {
-      player.addRemoteTextTrack({
-        kind: "subtitles",
-        label: subtitle.name,
-        srclang: undefined,
-        src: subtitleContentUrl(props.id, subtitle.id),
-        default: false,
-      });
-    }
-  }
 
   if (watch.success()) {
     watchConditions = watch.value();
@@ -103,6 +91,18 @@ onMounted(async () => {
 
     if (!player.paused()) {
       timer.resume();
+    }
+  }
+
+  if (subs.success()) {
+    for (const subtitle of subs.value()) {
+      player.addRemoteTextTrack({
+        kind: "subtitles",
+        label: subtitle.name,
+        srclang: undefined,
+        src: subtitleContentUrl(props.id, subtitle.id),
+        default: false,
+      });
     }
   }
 });
