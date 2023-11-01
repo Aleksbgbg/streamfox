@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { type Ref, computed, onMounted, onUnmounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import videojs from "video.js";
+import type Player from "video.js/dist/types/player";
 import { getAllSubtitles, subtitleContentUrl } from "@/endpoints/subtitle";
 import {
   type VideoId,
@@ -13,6 +15,8 @@ import { getVolume, setVolume } from "@/settings/volume";
 import { type Optional, empty, getValue, tryApply } from "@/types/optional";
 import { CallbackTimer } from "@/utils/callback-timer";
 import { panic } from "@/utils/panic";
+
+const route = useRoute();
 
 const props = defineProps<{
   id: VideoId;
@@ -48,6 +52,15 @@ async function checkWatchConditions() {
 }
 
 const playerElement: Ref<HTMLVideoElement | null> = ref(null);
+
+function handleSpecificTimestamp(player: Player) {
+  if (route.query.t) {
+    player.load();
+
+    const skipForwardSecs = parseInt(route.query.t as string);
+    player.currentTime(player.currentTime() + skipForwardSecs);
+  }
+}
 
 onMounted(async () => {
   const player = videojs(playerElement.value ?? panic("player is null"), {
@@ -93,6 +106,8 @@ onMounted(async () => {
       timer.resume();
     }
   }
+
+  handleSpecificTimestamp(player);
 
   if (subs.success()) {
     for (const subtitle of subs.value()) {
