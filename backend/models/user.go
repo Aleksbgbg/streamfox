@@ -7,8 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func VerifyPassword(password, hashedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+type User struct {
+	Base
+	Username     *string `gorm:"type:varchar(32); unique;"`
+	EmailAddress *string `gorm:"type:text; unique;"`
+	Password     *string `gorm:"type:char(60);"`
 }
 
 func ValidateCredentials(username, password string) (*User, error) {
@@ -20,7 +23,7 @@ func ValidateCredentials(username, password string) (*User, error) {
 		return nil, err
 	}
 
-	err = VerifyPassword(password, *user.Password)
+	err = verifyPassword(password, *user.Password)
 
 	if err == bcrypt.ErrMismatchedHashAndPassword {
 		return nil, err
@@ -29,10 +32,8 @@ func ValidateCredentials(username, password string) (*User, error) {
 	return user, nil
 }
 
-func FetchUser(id Id) (*User, error) {
-	user := User{}
-	err := db.First(&user, id).Error
-	return &user, err
+func verifyPassword(password, hashedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
 func UsernameExists(username string) bool {
@@ -53,17 +54,39 @@ func EmailExists(email string) bool {
 	return exists
 }
 
+func FetchUser(id Id) (*User, error) {
+	user := User{}
+	err := db.First(&user, id).Error
+	return &user, err
+}
+
 func GenerateAnonymousUser() (*User, error) {
 	user := &User{}
 	err := user.Save()
 	return user, err
 }
 
-type User struct {
-	Base
-	Username     *string `gorm:"type:varchar(32); unique;"`
-	EmailAddress *string `gorm:"type:text; unique;"`
-	Password     *string `gorm:"type:char(60);"`
+func (user *User) Save() error {
+	user.Id = NewId()
+	err := db.Create(&user).Error
+	return err
+}
+
+func (user *User) BeforeSave(tx *gorm.DB) error {
+	if user.Password == nil {
+		return nil
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
+
+	if err != nil {
+		return err
+	}
+
+	hashedPasswordStr := string(hashedPassword)
+	user.Password = &hashedPasswordStr
+
+	return nil
 }
 
 func (user *User) IsAnonymous() bool {
@@ -142,27 +165,4 @@ func (user *User) Absorb(anonymous *User) error {
 	}
 
 	return db.Delete(anonymous).Error
-}
-
-func (user *User) Save() error {
-	user.Id = NewId()
-	err := db.Create(&user).Error
-	return err
-}
-
-func (user *User) BeforeSave(tx *gorm.DB) error {
-	if user.Password == nil {
-		return nil
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
-
-	if err != nil {
-		return err
-	}
-
-	hashedPasswordStr := string(hashedPassword)
-	user.Password = &hashedPasswordStr
-
-	return nil
 }
