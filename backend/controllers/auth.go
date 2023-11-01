@@ -117,12 +117,20 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	if models.UsernameExists(input.Username) {
+	usernameExists, err := models.UsernameExists(input.Username)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
+		return
+	}
+	if usernameExists {
 		validationError(c, errorMap{"username": []string{"Username must not be taken."}})
 		return
 	}
 
-	if models.EmailExists(input.EmailAddress) {
+	emailExists, err := models.EmailExists(input.EmailAddress)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
+		return
+	}
+	if emailExists {
 		validationError(c, errorMap{"emailAddress": []string{"Email Address must not be taken."}})
 		return
 	}
@@ -132,7 +140,7 @@ func Register(c *gin.Context) {
 		EmailAddress: &input.EmailAddress,
 		Password:     &input.Password,
 	}
-	err := user.Save()
+	err = user.Save()
 
 	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
 		return

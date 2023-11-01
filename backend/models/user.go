@@ -36,22 +36,20 @@ func verifyPassword(password, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-func UsernameExists(username string) bool {
-	var exists bool
-	db.Model(User{}).
-		Select("count(*) > 0").
+func UsernameExists(username string) (bool, error) {
+	var count int64
+	err := db.Model(&User{}).
 		Where(&User{Username: &username}).
-		Find(&exists)
-	return exists
+		Count(&count).Error
+	return count > 0, err
 }
 
-func EmailExists(email string) bool {
-	var exists bool
-	db.Model(User{}).
-		Select("count(*) > 0").
+func EmailExists(email string) (bool, error) {
+	var count int64
+	err := db.Model(&User{}).
 		Where(&User{EmailAddress: &email}).
-		Find(&exists)
-	return exists
+		Count(&count).Error
+	return count > 0, err
 }
 
 func FetchUser(id Id) (*User, error) {
