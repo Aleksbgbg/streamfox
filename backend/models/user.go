@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -9,9 +10,14 @@ import (
 
 type User struct {
 	Base
-	Username     *string `gorm:"type:varchar(32); unique;"`
-	EmailAddress *string `gorm:"type:text; unique;"`
-	Password     *string `gorm:"type:char(60);"`
+
+	Username          *string `gorm:"type:varchar(32); unique;"`
+	CanonicalUsername *string `gorm:"type:varchar(32); unique;"`
+
+	EmailAddress          *string `gorm:"type:text; unique;"`
+	CanonicalEmailAddress *string `gorm:"type:text; unique;"`
+
+	Password *string `gorm:"type:char(60);"`
 }
 
 func ValidateCredentials(username, password string) (*User, error) {
@@ -37,17 +43,21 @@ func verifyPassword(password, hashedPassword string) error {
 }
 
 func UsernameExists(username string) (bool, error) {
+	lowerUsername := strings.ToLower(username)
+
 	var count int64
 	err := db.Model(&User{}).
-		Where(&User{Username: &username}).
+		Where(&User{CanonicalUsername: &lowerUsername}).
 		Count(&count).Error
 	return count > 0, err
 }
 
 func EmailExists(email string) (bool, error) {
+	lowerEmail := strings.ToLower(email)
+
 	var count int64
 	err := db.Model(&User{}).
-		Where(&User{EmailAddress: &email}).
+		Where(&User{CanonicalEmailAddress: &lowerEmail}).
 		Count(&count).Error
 	return count > 0, err
 }
@@ -66,6 +76,15 @@ func GenerateAnonymousUser() (*User, error) {
 
 func (user *User) Save() error {
 	user.Id = NewId()
+	if user.Username != nil {
+		lowerUsername := strings.ToLower(*user.Username)
+		user.CanonicalUsername = &lowerUsername
+	}
+	if user.EmailAddress != nil {
+		lowerEmail := strings.ToLower(*user.EmailAddress)
+		user.CanonicalEmailAddress = &lowerEmail
+	}
+
 	err := db.Create(&user).Error
 	return err
 }
