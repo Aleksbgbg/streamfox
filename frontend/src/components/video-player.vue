@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { type Ref, computed, onMounted, onUnmounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import videojs from "video.js";
 import type Player from "video.js/dist/types/player";
+import CContextMenuItem from "@/components/menu/context-menu-item.vue";
+import CContextMenu from "@/components/menu/context-menu.vue";
 import { getAllSubtitles, subtitleContentUrl } from "@/endpoints/subtitle";
 import {
   type VideoId,
@@ -14,8 +16,11 @@ import {
 import { getVolume, setVolume } from "@/settings/volume";
 import { type Optional, empty, getValue, tryApply } from "@/types/optional";
 import { CallbackTimer } from "@/utils/callback-timer";
+import { clipboardCopy } from "@/utils/clipboard";
 import { panic } from "@/utils/panic";
+import { fullUrl } from "@/utils/url";
 
+const router = useRouter();
 const route = useRoute();
 
 const props = defineProps<{
@@ -62,8 +67,9 @@ function handleSpecificTimestamp(player: Player) {
   }
 }
 
+let player: Optional<Player> = empty();
 onMounted(async () => {
-  const player = videojs(playerElement.value ?? panic("player is null"), {
+  player = videojs(playerElement.value ?? panic("player is null"), {
     autoplay: true,
     controls: true,
     loop: true,
@@ -80,7 +86,7 @@ onMounted(async () => {
 
   player.volume(getVolume());
   player.on("volumechange", function () {
-    setVolume(player.volume());
+    setVolume(getValue(player).volume());
   });
 
   const [watch, subs] = await Promise.all([
@@ -98,7 +104,7 @@ onMounted(async () => {
     player.on("play", () => getValue(timer).resume());
     player.on("pause", () => getValue(timer).pause());
     player.on("progress", () => {
-      conditionsTracker.percentage = player.bufferedPercent();
+      conditionsTracker.percentage = getValue(player).bufferedPercent();
       checkWatchConditions();
     });
 
@@ -123,12 +129,36 @@ onMounted(async () => {
 });
 
 onUnmounted(() => tryApply(timer, (timer) => timer.cancel()));
+
+const contextMenu: Ref<typeof CContextMenu | null> = ref(null);
+function onContextMenu(event: MouseEvent) {
+  contextMenu.value?.show({ x: event.clientX, y: event.clientY });
+}
+function copyUrl() {
+  clipboardCopy(fullUrl(route.path));
+}
+function copyUrlTimestamp() {
+  clipboardCopy(
+    fullUrl(
+      router.resolve({
+        name: getValue(route.name),
+        query: { t: Math.round(player?.currentTime() || 0).toString() },
+      }).fullPath
+    )
+  );
+}
 </script>
 
 <template lang="pug">
-div
-  video.video-js.vjs-theme-sea(ref="playerElement")
+div(data-vjs-player)
+  video.video-js.vjs-theme-sea(
+    ref="playerElement"
+    @contextmenu.prevent="onContextMenu"
+  )
     source(:src="videoUrl" type="video/mp4")
+  c-context-menu(ref="contextMenu")
+    c-context-menu-item(icon="link" @click="copyUrl") Copy video URL
+    c-context-menu-item(icon="link" @click="copyUrlTimestamp") Copy video URL at current time
 </template>
 
 <style lang="stylus">
