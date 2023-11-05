@@ -11,6 +11,7 @@ import {
   updateVideo,
   uploadVideo,
 } from "@/endpoints/video";
+import { fracToPercent } from "@/utils/math";
 import { panic } from "@/utils/panic";
 import { createProgressReporter } from "@/utils/upload-progress";
 
@@ -43,7 +44,7 @@ async function uploadFile(file: File): Promise<ApiResponse<void, void>> {
     let readBytes = 0;
 
     const reportProgress = createProgressReporter(function (progressReport) {
-      upload.progressPercentage = progressReport.uploadedFraction * 100;
+      upload.progressPercentage = fracToPercent(progressReport.uploadedFraction);
       upload.dataRateMBs = progressReport.dataRateBytesPerSec / 1_000_000;
     });
 
