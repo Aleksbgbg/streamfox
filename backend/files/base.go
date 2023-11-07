@@ -95,3 +95,20 @@ func (f *File) Remove() error {
 	f.AutoClose()
 	return os.Remove(f.path)
 }
+
+func (f *File) ReadOrFillIfEmpty(filler func() string) (string, error) {
+	content, err := os.ReadFile(f.Path())
+	if err != nil {
+		return "", err
+	}
+
+	if len(content) == 0 {
+		content = []byte(filler())
+		err = os.WriteFile(f.Path(), content, DefaultPerm)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return string(content), nil
+}

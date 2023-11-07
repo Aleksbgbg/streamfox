@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"os"
 	"streamfox-backend/files"
 	"streamfox-backend/models"
 	"streamfox-backend/utils"
@@ -20,21 +19,12 @@ func SetupApiSecret() error {
 		return err
 	}
 
-	secret, err := os.ReadFile(file.Path())
+	secret, err := file.ReadOrFillIfEmpty(func() string { return uniuri.New() })
 	if err != nil {
 		return err
 	}
 
-	if len(secret) == 0 {
-		secret = []byte(uniuri.New())
-
-		err = os.WriteFile(file.Path(), secret, files.DefaultPerm)
-		if err != nil {
-			return err
-		}
-	}
-
-	apiSecret = secret
+	apiSecret = []byte(secret)
 
 	return nil
 }
