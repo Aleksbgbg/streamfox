@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"log"
 	"streamfox-backend/utils"
 
 	"gorm.io/driver/postgres"
@@ -11,7 +10,7 @@ import (
 
 var db *gorm.DB
 
-func Setup() {
+func Setup() error {
 	var err error
 	db, err = gorm.Open(
 		postgres.Open(fmt.Sprintf(
@@ -26,9 +25,8 @@ func Setup() {
 			TranslateError: true,
 		},
 	)
-
 	if err != nil {
-		log.Fatal("Could not connect to database:", err)
+		return fmt.Errorf("could not connect to the database: %w", err)
 	}
 
 	db.AutoMigrate(&Subtitle{})
@@ -38,8 +36,9 @@ func Setup() {
 	db.AutoMigrate(&Watch{})
 
 	err = setupIdGen()
-
 	if err != nil {
-		log.Panicf("could not setup ID generator: %v", err)
+		return fmt.Errorf("could not setup ID generator: %w", err)
 	}
+
+	return nil
 }

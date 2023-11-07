@@ -23,7 +23,9 @@ func main() {
 		log.Panicf("Error setting up API secret: %v", err)
 	}
 
-	models.Setup()
+	if err := models.Setup(); err != nil {
+		log.Panicf("Error setting up database: %v", err)
+	}
 
 	const API_PREFIX = "/api"
 	const FRONTEND_PATH = "frontend"
