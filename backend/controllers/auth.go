@@ -104,7 +104,7 @@ func absorbAnonymousUser(c *gin.Context, user *models.User) error {
 }
 
 type RegisterInput struct {
-	Username       string `json:"username"       binding:"required,min=2,max=32,printascii,ne_ignore_case=Anonymous,ne_ignore_case=Streamfox"`
+	Username       string `json:"username"       binding:"required,min=2,max=32,printascii,ne_ignore_case=Anonymous"`
 	EmailAddress   string `json:"emailAddress"   binding:"required,email"`
 	Password       string `json:"password"       binding:"required,min=6,max=72,printascii"`
 	RepeatPassword string `json:"repeatPassword" binding:"required,eqfield=Password"`
