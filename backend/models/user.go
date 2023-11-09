@@ -75,33 +75,32 @@ func GenerateAnonymousUser() (*User, error) {
 }
 
 func (user *User) Save() error {
+	return db.Create(&user).Error
+}
+
+func (user *User) BeforeSave(tx *gorm.DB) error {
 	user.Id = NewId()
+
 	if user.Username != nil {
 		lowerUsername := strings.ToLower(*user.Username)
 		user.CanonicalUsername = &lowerUsername
 	}
+
 	if user.EmailAddress != nil {
 		lowerEmail := strings.ToLower(*user.EmailAddress)
 		user.CanonicalEmailAddress = &lowerEmail
 	}
 
-	err := db.Create(&user).Error
-	return err
-}
+	if user.Password != nil {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
 
-func (user *User) BeforeSave(tx *gorm.DB) error {
-	if user.Password == nil {
-		return nil
+		if err != nil {
+			return err
+		}
+
+		hashedPasswordStr := string(hashedPassword)
+		user.Password = &hashedPasswordStr
 	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
-
-	if err != nil {
-		return err
-	}
-
-	hashedPasswordStr := string(hashedPassword)
-	user.Password = &hashedPasswordStr
 
 	return nil
 }
