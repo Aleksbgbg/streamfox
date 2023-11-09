@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/dchest/uniuri"
 )
 
 func ToLowerCamelCase(str string) string {
@@ -27,4 +29,8 @@ func AddSpaces(str string) string {
 		buffer.WriteRune(rune)
 	}
 	return buffer.String()
+}
+
+func SecureString() string {
+	return uniuri.New()
 }

@@ -7,7 +7,6 @@ import (
 	"streamfox-backend/utils"
 	"time"
 
-	"github.com/dchest/uniuri"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -19,7 +18,7 @@ func SetupApiSecret() error {
 		return err
 	}
 
-	secret, err := file.ReadOrFillIfEmpty(func() string { return uniuri.New() })
+	secret, err := file.ReadOrFillIfEmpty(utils.SecureString)
 	if err != nil {
 		return err
 	}
