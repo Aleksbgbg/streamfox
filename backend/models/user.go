@@ -79,7 +79,9 @@ func (user *User) Save() error {
 }
 
 func (user *User) BeforeSave(tx *gorm.DB) error {
-	user.Id = NewId()
+	if user.Id.Int() == 0 {
+		user.Id = NewId()
+	}
 
 	if user.Username != nil {
 		lowerUsername := strings.ToLower(*user.Username)
