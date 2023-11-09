@@ -83,12 +83,12 @@ func (user *User) BeforeSave(tx *gorm.DB) error {
 		user.Id = NewId()
 	}
 
-	if user.Username != nil {
+	if (user.CanonicalUsername == nil) && (user.Username != nil) {
 		lowerUsername := strings.ToLower(*user.Username)
 		user.CanonicalUsername = &lowerUsername
 	}
 
-	if user.EmailAddress != nil {
+	if (user.CanonicalEmailAddress == nil) && (user.EmailAddress != nil) {
 		lowerEmail := strings.ToLower(*user.EmailAddress)
 		user.CanonicalEmailAddress = &lowerEmail
 	}
