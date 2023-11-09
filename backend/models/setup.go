@@ -70,5 +70,11 @@ func Setup() error {
 		Password: &streamfoxPassword,
 	})
 
+	anonymous := "Anonymous"
+	genUser(User{
+		Base:     Base{Id: IdFromInt(2)},
+		Username: &anonymous,
+	})
+
 	return nil
 }
