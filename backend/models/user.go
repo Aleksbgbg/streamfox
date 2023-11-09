@@ -29,6 +29,10 @@ func ValidateCredentials(username, password string) (*User, error) {
 		return nil, err
 	}
 
+	if user.Password == nil {
+		return nil, fmt.Errorf("user does not have a password to validate")
+	}
+
 	err = verifyPassword(password, *user.Password)
 
 	if err == bcrypt.ErrMismatchedHashAndPassword {
