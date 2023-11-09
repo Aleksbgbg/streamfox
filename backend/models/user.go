@@ -42,6 +42,11 @@ func verifyPassword(password, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
+func idExists(id Id) (bool, error) {
+	count, err := count(&User{Base: Base{Id: id}})
+	return count > 0, err
+}
+
 func UsernameExists(username string) (bool, error) {
 	lowerUsername := strings.ToLower(username)
 

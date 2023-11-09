@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"streamfox-backend/files"
 	"streamfox-backend/utils"
 
 	"gorm.io/driver/postgres"
@@ -9,6 +10,18 @@ import (
 )
 
 var db *gorm.DB
+
+func genUser(user User) error {
+	exists, err := idExists(user.Id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	return user.Save()
+}
 
 func Setup() error {
 	var err error
@@ -39,6 +52,23 @@ func Setup() error {
 	if err != nil {
 		return fmt.Errorf("could not setup ID generator: %w", err)
 	}
+
+	passwordFile, err := files.NewResolver().Resolve(files.StreamfoxDefaultPassword)
+	if err != nil {
+		return err
+	}
+
+	streamfoxPassword, err := passwordFile.ReadOrFillIfEmpty(utils.SecureString)
+	if err != nil {
+		return err
+	}
+
+	streamfox := "Streamfox"
+	genUser(User{
+		Base:     Base{Id: IdFromInt(1)},
+		Username: &streamfox,
+		Password: &streamfoxPassword,
+	})
 
 	return nil
 }

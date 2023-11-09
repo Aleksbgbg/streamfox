@@ -9,6 +9,7 @@ import (
 const fsTree = `
 <config_root>
 	auth_secret #auth_secret
+	streamfox_default_password #streamfox_default_password
 <data_root>
 	videos
 		<video_id>
@@ -26,10 +27,11 @@ const (
 )
 
 const (
-	AuthSecret     = "auth_secret"
-	VideoStream    = "video_stream"
-	VideoThumbnail = "video_thumbnail"
-	VideoSubtitle  = "video_subtitle"
+	AuthSecret               = "auth_secret"
+	StreamfoxDefaultPassword = "streamfox_default_password"
+	VideoStream              = "video_stream"
+	VideoThumbnail           = "video_thumbnail"
+	VideoSubtitle            = "video_subtitle"
 )
 
 var fs = ParseFsTree(fsTree)
