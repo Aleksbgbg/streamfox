@@ -93,6 +93,10 @@ func (user *User) BeforeSave(tx *gorm.DB) error {
 		user.CanonicalEmailAddress = &lowerEmail
 	}
 
+	return nil
+}
+
+func (user *User) BeforeCreate(tx *gorm.DB) error {
 	if user.Password != nil {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
 
