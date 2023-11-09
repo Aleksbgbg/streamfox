@@ -22,18 +22,11 @@ func recordView(view View) error {
 }
 
 func viewAlreadyCounted(viewId Id) (bool, error) {
-	var count int64
-	err := db.Model(&View{}).Where(&View{Base: Base{Id: viewId}}).Count(&count).Error
-
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
+	count, err := count(&View{Base: Base{Id: viewId}})
+	return count > 0, err
 }
 
 func CountViews(video *Video) (int64, error) {
-	var count int64
-	err := db.Model(&View{}).Where(&View{VideoId: video.Id}).Count(&count).Error
+	count, err := count(&View{VideoId: video.Id})
 	return count, err
 }

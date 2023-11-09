@@ -45,20 +45,14 @@ func verifyPassword(password, hashedPassword string) error {
 func UsernameExists(username string) (bool, error) {
 	lowerUsername := strings.ToLower(username)
 
-	var count int64
-	err := db.Model(&User{}).
-		Where(&User{CanonicalUsername: &lowerUsername}).
-		Count(&count).Error
+	count, err := count(&User{CanonicalUsername: &lowerUsername})
 	return count > 0, err
 }
 
 func EmailExists(email string) (bool, error) {
 	lowerEmail := strings.ToLower(email)
 
-	var count int64
-	err := db.Model(&User{}).
-		Where(&User{CanonicalEmailAddress: &lowerEmail}).
-		Count(&count).Error
+	count, err := count(&User{CanonicalEmailAddress: &lowerEmail})
 	return count > 0, err
 }
 
