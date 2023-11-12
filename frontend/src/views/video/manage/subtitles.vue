@@ -205,12 +205,12 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
           ) Save
   .flex
     button(
-      class="rounded bg-frost-blue hover:bg-frost-deep px-2 py-1 m-2"
+      class="rounded bg-frost-blue hover:bg-frost-deep m-2"
       @click="create()"
     )
-      i.bi-plus.text-xl
-    button(class="rounded bg-frost-blue hover:bg-frost-deep px-2 py-1 m-2")
-      label(for="file-input" class="hover:cursor-pointer")
+      i.block.bi-plus.text-xl.px-2.py-1
+    button(class="rounded bg-frost-blue hover:bg-frost-deep m-2")
+      label.block.px-2.py-1(for="file-input" class="hover:cursor-pointer")
         i.bi-file-earmark-plus.text-xl
       input.hidden#file-input(
         type="file"
