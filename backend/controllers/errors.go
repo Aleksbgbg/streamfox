@@ -73,6 +73,7 @@ const (
 	errVideoInvalidFormat
 	errVideoCannotOverwrite
 	errVideoSubtitlesCannotDoubleExtract
+	errVideoSubtitlesInvalidFormat
 	errVideoViewAlreadyCounted
 
 	errUserRequired
@@ -112,6 +113,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errValidation, "Cannot overwrite video after uploading has completed successfully."
 	case errVideoSubtitlesCannotDoubleExtract:
 		return errValidation, "Video subtitles have already been extracted."
+	case errVideoSubtitlesInvalidFormat:
+		return errValidation, "Provided file cannot be converted to WebVTT (web subtitles)."
 	case errVideoViewAlreadyCounted:
 		return errValidation, "View has already been counted."
 

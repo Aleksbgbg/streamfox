@@ -17,6 +17,7 @@ const fsTree = `
 			thumbnail #video_thumbnail
 			subtitles
 				<subtitle_id>.vtt #video_subtitle
+				<subtitle_id>.temp.unknown #video_subtitle_temp
 `
 
 const (
@@ -32,6 +33,7 @@ const (
 	VideoStream              = "video_stream"
 	VideoThumbnail           = "video_thumbnail"
 	VideoSubtitle            = "video_subtitle"
+	VideoSubtitleTemp        = "video_subtitle_temp"
 )
 
 var fs = ParseFsTree(fsTree)

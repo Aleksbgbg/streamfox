@@ -122,13 +122,24 @@ func GetSubtitleContent(c *gin.Context) {
 	c.File(file.Path())
 }
 
-func CreateSubtitle(c *gin.Context) {
+func storePlaceholderContents(vttSubtitleFile *files.File) error {
 	const defaultSubtitleFile = `WEBVTT
 
 00:00.000 --> 00:05.000
 Welcome!
 `
 
+	vttHandle, err := vttSubtitleFile.Open()
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(vttHandle, strings.NewReader(defaultSubtitleFile))
+	vttSubtitleFile.AutoClose()
+	return err
+}
+
+func CreateSubtitle(c *gin.Context) {
 	video := getVideoParam(c)
 
 	subtitle, err := models.CreateSubtitle(models.NewId(), video.Id, "New Subtitle")
@@ -136,28 +147,54 @@ Welcome!
 		return
 	}
 
-	file, err := files.NewResolver().
+	resolver := files.NewResolver().
 		AddVar(files.VideoId, video.Id).
-		AddVar(files.SubtitleId, subtitle.Id).
-		Resolve(files.VideoSubtitle)
+		AddVar(files.SubtitleId, subtitle.Id)
+
+	vttSubtitleFile, err := resolver.Resolve(files.VideoSubtitle)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
+		subtitle.Delete()
 		return
 	}
 
-	handle, err := file.Open()
+	success := false
+	defer func() {
+		if !success {
+			subtitle.Delete()
+			vttSubtitleFile.Remove()
+		}
+	}()
+
+	err = storePlaceholderContents(vttSubtitleFile)
 	if ok := checkServerError(c, err, errGenericFileIo); !ok {
 		return
 	}
-	defer file.AutoClose()
 
 	if c.Request.ContentLength > 0 {
-		_, err = io.Copy(handle, c.Request.Body)
-	} else {
-		_, err = io.Copy(handle, strings.NewReader(defaultSubtitleFile))
+		subtitleContentsUpload, err := resolver.Resolve(files.VideoSubtitleTemp)
+		if ok := checkServerError(c, err, errGenericFileIo); !ok {
+			return
+		}
+		defer subtitleContentsUpload.Remove()
+
+		srcHandle, err := subtitleContentsUpload.Open()
+		if ok := checkServerError(c, err, errGenericFileIo); !ok {
+			return
+		}
+
+		_, err = io.Copy(srcHandle, c.Request.Body)
+		subtitleContentsUpload.AutoClose()
+		if ok := checkServerError(c, err, errGenericFileIo); !ok {
+			return
+		}
+
+		err = codec.ConvertToVtt(video.Id, subtitle.Id)
+		if ok := checkUserError(c, err, errVideoSubtitlesInvalidFormat); !ok {
+			return
+		}
 	}
-	if ok := checkServerError(c, err, errGenericFileIo); !ok {
-		return
-	}
+
+	success = true
 
 	c.JSON(http.StatusOK, getSubtitleInfo(subtitle))
 }

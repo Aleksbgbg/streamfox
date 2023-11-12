@@ -80,3 +80,29 @@ func ExtractAllSubtitles(videoId models.Id) ([]Subtitle, error) {
 
 	return subs, nil
 }
+
+func convertSubtitleFile(srcPath, dstPath string) error {
+	// dstPath should already include the .vtt extension
+	args := strings.Fields(fmt.Sprintf("ffmpeg -loglevel error -y -i %s %s", srcPath, dstPath))
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stderr = os.Stdout
+	return cmd.Run()
+}
+
+func ConvertToVtt(videoId models.Id, subtitleId models.Id) error {
+	resolver := files.NewResolver().
+		AddVar(files.VideoId, videoId).
+		AddVar(files.SubtitleId, subtitleId)
+
+	src, err := resolver.Resolve(files.VideoSubtitleTemp)
+	if err != nil {
+		return err
+	}
+
+	dst, err := resolver.Resolve(files.VideoSubtitle)
+	if err != nil {
+		return err
+	}
+
+	return convertSubtitleFile(src.Path(), dst.Path())
+}
