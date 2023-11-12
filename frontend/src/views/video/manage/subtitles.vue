@@ -124,7 +124,7 @@ function createFromFile() {
   reader.onloadend = async function () {
     await create(reader.result?.toString() ?? panic("no file read result"));
   };
-  reader.readAsBinaryString(file);
+  reader.readAsText(file);
 }
 
 async function save(subtitle: SubtitleWithContent) {
