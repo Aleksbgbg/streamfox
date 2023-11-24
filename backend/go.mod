@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/abrander/ginproxy v0.0.0-20160203200526-17006b6b1609
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/dchest/uniuri v1.2.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.14.1
 	github.com/golang-jwt/jwt/v5 v5.0.0
@@ -18,7 +19,6 @@ require (
 require (
 	github.com/bytedance/sonic v1.9.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
-	github.com/dchest/uniuri v1.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
