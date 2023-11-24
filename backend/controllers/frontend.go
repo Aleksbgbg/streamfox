@@ -16,6 +16,7 @@ import (
 
 	"github.com/abrander/ginproxy"
 	"github.com/gin-gonic/gin"
+	"github.com/go-http-utils/headers"
 )
 
 func ProdFrontendMiddleware(frontendPath string) gin.HandlerFunc {
@@ -89,7 +90,7 @@ func GenerateHtmlMetadata(handler gin.HandlerFunc) gin.HandlerFunc {
 
 		handler(c)
 
-		if !strings.HasPrefix(c.Writer.Header().Get("Content-Type"), "text/html") {
+		if !strings.HasPrefix(c.Writer.Header().Get(headers.ContentType), "text/html") {
 			return
 		}
 

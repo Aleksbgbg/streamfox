@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-http-utils/headers"
 )
 
 type deferredResponseWriter struct {
@@ -44,7 +45,7 @@ func (w *deferredResponseWriter) Flush() {
 
 	w.response.WriteHeader(w.status)
 	if w.body.Len() > 0 {
-		w.response.Header().Set("Content-Length", fmt.Sprint(w.body.Len()))
+		w.response.Header().Set(headers.ContentLength, fmt.Sprint(w.body.Len()))
 		_, err := io.Copy(w.response, w.body)
 		if err != nil {
 			w.context.Error(err)

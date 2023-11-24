@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-http-utils/headers"
 )
 
 var contentRangeRegex = regexp.MustCompile(`^bytes (\d+)-(\d+)/(\d+)$`)
@@ -27,7 +28,7 @@ var errInvalidEnd = fmt.Errorf("Content-Range end is bigger than content size")
 func parseContentRange(c *gin.Context) (contentRange, error) {
 	r := contentRange{}
 
-	header := c.GetHeader("Content-Range")
+	header := c.GetHeader(headers.ContentRange)
 
 	if len(header) == 0 {
 		return r, errNoContentRange
