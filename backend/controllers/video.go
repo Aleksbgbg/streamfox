@@ -362,7 +362,6 @@ func GetVideoStream(c *gin.Context) {
 	}
 
 	c.File(stream.Path())
-	c.Header("Content-Type", video.MimeType)
 
 	bytesStreamed := int64(c.Writer.Size())
 
