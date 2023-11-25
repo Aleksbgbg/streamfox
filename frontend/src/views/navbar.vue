@@ -7,6 +7,8 @@ import { getValue, hasValue } from "@/types/optional";
 import { logout } from "@/utils/auth";
 
 const store = useUserStore();
+
+const pageNames = ["home"];
 </script>
 
 <template lang="pug">
@@ -14,8 +16,13 @@ nav.flex.items-center.p-5
   router-link.flex.items-center(:to="{ name: 'home' }")
     logo.fill-white.w-14.-mt-4
     h1.font-bold.text-2xl.-ml-4 Streamfox
-  .flex-grow
-    c-upload-button
+  c-upload-button
+  ul.grow.flex.gap-3
+    li.capitalize(v-for="name of pageNames")
+      router-link.text-xl.text-neutral-400.py-5.px-2(
+        class="[&.router-link-exact-active]:text-white [&.router-link-exact-active]:font-bold"
+        :to="{ name }"
+      ) {{ name }}
   .flex.items-center(v-if="hasValue(store.user)")
     c-user-badge(:user="getValue(store.user)")
     button(
