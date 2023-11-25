@@ -2,7 +2,7 @@
 import CNavbarCompact from "@/views/navbar/compact.vue";
 import CNavbarExpansive from "@/views/navbar/expansive.vue";
 
-const pages = ["home", "upload"];
+const pages = ["home", "upload", "live"];
 </script>
 
 <template lang="pug">

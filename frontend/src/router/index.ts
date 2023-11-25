@@ -41,5 +41,10 @@ export const router = createRouter({
       name: "register",
       component: () => import("@/views/accounts/register.vue"),
     },
+    {
+      path: "/live",
+      name: "live",
+      component: () => import("@/views/live/live.vue"),
+    },
   ],
 });
