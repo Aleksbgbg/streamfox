@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { type Ref, onBeforeMount, reactive, ref } from "vue";
+import CButton from "@/components/button.vue";
 import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CSuccess from "@/components/forms/success.vue";
@@ -166,9 +167,10 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
       p.flex.items-center.mb-3
         span.text-4xl.font-bold.mr-5 !
         span.text-center Your video may have embedded subtitles.
-      button(
+      c-button.w-full(
         v-show="!extracting"
-        class="flex justify-center items-center rounded bg-aurora-purple-600 hover:bg-aurora-purple-700 w-full p-2"
+        theme="purple"
+        :colors="{ default: 'bg-aurora-purple-600' }"
         @click="extract"
       ) Extract them!
       p.text-center(v-show="extracting")
@@ -195,23 +197,13 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
           :errors="saveErr.specific.content"
         )
         .flex.justify-end
-          button(
-            class="rounded bg-aurora-red hover:bg-aurora-red-700 px-2 py-1 mr-3"
-            @click="deleteSub(subtitle, index)"
-          ) Delete
-          button(
-            class="rounded bg-frost-blue hover:bg-frost-deep px-2 py-1"
-            @click="save(subtitle)"
-          ) Save
-  .flex
-    button(
-      class="rounded bg-frost-blue hover:bg-frost-deep m-2"
-      @click="create()"
-    )
-      i.block.bi-plus.text-xl.px-2.py-1
-    button(class="rounded bg-frost-blue hover:bg-frost-deep m-2")
-      label.block.px-2.py-1(for="file-input" class="hover:cursor-pointer")
-        i.bi-file-earmark-plus.text-xl
+          c-button.mr-3(theme="red" @click="deleteSub(subtitle, index)") Delete
+          c-button(@click="save(subtitle)") Save
+  .flex.gap-3
+    c-button(padding="small" @click="create()")
+      i.block.bi-plus.text-xl
+    c-button.block(element="label" padding="small" for="file-input" class="hover:cursor-pointer")
+      i.bi-file-earmark-plus.text-xl
       input.hidden#file-input(
         type="file"
         ref="fileInput"

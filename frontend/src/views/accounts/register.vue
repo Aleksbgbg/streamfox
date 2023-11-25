@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Ref, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import CButton from "@/components/button.vue";
 import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormLayout from "@/components/layout/form.vue";
@@ -64,9 +65,7 @@ c-form-layout(title="Register")
       :errors="err.specific.repeatPassword"
     )
     c-errors(center :errors="err.generic")
-    button(
-      class="bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2"
-    ) Register Account
+    c-button Register Account
     router-link(
       class="text-frost-deep text-center hover:underline"
       :to="{ name: 'login' }"

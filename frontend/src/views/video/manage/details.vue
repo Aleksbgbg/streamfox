@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Ref, onBeforeMount, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
+import CButton from "@/components/button.vue";
 import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormOption from "@/components/forms/select/option.vue";
@@ -93,7 +94,5 @@ form.flex.flex-col.justify-center.gap-6.h-full.px-5.py-4(class="md:flex-row" @su
     )
     c-success(message="Saved!" ref="success")
     c-errors(center :errors="err.generic")
-    button.self-end(
-      class="bg-frost-blue hover:bg-frost-deep rounded transition duration-150 px-4 py-2"
-    ) Save
+    c-button.self-end Save
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import logo from "@/assets/logo.svg?component";
+import CButton from "@/components/button.vue";
 import CUploadButton from "@/components/upload-button.vue";
 import CUserBadge from "@/components/user/badge.vue";
 import { useUserStore } from "@/store/user";
@@ -23,25 +24,17 @@ nav.flex.items-center.p-5
         class="[&.router-link-exact-active]:text-white [&.router-link-exact-active]:font-bold"
         :to="{ name }"
       ) {{ name }}
-  .flex.items-center(v-if="hasValue(store.user)")
-    c-user-badge(:user="getValue(store.user)")
-    button(
-      class="hover:bg-polar-light rounded px-3 py-2"
-      @click="logout"
-    )
-      span Log Out
-      i.bi-box-arrow-in-right
-  div(v-else)
-    router-link(
-      class="hover:bg-polar-light rounded px-3 py-2 ml-2"
-      :to="{ name: 'login' }"
-    )
-      i.bi-box-arrow-in-right
-      span Log In
-    router-link(
-      class="hover:bg-polar-light rounded px-3 py-2 ml-2"
-      :to="{ name: 'register' }"
-    )
-      i.bi-person
-      span Register
+  .flex.items-center.gap-3
+    template(v-if="hasValue(store.user)")
+      c-user-badge(:user="getValue(store.user)")
+      c-button(theme="invisible" @click="logout")
+        span Log Out
+        i.bi-box-arrow-in-right
+    template(v-else)
+      c-button(element="router-link" theme="invisible" :to="{ name: 'login' }")
+        i.bi-box-arrow-in-right
+        span Log In
+      c-button(element="router-link" theme="invisible" :to="{ name: 'register' }")
+        i.bi-person
+        span Register
 </template>
