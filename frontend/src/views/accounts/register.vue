@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type Ref, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import CButton from "@/components/button.vue";
 import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
@@ -8,7 +8,9 @@ import CFormLayout from "@/components/layout/form.vue";
 import { type Registration, register } from "@/endpoints/auth";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
 import { login } from "@/utils/auth";
+import { navigateBackOrHome } from "@/utils/navigation";
 
+const route = useRoute();
 const router = useRouter();
 
 const registration = reactive({
@@ -31,7 +33,7 @@ async function submit() {
   }
 
   await login();
-  router.push({ name: "home" });
+  navigateBackOrHome(router, route);
 }
 </script>
 

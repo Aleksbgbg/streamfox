@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRoute } from "vue-router";
 import logo from "@/assets/logo.svg?component";
 import CButton from "@/components/button.vue";
 import CUploadButton from "@/components/upload-button.vue";
@@ -6,6 +7,9 @@ import CUserBadge from "@/components/user/badge.vue";
 import { useUserStore } from "@/store/user";
 import { getValue, hasValue } from "@/types/optional";
 import { logout } from "@/utils/auth";
+import { returnUrl } from "@/utils/navigation";
+
+const route = useRoute();
 
 const store = useUserStore();
 
@@ -31,10 +35,18 @@ nav.flex.items-center.p-5
         span Log Out
         i.bi-box-arrow-in-right
     template(v-else)
-      c-button(element="router-link" theme="invisible" :to="{ name: 'login' }")
+      c-button(
+        element="router-link"
+        theme="invisible"
+        :to="{ name: 'login', query: { returnUrl: returnUrl(route) } }"
+      )
         i.bi-box-arrow-in-right
         span Log In
-      c-button(element="router-link" theme="invisible" :to="{ name: 'register' }")
+      c-button(
+        element="router-link"
+        theme="invisible"
+        :to="{ name: 'register', query: { returnUrl: returnUrl(route) } }"
+      )
         i.bi-person
         span Register
 </template>
