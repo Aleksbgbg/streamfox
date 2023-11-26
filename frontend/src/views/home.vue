@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { type Ref, onBeforeMount, ref } from "vue";
+import CVideoPreview from "@/components/content-grid/preview/video-preview.vue";
 import CTileGrid from "@/components/content-grid/tile-grid.vue";
 import { useToaster } from "@/components/toasts/toaster";
-import CVideoPreview from "@/components/video-preview.vue";
 import { type VideoInfo, getVideos } from "@/endpoints/video";
 
 const toaster = useToaster();
@@ -23,5 +23,5 @@ onBeforeMount(async () => {
 
 <template lang="pug">
 c-tile-grid
-  c-video-preview(class="max-w-[416px]" v-for="video of videos" :video="video")
+  c-video-preview(v-for="video of videos" :video="video")
 </template>

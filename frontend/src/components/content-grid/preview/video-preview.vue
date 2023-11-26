@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template lang="pug">
-c-watch-link.group.w-full(:videoId="video.id")
+c-watch-link.group.w-full(class="max-w-[416px]" :videoId="video.id")
   .relative.aspect-video
     img(src="@/assets/fox.png" alt="")
     img.absolute.top-0(:src="videoThumbnail(video.id)" alt="")
