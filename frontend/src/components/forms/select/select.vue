@@ -96,7 +96,7 @@ div(:class="center ? 'w-80 max-w-full px-5' : 'w-full'")
     )
       span.flex-grow.text-left.truncate {{ selected?.title }}
       span.self-center.text-sm.ml-2.transition-all.duration-300(:class="{ 'rotate-180': toggled }") ▼
-    .absolute.w-full(v-show="toggled")
+    .absolute.w-full.z-50(v-show="toggled")
       ul
         slot
   c-errors(:errors="errors")
