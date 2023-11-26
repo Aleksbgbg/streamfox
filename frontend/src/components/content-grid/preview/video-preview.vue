@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CWatchLink from "@/components/watch-link.vue";
 import { type VideoInfo, videoThumbnail } from "@/endpoints/video";
 import { dateToElapsedTimeString, secsToDurationString } from "@/utils/strings";
 
@@ -9,7 +8,7 @@ defineProps<{
 </script>
 
 <template lang="pug">
-c-watch-link.group.w-full(class="max-w-[416px]" :videoId="video.id")
+router-link.group.w-full(class="max-w-[416px]" :to="{ name: 'watch', params: { id: video.id } }")
   .relative.aspect-video
     img(src="@/assets/fox.png" alt="")
     img.absolute.top-0(:src="videoThumbnail(video.id)" alt="")
