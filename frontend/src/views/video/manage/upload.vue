@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { type Ref, computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import CErrors from "@/components/forms/errors.vue";
 import CFormLayout from "@/components/layout/form.vue";
+import { useToaster } from "@/components/toasts/toaster";
 import { type ApiErr, ApiResponse, emptyApiErr } from "@/endpoints/request";
 import {
   type VideoCreatedInfo,
@@ -16,6 +16,8 @@ import { panic } from "@/utils/panic";
 import { createProgressReporter } from "@/utils/upload-progress";
 
 const router = useRouter();
+
+const toaster = useToaster();
 
 const fileInput: Ref<HTMLInputElement | null> = ref(null);
 
@@ -90,6 +92,7 @@ async function fileSelected() {
 
     if (!createResponse.success()) {
       createErr.value = createResponse.err();
+      toaster.failureAll(createErr.value.generic);
       return;
     }
 
@@ -102,6 +105,7 @@ async function fileSelected() {
 
   if (!uploadResponse.success()) {
     uploadErr.value = uploadResponse.err();
+    toaster.failureAll(uploadErr.value.generic);
     upload.inProgress = false;
     return;
   }
@@ -133,6 +137,4 @@ c-form-layout(title="Upload Video")
       span.block.text-center {{ roundedDataRateMBs }} MB/s
       .bg-white.h-2.w-64
         .bg-frost-blue.h-2(:style="{ width: `${upload.progressPercentage}%` }")
-    c-errors(center :errors="createErr.generic")
-    c-errors(center :errors="uploadErr.generic")
 </template>

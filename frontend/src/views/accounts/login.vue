@@ -2,9 +2,9 @@
 import { type Ref, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CButton from "@/components/button.vue";
-import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormLayout from "@/components/layout/form.vue";
+import { useToaster } from "@/components/toasts/toaster";
 import { type Credentials, requestLogin } from "@/endpoints/auth";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
 import { login } from "@/utils/auth";
@@ -12,6 +12,8 @@ import { navigateBackOrHome } from "@/utils/navigation";
 
 const route = useRoute();
 const router = useRouter();
+
+const toaster = useToaster();
 
 const credentials = reactive({
   username: "",
@@ -27,6 +29,7 @@ async function submit() {
 
   if (!response.success()) {
     err.value = response.err();
+    toaster.failureAll(err.value.generic);
     return;
   }
 
@@ -51,7 +54,6 @@ c-form-layout(title="Login")
       v-model="credentials.password"
       :errors="err.specific.password"
     )
-    c-errors(center :errors="err.generic")
     c-button Log In
     router-link(
       class="text-frost-deep text-center hover:underline"

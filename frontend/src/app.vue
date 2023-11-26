@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CToastArea from "@/components/toasts/toast-area.vue";
 import VNavbar from "@/views/navbar.vue";
 </script>
 
@@ -8,6 +9,7 @@ import VNavbar from "@/views/navbar.vue";
     v-navbar
   main.grow.overflow-auto
     router-view
+  c-toast-area
 </template>
 
 <style lang="stylus">

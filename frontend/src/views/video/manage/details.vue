@@ -2,12 +2,11 @@
 import { type Ref, onBeforeMount, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import CButton from "@/components/button.vue";
-import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormOption from "@/components/forms/select/option.vue";
 import CFormSelect from "@/components/forms/select/select.vue";
-import CSuccess from "@/components/forms/success.vue";
 import CFormTextarea from "@/components/forms/textarea.vue";
+import { useToaster } from "@/components/toasts/toaster";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
 import {
   type VideoId,
@@ -18,11 +17,13 @@ import {
   videoThumbnail,
 } from "@/endpoints/video";
 
+const route = useRoute();
+
+const toaster = useToaster();
+
 const props = defineProps<{
   videoId: VideoId;
 }>();
-
-const route = useRoute();
 
 const video: VideoUpdateInfo = reactive({
   name: "",
@@ -30,14 +31,13 @@ const video: VideoUpdateInfo = reactive({
   visibility: Visibility.Public,
 });
 
-const success = ref<InstanceType<typeof CSuccess> | null>(null);
 const err: Ref<ApiErr<VideoUpdateInfo>> = ref(emptyApiErr());
 
 onBeforeMount(async () => {
   const response = await getVideoInfo(props.videoId);
 
   if (!response.success()) {
-    err.value.generic = response.err().generic;
+    toaster.failureAll(response.err().generic);
     return;
   }
 
@@ -48,16 +48,16 @@ onBeforeMount(async () => {
 });
 
 async function save() {
-  err.value = emptyApiErr();
-
   const response = await updateVideo(props.videoId, video);
 
   if (!response.success()) {
     err.value = response.err();
+    toaster.failureAll(err.value.generic);
     return;
   }
 
-  success.value?.show();
+  err.value = emptyApiErr();
+  toaster.success("Video details saved!");
 }
 </script>
 
@@ -92,7 +92,5 @@ form.flex.flex-col.justify-center.gap-6.h-full.px-5.py-4(class="md:flex-row" @su
       v-model="video.description"
       :errors="err.specific.description"
     )
-    c-success(message="Saved!" ref="success")
-    c-errors(center :errors="err.generic")
     c-button.self-end Save
 </template>

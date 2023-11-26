@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { type Ref, onBeforeMount, ref } from "vue";
+import { useToaster } from "@/components/toasts/toaster";
 import CVideoPreview from "@/components/video-preview.vue";
 import { type VideoInfo, getVideos } from "@/endpoints/video";
+
+const toaster = useToaster();
 
 const videos: Ref<VideoInfo[]> = ref([]);
 
@@ -9,6 +12,7 @@ onBeforeMount(async () => {
   const response = await getVideos();
 
   if (!response.success()) {
+    toaster.failure("Unable to fetch videos.");
     return;
   }
 

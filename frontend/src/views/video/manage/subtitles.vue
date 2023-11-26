@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { type Ref, onBeforeMount, reactive, ref } from "vue";
 import CButton from "@/components/button.vue";
-import CErrors from "@/components/forms/errors.vue";
 import CFormInput from "@/components/forms/input.vue";
-import CSuccess from "@/components/forms/success.vue";
 import CFormTextarea from "@/components/forms/textarea.vue";
 import CSpinner from "@/components/spinner.vue";
 import CTab from "@/components/tab-control/tab.vue";
 import CTabs from "@/components/tab-control/tabs.vue";
+import { useToaster } from "@/components/toasts/toaster";
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
 import {
   type Subtitle,
@@ -23,6 +22,8 @@ import {
 import type { VideoId } from "@/endpoints/video";
 import { mapCopy } from "@/utils/arrays";
 import { panic } from "@/utils/panic";
+
+const toaster = useToaster();
 
 const props = defineProps<{
   videoId: VideoId;
@@ -57,10 +58,6 @@ onBeforeMount(async () => {
   }
 });
 
-const extractSuccess = ref<InstanceType<typeof CSuccess> | null>(null);
-const saveSuccess = ref<InstanceType<typeof CSuccess> | null>(null);
-const deleteSuccess = ref<InstanceType<typeof CSuccess> | null>(null);
-
 const extractErr: Ref<ApiErr<void>> = ref(emptyApiErr());
 const createErr: Ref<ApiErr<void>> = ref(emptyApiErr());
 const saveErr: Ref<ApiErr<UpdateSubtitleInfo>> = ref(emptyApiErr());
@@ -73,6 +70,7 @@ async function extract() {
 
   if (!response.success()) {
     extractErr.value = response.err();
+    toaster.failureAll(extractErr.value.generic);
     return;
   }
 
@@ -82,9 +80,9 @@ async function extract() {
 
   const count = response.value().length;
   if (count === 0) {
-    extractSuccess.value?.show("No embedded subtitles were found.");
+    toaster.success("No embedded subtitles were found.");
   } else {
-    extractSuccess.value?.show(`Extracted ${response.value().length} subtitle tracks!`);
+    toaster.success(`Extracted ${response.value().length} subtitle track(s)!`);
 
     mapCopy(subtitles, response.value(), (subtitle) => ({
       id: subtitle.id,
@@ -98,6 +96,7 @@ async function loadSubtitle(subtitle: SubtitleWithContent) {
   const response = await getSubtitleContent(props.videoId, subtitle.id);
 
   if (!response.success()) {
+    toaster.failureAll(response.err().generic);
     return;
   }
 
@@ -109,6 +108,7 @@ async function create(content = "") {
 
   if (!response.success()) {
     createErr.value = response.err();
+    toaster.failureAll(createErr.value.generic);
     return;
   }
 
@@ -136,12 +136,12 @@ async function save(subtitle: SubtitleWithContent) {
 
   if (!response.success()) {
     saveErr.value = response.err();
+    toaster.failureAll(saveErr.value.generic);
     return;
   }
 
   saveErr.value = emptyApiErr();
-
-  saveSuccess.value?.show();
+  toaster.success("Subtitle details saved!");
 }
 
 async function deleteSub(subtitle: SubtitleWithContent, index: number) {
@@ -149,14 +149,13 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
 
   if (!response.success()) {
     deleteErr.value = response.err();
+    toaster.failureAll(deleteErr.value.generic);
     return;
   }
 
   deleteErr.value = emptyApiErr();
-
   subtitles.splice(index, 1);
-
-  deleteSuccess.value?.show(`Deleted subtitle track titled '${subtitle.name}'.`);
+  toaster.success(`Deleted subtitle track titled '${subtitle.name}'.`);
 }
 </script>
 
@@ -209,11 +208,4 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
         ref="fileInput"
         @change="createFromFile"
       )
-  c-success(:timeout="3000" ref="extractSuccess")
-  c-success(message="Saved!" ref="saveSuccess")
-  c-success(:timeout="3000" ref="deleteSuccess")
-  c-errors(center :errors="extractErr.generic")
-  c-errors(center :errors="createErr.generic")
-  c-errors(center :errors="saveErr.generic")
-  c-errors(center :errors="deleteErr.generic")
 </template>
