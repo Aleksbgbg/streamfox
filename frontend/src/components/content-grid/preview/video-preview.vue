@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import CPreviewGeneric from "@/components/content-grid/preview/generic.vue";
 import { type VideoInfo, videoThumbnail } from "@/endpoints/video";
-import { dateToElapsedTimeString, secsToDurationString } from "@/utils/strings";
 
 defineProps<{
   video: VideoInfo;
@@ -8,19 +8,14 @@ defineProps<{
 </script>
 
 <template lang="pug">
-router-link.group.w-full(class="max-w-[416px]" :to="{ name: 'watch', params: { id: video.id } }")
-  .relative.aspect-video
-    img(src="@/assets/fox.png" alt="")
-    img.absolute.top-0(:src="videoThumbnail(video.id)" alt="")
-    span(
-      class="absolute bottom-0.5 right-0.5 text-sm opacity-85 bg-black px-1"
-    ) {{ secsToDurationString(video.durationSecs) }}
-  h3.break-words.line-clamp-2.font-semibold.mt-2(
-    class="group-hover:underline group-hover:text-aurora-yellow"
-  ) {{ video.name }}
-  p.text-sm {{ video.creator.username }}
-  p.text-sm
-    | {{ video.views }} {{ video.views === 1 ? 'view' : 'views' }}
-    | •
-    | {{ dateToElapsedTimeString(video.uploadedAt) }}
+c-preview-generic(
+  :link="{ name: 'watch', params: { id: video.id } }"
+  :thumbnailUrl="videoThumbnail(video.id)"
+  :durationSecs="video.durationSecs"
+  :name="video.name"
+  :creator="video.creator"
+  :beginAt="video.uploadedAt"
+  :viewership="video.views"
+  viewershipName="view"
+)
 </template>
