@@ -2,7 +2,6 @@
 import { useRoute } from "vue-router";
 import logo from "@/assets/logo.svg?component";
 import CButton from "@/components/button.vue";
-import CUploadButton from "@/components/upload-button.vue";
 import CUserBadge from "@/components/user/badge.vue";
 import { useUserStore } from "@/store/user";
 import { getValue, hasValue } from "@/types/optional";
@@ -13,15 +12,14 @@ const route = useRoute();
 
 const store = useUserStore();
 
-const pageNames = ["home"];
+const pageNames = ["home", "upload"];
 </script>
 
 <template lang="pug">
 nav.flex.items-center.p-5
-  router-link.flex.items-center(:to="{ name: 'home' }")
+  router-link.flex.items-center.mr-5(:to="{ name: 'home' }")
     logo.fill-white.w-14.-mt-4
     h1.font-bold.text-2xl.-ml-4 Streamfox
-  c-upload-button
   ul.grow.flex.gap-3
     li.capitalize(v-for="name of pageNames")
       router-link.text-xl.text-neutral-400.py-5.px-2(
