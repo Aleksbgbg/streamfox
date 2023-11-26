@@ -10,8 +10,9 @@ const props = defineProps<{
 
 <template lang="pug">
 c-watch-link.group.w-full(:videoId="props.video.id")
-  .relative
-    img(:src="videoThumbnail(props.video.id)" alt="")
+  .relative.aspect-video
+    img(src="@/assets/fox.png" alt="")
+    img.absolute.top-0(:src="videoThumbnail(props.video.id)" alt="")
     span(
       class="absolute bottom-0.5 right-0.5 text-sm opacity-85 bg-black px-1"
     ) {{ secsToDurationString(props.video.durationSecs) }}
