@@ -2,13 +2,13 @@
 import CUserAvatar from "@/components/user/avatar.vue";
 import type { User } from "@/endpoints/user";
 
-const props = defineProps<{
+defineProps<{
   user: User;
 }>();
 </script>
 
 <template lang="pug">
-.flex
-  c-user-avatar(class="w-[25px] h-[25px]" :user="user")
-  span.ml-2 {{ user.username }}
+.flex.truncate
+  c-user-avatar(:user="user" size="25px")
+  span.truncate.ml-2 {{ user.username }}
 </template>

@@ -4,6 +4,7 @@ import { newRng } from "@/utils/rng";
 
 const props = defineProps<{
   user: User;
+  size: string;
 }>();
 
 const rng = newRng(props.user.id);
@@ -14,6 +15,8 @@ const l = Math.round(rng(25, 50));
 </script>
 
 <template lang="pug">
-div(class="rounded-full" :style="`background-color: hsl(${h}, ${s}%, ${l}%)`")
-  span.inline-block.font-bold.text-center.w-full {{ user.username.charAt(0) }}
+.flex.items-center.justify-center.rounded-full.aspect-square.select-none(
+  :style="{ 'background-color': `hsl(${h}, ${s}%, ${l}%)`, 'width': size, 'height': size, 'container-type': 'inline-size' }"
+)
+  span.font-bold.uppercase(:style="{ 'font-size': '60cqw' }") {{ user.username.charAt(0) }}
 </template>
