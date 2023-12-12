@@ -4,7 +4,7 @@ import { panic } from "@/utils/panic";
 export function injectStrict<T>(key: InjectionKey<T>): T {
   const result = inject(key);
 
-  if (typeof result === undefined) {
+  if (result === undefined) {
     panic(`no provider for injection key ${key.toString()}`);
   }
 
