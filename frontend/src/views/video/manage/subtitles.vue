@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type Ref, onBeforeMount, reactive, ref } from "vue";
 import CButton from "@/components/button.vue";
+import CEmptyCollection from "@/components/empty-collection.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormTextarea from "@/components/forms/textarea.vue";
 import CSpinner from "@/components/spinner.vue";
@@ -175,29 +176,29 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
       p.text-center(v-show="extracting")
         c-spinner.mr-2
         span Extracting...
-  p.text-aurora-yellow-300.text-center(v-show="subtitles.length === 0") No subtitles here. Add some!
-  c-tabs(vertical)
-    c-tab(
-      v-for="(subtitle, index) of subtitles"
-      :key="index"
-      :title="subtitle.name"
-      @selected.once="loadSubtitle(subtitle)"
-    )
-      .flex.flex-col.gap-3.h-full
-        c-form-input(
-          title="Name"
-          v-model="subtitle.name"
-          :errors="saveErr.specific.name"
-        )
-        c-form-textarea(
-          title="Content"
-          placeholder="Provide your subtitles in WebVTT format."
-          v-model="subtitle.content"
-          :errors="saveErr.specific.content"
-        )
-        .flex.justify-end
-          c-button.mr-3(theme="red" @click="deleteSub(subtitle, index)") Delete
-          c-button(@click="save(subtitle)") Save
+  c-empty-collection(:collection="subtitles" empty="No subtitles here. Add some!")
+    c-tabs(vertical)
+      c-tab(
+        v-for="(subtitle, index) of subtitles"
+        :key="index"
+        :title="subtitle.name"
+        @selected.once="loadSubtitle(subtitle)"
+      )
+        .flex.flex-col.gap-3.h-full
+          c-form-input(
+            title="Name"
+            v-model="subtitle.name"
+            :errors="saveErr.specific.name"
+          )
+          c-form-textarea(
+            title="Content"
+            placeholder="Provide your subtitles in WebVTT format."
+            v-model="subtitle.content"
+            :errors="saveErr.specific.content"
+          )
+          .flex.justify-end
+            c-button.mr-3(theme="red" @click="deleteSub(subtitle, index)") Delete
+            c-button(@click="save(subtitle)") Save
   .flex.gap-3
     c-button(padding="small" @click="create()")
       i.block.bi-plus.text-xl

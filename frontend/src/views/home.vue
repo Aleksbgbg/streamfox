@@ -2,6 +2,7 @@
 import { type Ref, onBeforeMount, ref } from "vue";
 import CVideoPreview from "@/components/content-grid/preview/video-preview.vue";
 import CTileGrid from "@/components/content-grid/tile-grid.vue";
+import CEmptyCollection from "@/components/empty-collection.vue";
 import { useToaster } from "@/components/toasts/toaster";
 import { type VideoInfo, getVideos } from "@/endpoints/video";
 
@@ -22,6 +23,7 @@ onBeforeMount(async () => {
 </script>
 
 <template lang="pug">
-c-tile-grid
-  c-video-preview(v-for="video of videos" :video="video")
+c-empty-collection(:collection="videos" empty="No videos yet. Upload one!" text-margin)
+  c-tile-grid
+    c-video-preview(v-for="video of videos" :video="video")
 </template>
