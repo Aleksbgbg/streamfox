@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"streamfox-backend/files"
 	"streamfox-backend/models"
@@ -8,6 +9,16 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+)
+
+const (
+	jwtKeyUserId     = "uid"
+	jwtKeyExpiration = "exp"
+)
+
+var (
+	errClaimNoExist     = errors.New("claim does not exist")
+	errClaimTypeInvalid = errors.New("claim type is invalid")
 )
 
 var apiSecret []byte
@@ -30,32 +41,45 @@ func SetupApiSecret() error {
 
 func generateToken(userId models.Id) (string, error) {
 	tokenLifespan := utils.GetEnvVarInt(utils.APP_TOKEN_LIFESPAN_HRS)
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		jwtKeyUserId:     userId.String(),
+		jwtKeyExpiration: time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix(),
+	}).SignedString(apiSecret)
+}
 
-	claims := jwt.MapClaims{}
-	claims["authorized"] = true
-	claims["user_id"] = userId.String()
-	claims["expr"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
+func getClaim[T any](claims jwt.MapClaims, key string) (T, error) {
+	var result T
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	value, exists := claims[key]
+	if !exists {
+		return result, fmt.Errorf("'%s': %+v", key, errClaimNoExist)
+	}
 
-	return token.SignedString(apiSecret)
+	result, ok := value.(T)
+	if !ok {
+		return result, fmt.Errorf("'%s': %+v", key, errClaimTypeInvalid)
+	}
+
+	return result, nil
 }
 
 func getUserId(tokenStr string) (models.Id, error) {
 	token, err := parseToken(tokenStr)
-
 	if err != nil {
 		return models.NilId, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
-
 	if !ok || !token.Valid {
 		return models.NilId, nil
 	}
 
-	userId, err := models.IdFromString(claims["user_id"].(string))
+	userIdClaim, err := getClaim[string](claims, jwtKeyUserId)
+	if err != nil {
+		return models.NilId, err
+	}
 
+	userId, err := models.IdFromString(userIdClaim)
 	if err != nil {
 		return models.NilId, err
 	}
