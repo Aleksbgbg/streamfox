@@ -1,9 +1,9 @@
+import eslint from "@nabla/vite-plugin-eslint";
 import vue from "@vitejs/plugin-vue";
 import dotenv from "dotenv";
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
-import eslint from "vite-plugin-eslint";
 import svgLoader from "vite-svg-loader";
 
 dotenv.config();
