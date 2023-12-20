@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import CButton from "@/components/button.vue";
 import CErrors from "@/components/forms/errors.vue";
+import CIcon from "@/components/icon.vue";
 import { asInputElement } from "@/utils/cast";
 import { toLowerCamelCase } from "@/utils/strings";
 
@@ -59,6 +60,6 @@ div(:class="center ? 'w-80 max-w-full px-5' : 'w-full'")
         @mousedown="(e) => e.preventDefault()"
         @click="visible = !visible"
       )
-        i.bi(:class="visible ? 'bi-eye-slash-fill' : 'bi-eye-fill'")
+        c-icon(:name="visible ? 'eye-slash-fill' : 'eye-fill'")
   c-errors(:errors="errors")
 </template>

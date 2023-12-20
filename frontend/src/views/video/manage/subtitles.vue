@@ -4,6 +4,7 @@ import CButton from "@/components/button.vue";
 import CEmptyCollection from "@/components/empty-collection.vue";
 import CFormInput from "@/components/forms/input.vue";
 import CFormTextarea from "@/components/forms/textarea.vue";
+import CIcon from "@/components/icon.vue";
 import CSpinner from "@/components/spinner.vue";
 import CTab from "@/components/tab-control/tab.vue";
 import CTabs from "@/components/tab-control/tabs.vue";
@@ -201,9 +202,9 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
             c-button(@click="save(subtitle)") Save
   .flex.gap-3
     c-button(padding="small" @click="create()")
-      i.block.bi-plus.text-xl
-    c-button.block(element="label" padding="small" for="file-input" class="hover:cursor-pointer")
-      i.bi-file-earmark-plus.text-xl
+      c-icon.text-xl(name="plus")
+    c-button(element="label" padding="small" for="file-input" class="hover:cursor-pointer")
+      c-icon.text-xl(name="file-earmark-plus")
       input.hidden#file-input(
         type="file"
         ref="fileInput"

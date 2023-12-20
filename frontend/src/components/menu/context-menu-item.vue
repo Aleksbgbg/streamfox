@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CIcon from "@/components/icon.vue";
+
 defineProps<{
   icon: string;
 }>();
@@ -11,7 +13,7 @@ a.flex.items-center.px-3.py-1(
   class="hover:bg-frost-blue"
   role="button"
 )
-  i.bi.text-2xl.mr-2(:class="`bi-${icon}`")
+  c-icon.text-2xl.mr-2(:name="icon")
   span.text-sm
     slot
 </template>
