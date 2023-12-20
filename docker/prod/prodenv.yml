@@ -33,6 +33,8 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
-      interval: 10s
+      start_period: 30s
+      start_interval: 1s
+      interval: 8766h
       timeout: 5s
       retries: 5
