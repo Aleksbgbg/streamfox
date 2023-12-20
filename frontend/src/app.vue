@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import CToastArea from "@/components/toasts/toast-area.vue";
-import VNavbar from "@/views/navbar.vue";
+import CNavbar from "@/views/navbar/navbar.vue";
 </script>
 
 <template lang="pug">
 #app.flex.flex-col.bg-polar-dark.text-white.overflow-hidden.h-screen
   header.bg-polar-darkest
-    v-navbar
+    c-navbar
   main.grow.overflow-auto
     router-view
   c-toast-area
