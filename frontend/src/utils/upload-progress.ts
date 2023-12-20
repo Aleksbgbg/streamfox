@@ -34,7 +34,7 @@ class RealTimer implements Timer {
 
 export function createProgressReporter(
   onReportProgress: ProgressReportFunc,
-  timer: Timer = new RealTimer()
+  timer: Timer = new RealTimer(),
 ): UploadReportFunc {
   timer.beginRecording();
   return function (uploadReport) {

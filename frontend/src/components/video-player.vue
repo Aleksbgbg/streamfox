@@ -63,7 +63,7 @@ function handleSpecificTimestamp(player: Player) {
     player.load();
 
     const skipForwardSecs = parseInt(route.query.t as string);
-    player.currentTime(player.currentTime() + skipForwardSecs);
+    player.currentTime((player.currentTime() ?? 0) + skipForwardSecs);
   }
 }
 
@@ -86,7 +86,7 @@ onMounted(async () => {
 
   player.volume(getVolume());
   player.on("volumechange", function () {
-    setVolume(getValue(player).volume());
+    setVolume(getValue(player).volume() ?? 0.5);
   });
 
   const [watch, subs] = await Promise.all([
@@ -143,8 +143,8 @@ function copyUrlTimestamp() {
       router.resolve({
         name: getValue(route.name),
         query: { t: Math.round(player?.currentTime() || 0).toString() },
-      }).fullPath
-    )
+      }).fullPath,
+    ),
   );
 }
 </script>

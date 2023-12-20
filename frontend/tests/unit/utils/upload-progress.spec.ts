@@ -18,14 +18,14 @@ describe("UploadProgressReporter", () => {
             elapsedTimeSecs(): number {
               return 0;
             },
-          }
+          },
         );
 
         reportProgress({ uploadedBytes, totalBytes });
 
         expect(reportedProgress.uploadedFraction).toBeCloseTo(expectedUploadedFraction);
       });
-    }
+    },
   );
 
   describe.each([
@@ -45,14 +45,14 @@ describe("UploadProgressReporter", () => {
             elapsedTimeSecs(): number {
               return elapsedTimeSecs;
             },
-          }
+          },
         );
 
         reportProgress({ uploadedBytes: transferredBytes, totalBytes: transferredBytes + 1 });
 
         expect(reportedProgress.dataRateBytesPerSec).toBe(expectedDataRate);
       });
-    }
+    },
   );
 
   test("begins recording before reporting elapsed time", () => {
@@ -83,7 +83,7 @@ describe("UploadProgressReporter", () => {
         elapsedTimeSecs(): number {
           return elapsedTime;
         },
-      }
+      },
     );
 
     elapsedTime = 3;

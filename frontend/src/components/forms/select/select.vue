@@ -42,7 +42,7 @@ watch(
     if (children.has(newValue)) {
       select(children.get(newValue));
     }
-  }
+  },
 );
 
 provide<SelectControl>(selectControlKey, {

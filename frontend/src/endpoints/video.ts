@@ -55,7 +55,7 @@ export function uploadVideo(
   id: VideoId,
   video: ArrayBuffer,
   range: ContentRange,
-  reportProgress: UploadReportFunc
+  reportProgress: UploadReportFunc,
 ): Promise<ApiResponse<void, void>> {
   return request({
     method: "put",
@@ -79,7 +79,7 @@ export interface VideoUpdateInfo {
 
 export function updateVideo(
   id: VideoId,
-  update: VideoUpdateInfo
+  update: VideoUpdateInfo,
 ): Promise<ApiResponse<VideoUpdateInfo, VideoUpdateInfo>> {
   return put(`/videos/${id}/settings`, update);
 }

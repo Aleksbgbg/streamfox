@@ -26,7 +26,7 @@ const visible = ref(false);
 const label = computed(() => toLowerCamelCase(props.title));
 const valid = computed(() => !props.errors || props.errors.length === 0);
 const inputType = computed(() =>
-  props.type === "password" && visible.value ? "text" : props.type
+  props.type === "password" && visible.value ? "text" : props.type,
 );
 </script>
 

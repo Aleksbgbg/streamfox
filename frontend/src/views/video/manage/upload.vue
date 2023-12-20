@@ -56,7 +56,7 @@ async function uploadFile(file: File): Promise<ApiResponse<void, void>> {
         video.value.id,
         reader.result as ArrayBuffer,
         { start: readBytes, end: Math.min(readBytes + chunkSizeBytes, size) - 1, size },
-        reportProgress
+        reportProgress,
       );
 
       if (!uploadResponse.success()) {

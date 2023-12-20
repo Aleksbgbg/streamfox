@@ -31,14 +31,14 @@ export function subtitleContentUrl(videoId: VideoId, subtitleId: SubtitleId): st
 
 export function getSubtitleContent(
   videoId: VideoId,
-  subtitleId: SubtitleId
+  subtitleId: SubtitleId,
 ): Promise<ApiResponse<void, string>> {
   return get(`/videos/${videoId}/subtitles/${subtitleId}/content`);
 }
 
 export function createSubtitle(
   videoId: VideoId,
-  fileContent = ""
+  fileContent = "",
 ): Promise<ApiResponse<void, Subtitle>> {
   return post(`/videos/${videoId}/subtitles`, fileContent);
 }
@@ -51,14 +51,14 @@ export interface UpdateSubtitleInfo {
 export function updateSubtitle(
   videoId: VideoId,
   subtitleId: SubtitleId,
-  update: UpdateSubtitleInfo
+  update: UpdateSubtitleInfo,
 ): Promise<ApiResponse<UpdateSubtitleInfo, void>> {
   return put(`/videos/${videoId}/subtitles/${subtitleId}`, update);
 }
 
 export function deleteSubtitle(
   videoId: VideoId,
-  subtitleId: SubtitleId
+  subtitleId: SubtitleId,
 ): Promise<ApiResponse<void, void>> {
   return delete_(`/videos/${videoId}/subtitles/${subtitleId}`);
 }

@@ -134,14 +134,14 @@ export function get<TResponse>(url: string): Promise<ApiResponse<void, TResponse
 
 export function put<TData, TResponse>(
   url: string,
-  data: TData
+  data: TData,
 ): Promise<ApiResponse<TData, TResponse>> {
   return request({ method: "put", url, data });
 }
 
 export function post<TData, TResponse>(
   url: string,
-  data: TData | null = null
+  data: TData | null = null,
 ): Promise<ApiResponse<TData, TResponse>> {
   return request({ method: "post", url, data });
 }

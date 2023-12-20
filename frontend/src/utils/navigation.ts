@@ -1,7 +1,7 @@
 import type { LocationQueryValue, RouteLocationNormalizedLoaded, Router } from "vue-router";
 
 function isValidReturnUrl(
-  returnUrl: LocationQueryValue | LocationQueryValue[]
+  returnUrl: LocationQueryValue | LocationQueryValue[],
 ): returnUrl is string {
   return typeof returnUrl === "string";
 }
