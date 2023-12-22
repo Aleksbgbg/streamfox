@@ -31,18 +31,8 @@ export function videoStream(id: VideoId): string {
   return apiUrl(`/videos/${id}/stream`);
 }
 
-export interface WatchConditions {
-  percentage: number;
-  remainingBytes: number;
-  remainingTimeMs: number;
-}
-
-export function getWatchConditions(id: VideoId): Promise<ApiResponse<void, WatchConditions>> {
-  return get(`/videos/${id}/watch-conditions`);
-}
-
-export function postView(id: VideoId): Promise<ApiResponse<void, void>> {
-  return post(`/videos/${id}/views`);
+export function postWatchHint(id: VideoId): Promise<ApiResponse<void, void>> {
+  return post(`/videos/${id}/hint/watch`);
 }
 
 export interface ContentRange {

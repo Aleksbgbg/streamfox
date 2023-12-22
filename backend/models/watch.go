@@ -23,7 +23,7 @@ type Watch struct {
 	BytesStreamed *int64    `gorm:"not null"`
 }
 
-const WatchPercentageRequired = 0.6
+const minimumWatchTime = time.Minute + (30 * time.Second)
 
 type WatchConditions struct {
 	RemainingBytes uint64
@@ -31,16 +31,20 @@ type WatchConditions struct {
 }
 
 func calculateWatchConditions(watch *Watch, video *Video) WatchConditions {
-	minimumBytes := math.Ceil(float64(video.SizeBytes) * WatchPercentageRequired)
-	alreadyStreamedBytes := float64(*watch.BytesStreamed)
+	videoDurationMs := float64(video.DurationSecs) * 1000
 
-	minimumWatchTimeMs := math.Ceil(float64(video.DurationSecs) * 1000 * WatchPercentageRequired)
+	requiredWatchTimeMs := math.Min(float64(minimumWatchTime.Milliseconds()), videoDurationMs)
 	alreadyWatchedMs := float64(time.Since(watch.StartedAt).Milliseconds())
+
+	requiredWatchFraction := requiredWatchTimeMs / videoDurationMs
+
+	minimumBytes := math.Ceil(float64(video.SizeBytes) * requiredWatchFraction)
+	alreadyStreamedBytes := float64(*watch.BytesStreamed)
 
 	return WatchConditions{
 		RemainingBytes: uint64(math.Max(0, minimumBytes-alreadyStreamedBytes)),
 		RemainingTime: time.Duration(
-			math.Max(0, minimumWatchTimeMs-alreadyWatchedMs),
+			math.Max(0, requiredWatchTimeMs-alreadyWatchedMs),
 		) * time.Millisecond,
 	}
 }

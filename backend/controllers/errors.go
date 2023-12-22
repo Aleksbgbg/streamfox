@@ -74,7 +74,6 @@ const (
 	errVideoCannotOverwrite
 	errVideoSubtitlesCannotDoubleExtract
 	errVideoSubtitlesInvalidFormat
-	errVideoViewAlreadyCounted
 
 	errUserRequired
 
@@ -92,9 +91,8 @@ const (
 	errUserMergeFailed
 	errVideoProbe
 	errVideoGenerateThumbnail
+	errVideoViewProcessWatchHint
 	errVideoSubtitlesExtract
-	errVideoGetWatchConditions
-	errVideoProcessStillWatching
 )
 
 func getPredefinedError(predefined predefinedError) (errType, string) {
@@ -115,8 +113,6 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errValidation, "Video subtitles have already been extracted."
 	case errVideoSubtitlesInvalidFormat:
 		return errValidation, "Provided file cannot be converted to WebVTT (web subtitles)."
-	case errVideoViewAlreadyCounted:
-		return errValidation, "View has already been counted."
 
 	case errUserRequired:
 		return errAuthentication, "No user was logged in but a user is required."
@@ -147,12 +143,10 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errServer, "Unable to probe video."
 	case errVideoGenerateThumbnail:
 		return errServer, "Error in generating thumbnail."
+	case errVideoViewProcessWatchHint:
+		return errServer, "Could not process watch hint."
 	case errVideoSubtitlesExtract:
 		return errServer, "Error in extracting subtitles."
-	case errVideoGetWatchConditions:
-		return errServer, "Could not get required watch conditions."
-	case errVideoProcessStillWatching:
-		return errServer, "Could not process still watching request."
 	}
 
 	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefined)
@@ -161,11 +155,6 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 
 func validationError(c *gin.Context, errors errorMap) {
 	errorMessage(c, errValidation, specificErrors(errors))
-	c.Abort()
-}
-
-func validationErrorGeneric(c *gin.Context, err string) {
-	errorMessage(c, errValidation, genericError(err))
 	c.Abort()
 }
 

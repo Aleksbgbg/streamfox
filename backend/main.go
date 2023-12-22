@@ -82,20 +82,6 @@ func main() {
 		controllers.GenerateAnonymousUserMiddleware,
 		controllers.GetVideoStream,
 	)
-	specificVideo.GET(
-		"/watch-conditions",
-		controllers.EnsureCompleteVideoMiddleware,
-		controllers.EnsureVisibleVideoMiddleware,
-		controllers.GenerateAnonymousUserMiddleware,
-		controllers.GetWatchConditions,
-	)
-	specificVideo.POST(
-		"/views",
-		controllers.EnsureCompleteVideoMiddleware,
-		controllers.EnsureVisibleVideoMiddleware,
-		controllers.GenerateAnonymousUserMiddleware,
-		controllers.PostView,
-	)
 	specificVideo.PUT(
 		"/settings",
 		controllers.RequireUserMiddleware,
@@ -107,6 +93,13 @@ func main() {
 		controllers.RequireUserMiddleware,
 		controllers.EnsureIsOwnerMiddleware,
 		controllers.UploadVideo,
+	)
+	specificVideo.POST(
+		"/hint/watch",
+		controllers.EnsureCompleteVideoMiddleware,
+		controllers.EnsureVisibleVideoMiddleware,
+		controllers.GenerateAnonymousUserMiddleware,
+		controllers.PostWatchHint,
 	)
 
 	subtitles := specificVideo.Group("/subtitles")

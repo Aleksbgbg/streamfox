@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -85,95 +84,72 @@ func (video *Video) IsCreator(user *User) bool {
 	return video.CreatorId == user.Id
 }
 
-func (video *Video) ProcessStream(user *User, bytesStreamed int64) error {
+func (video *Video) TrackBytesStreamed(user *User, bytesStreamed int64) error {
 	watch, err := watchFor(user, video)
-
-	if err != nil {
-		return fmt.Errorf("could not get watch: %v", err)
-	}
-
-	counted, err := viewAlreadyCounted(watch.ViewId)
-
 	if err != nil {
 		return err
 	}
 
-	if counted {
+	alreadyViewed, err := viewAlreadyCounted(watch.ViewId)
+	if err != nil {
+		return err
+	}
+	if alreadyViewed {
 		return nil
 	}
 
 	*watch.BytesStreamed += bytesStreamed
 	err = watch.save()
-
 	if err != nil {
-		return fmt.Errorf("could not save watch: %v", err)
+		return err
 	}
 
 	return nil
 }
 
-func (video *Video) CalculateWatchConditions(user *User) (WatchConditions, error) {
-	watch, err := watchFor(user, video)
-
-	if err != nil {
-		return WatchConditions{}, fmt.Errorf("could not get watch: %v", err)
-	}
-
-	return calculateWatchConditions(watch, video), nil
-}
-
 type TryAddResultCode int
 
 const (
-	ADD_VIEW_FAILURE TryAddResultCode = iota
-	ADD_VIEW_SUCCESS
-	ADD_VIEW_DUPLICATE
-	ADD_VIEW_TIME_NOT_PASSED
-	ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH
+	TryAddResultError TryAddResultCode = iota
+	TryAddResultSuccess
+	TryAddResultDuplicateView
+	TryAddResultConditionsNotSatisfied
 )
 
 type TryAddResult struct {
-	Code TryAddResultCode
-
+	Code       TryAddResultCode
 	Conditions WatchConditions
 }
 
-func (video *Video) TryAddView(user *User) (TryAddResult, error) {
+func (video *Video) TryCountView(user *User) (TryAddResult, error) {
+	var result TryAddResult
+
 	watch, err := watchFor(user, video)
-
 	if err != nil {
-		return TryAddResult{Code: ADD_VIEW_FAILURE}, fmt.Errorf("could not get watch: %v", err)
+		result.Code = TryAddResultError
+		return result, err
 	}
 
-	counted, err := viewAlreadyCounted(watch.ViewId)
-
+	alreadyViewed, err := viewAlreadyCounted(watch.ViewId)
 	if err != nil {
-		return TryAddResult{
-				Code: ADD_VIEW_FAILURE,
-			}, fmt.Errorf(
-				"could not check if view was counted: %v",
-				err,
-			)
+		result.Code = TryAddResultError
+		return result, err
 	}
-
-	if counted {
-		return TryAddResult{Code: ADD_VIEW_DUPLICATE}, nil
+	if alreadyViewed {
+		result.Code = TryAddResultDuplicateView
+		return result, nil
 	}
 
 	conditions := calculateWatchConditions(watch, video)
-
 	if conditions.RemainingBytes > 0 {
-		return TryAddResult{
-			Code:       ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH,
-			Conditions: conditions,
-		}, nil
+		result.Code = TryAddResultConditionsNotSatisfied
+		result.Conditions = conditions
+		return result, nil
 	}
-
 	if conditions.RemainingTime.Milliseconds() > 0 {
-		return TryAddResult{
-			Code:       ADD_VIEW_TIME_NOT_PASSED,
-			Conditions: conditions,
-		}, nil
+		result.Code = TryAddResultConditionsNotSatisfied
+		result.Conditions = conditions
+		return result, nil
 	}
 
 	err = recordView(View{
@@ -183,16 +159,17 @@ func (video *Video) TryAddView(user *User) (TryAddResult, error) {
 		StartedAt:     watch.StartedAt,
 		BytesStreamed: *watch.BytesStreamed,
 	})
-
-	if err == nil {
-		return TryAddResult{Code: ADD_VIEW_SUCCESS}, nil
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			result.Code = TryAddResultDuplicateView
+			return result, nil
+		} else {
+			result.Code = TryAddResultError
+			return result, err
+		}
 	}
-
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return TryAddResult{Code: ADD_VIEW_DUPLICATE}, nil
-	}
-
-	return TryAddResult{Code: ADD_VIEW_FAILURE}, fmt.Errorf("could not create view: %v", err)
+	result.Code = TryAddResultSuccess
+	return result, nil
 }
 
 func (video *Video) Save() error {

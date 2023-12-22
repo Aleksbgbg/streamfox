@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"image"
 	"image/draw"
 	"image/jpeg"
@@ -364,66 +363,26 @@ func GetVideoStream(c *gin.Context) {
 	c.File(stream.Path())
 
 	bytesStreamed := int64(c.Writer.Size())
-
 	if bytesStreamed <= 0 {
 		return
 	}
-
-	err = video.ProcessStream(user, bytesStreamed)
-
+	err = video.TrackBytesStreamed(user, bytesStreamed)
 	recordError(c, err)
 }
 
-type WatchConditionsResponse struct {
-	Percentage      float64 `json:"percentage"`
-	RemainingBytes  uint64  `json:"remainingBytes"`
-	RemainingTimeMs uint64  `json:"remainingTimeMs"`
-}
-
-func GetWatchConditions(c *gin.Context) {
+func PostWatchHint(c *gin.Context) {
 	user := getUserParam(c)
 	video := getVideoParam(c)
 
-	conditions, err := video.CalculateWatchConditions(user)
-
-	if ok := checkServerError(c, err, errVideoGetWatchConditions); !ok {
-		return
-	}
-
-	c.JSON(http.StatusOK, WatchConditionsResponse{
-		Percentage:      models.WatchPercentageRequired,
-		RemainingBytes:  conditions.RemainingBytes,
-		RemainingTimeMs: uint64(conditions.RemainingTime.Milliseconds()),
-	})
-}
-
-func PostView(c *gin.Context) {
-	user := getUserParam(c)
-	video := getVideoParam(c)
-
-	result, err := video.TryAddView(user)
-
-	if ok := checkServerError(c, err, errVideoProcessStillWatching); !ok {
-		return
-	}
-
+	result, err := video.TryCountView(user)
 	switch result.Code {
-	case models.ADD_VIEW_SUCCESS:
+	case models.TryAddResultError:
+		serverError(c, err, errVideoViewProcessWatchHint)
+	case models.TryAddResultSuccess:
 		c.Status(http.StatusNoContent)
-	case models.ADD_VIEW_DUPLICATE:
-		userError(c, errVideoViewAlreadyCounted)
-	case models.ADD_VIEW_VIDEO_NOT_STREAMED_ENOUGH:
-		validationErrorGeneric(
-			c,
-			fmt.Sprintf("You need to stream another %d bytes.", result.Conditions.RemainingBytes),
-		)
-	case models.ADD_VIEW_TIME_NOT_PASSED:
-		validationErrorGeneric(
-			c,
-			fmt.Sprintf(
-				"You need to watch another %dms.",
-				result.Conditions.RemainingTime.Milliseconds(),
-			),
-		)
+	case models.TryAddResultDuplicateView:
+		c.Status(http.StatusAlreadyReported)
+	case models.TryAddResultConditionsNotSatisfied:
+		c.JSON(http.StatusOK, result.Conditions)
 	}
 }

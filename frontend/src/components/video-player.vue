@@ -6,18 +6,13 @@ import type Player from "video.js/dist/types/player";
 import CContextMenuItem from "@/components/menu/context-menu-item.vue";
 import CContextMenu from "@/components/menu/context-menu.vue";
 import { getAllSubtitles, subtitleContentUrl } from "@/endpoints/subtitle";
-import {
-  type VideoId,
-  type WatchConditions,
-  getWatchConditions,
-  postView,
-  videoStream,
-} from "@/endpoints/video";
+import { type VideoId, postWatchHint, videoStream } from "@/endpoints/video";
 import { getLoop, setLoop } from "@/settings/loop";
 import { getVolume, setVolume } from "@/settings/volume";
-import { type Optional, empty, getValue, tryApply } from "@/types/optional";
-import { CallbackTimer } from "@/utils/callback-timer";
+import { getValue } from "@/types/optional";
+import { ContinuousCallbackTimer } from "@/utils/callback-timer";
 import { clipboardCopy } from "@/utils/clipboard";
+import { once } from "@/utils/once";
 import { panic } from "@/utils/panic";
 import { fullUrl } from "@/utils/url";
 
@@ -33,33 +28,6 @@ const videoUrl = computed(() => videoStream(props.id));
 let loop = ref(getLoop());
 watch(loop, setLoop);
 
-let watchConditions: Optional<WatchConditions> = empty();
-const conditionsTracker = {
-  viewClaimed: false,
-  percentage: 0,
-  completedTime: false,
-};
-let timer: Optional<CallbackTimer> = empty();
-
-async function checkWatchConditions() {
-  if (
-    conditionsTracker.viewClaimed ||
-    conditionsTracker.percentage < getValue(watchConditions).percentage ||
-    !conditionsTracker.completedTime
-  ) {
-    return;
-  }
-
-  const response = await postView(props.id);
-
-  if (!response.success()) {
-    console.error("unable to count view: ", response.err());
-    return;
-  }
-
-  conditionsTracker.viewClaimed = true;
-}
-
 const playerElement: Ref<HTMLVideoElement | null> = ref(null);
 
 function handleSpecificTimestamp(player: Player) {
@@ -72,6 +40,7 @@ function handleSpecificTimestamp(player: Player) {
 }
 
 let player: Player;
+let timer: ContinuousCallbackTimer;
 onMounted(async () => {
   player = videojs(playerElement.value ?? panic("player is null"), {
     autoplay: true,
@@ -93,52 +62,39 @@ onMounted(async () => {
     setVolume(player.volume() ?? 0.5);
   });
 
+  timer = new ContinuousCallbackTimer(30_000, () => postWatchHint(props.id));
+  const watchHintOnStart = once(() => postWatchHint(props.id));
+  player.on("play", () => {
+    watchHintOnStart();
+    timer.resume();
+  });
+  player.on("pause", () => timer.pause());
   player.on("ended", () => {
+    postWatchHint(props.id);
+
     if (loop.value) {
       player.play();
     }
   });
 
-  const [watch, subs] = await Promise.all([
-    getWatchConditions(props.id),
-    getAllSubtitles(props.id),
-  ]);
-
-  if (watch.success()) {
-    watchConditions = watch.value();
-
-    timer = new CallbackTimer(watchConditions.remainingTimeMs, () => {
-      conditionsTracker.completedTime = true;
-      checkWatchConditions();
-    });
-    player.on("play", () => getValue(timer).resume());
-    player.on("pause", () => getValue(timer).pause());
-    player.on("progress", () => {
-      conditionsTracker.percentage = player.bufferedPercent();
-      checkWatchConditions();
-    });
-
-    if (!player.paused()) {
-      timer.resume();
-    }
-  }
-
   handleSpecificTimestamp(player);
 
-  if (subs.success()) {
-    for (const subtitle of subs.value()) {
-      player.addRemoteTextTrack({
-        kind: "subtitles",
-        label: subtitle.name,
-        srclang: undefined,
-        src: subtitleContentUrl(props.id, subtitle.id),
-        default: false,
-      });
-    }
+  const subs = await getAllSubtitles(props.id);
+  if (!subs.success()) {
+    return;
+  }
+  for (const subtitle of subs.value()) {
+    player.addRemoteTextTrack({
+      kind: "subtitles",
+      label: subtitle.name,
+      srclang: undefined,
+      src: subtitleContentUrl(props.id, subtitle.id),
+      default: false,
+    });
   }
 });
 
-onUnmounted(() => tryApply(timer, (timer) => timer.cancel()));
+onUnmounted(() => timer.cancel());
 
 const contextMenu: Ref<typeof CContextMenu | null> = ref(null);
 function onContextMenu(event: MouseEvent) {
