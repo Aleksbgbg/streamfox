@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, computed, onMounted, onUnmounted, ref } from "vue";
+import { type Ref, computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import videojs from "video.js";
 import type Player from "video.js/dist/types/player";
@@ -13,6 +13,7 @@ import {
   postView,
   videoStream,
 } from "@/endpoints/video";
+import { getLoop, setLoop } from "@/settings/loop";
 import { getVolume, setVolume } from "@/settings/volume";
 import { type Optional, empty, getValue, tryApply } from "@/types/optional";
 import { CallbackTimer } from "@/utils/callback-timer";
@@ -28,6 +29,9 @@ const props = defineProps<{
 }>();
 
 const videoUrl = computed(() => videoStream(props.id));
+
+let loop = ref(getLoop());
+watch(loop, setLoop);
 
 let watchConditions: Optional<WatchConditions> = empty();
 const conditionsTracker = {
@@ -72,7 +76,7 @@ onMounted(async () => {
   player = videojs(playerElement.value ?? panic("player is null"), {
     autoplay: true,
     controls: true,
-    loop: true,
+    loop: false,
     preload: "auto",
     responsive: true,
     fill: true,
@@ -87,6 +91,12 @@ onMounted(async () => {
   player.volume(getVolume());
   player.on("volumechange", function () {
     setVolume(player.volume() ?? 0.5);
+  });
+
+  player.on("ended", () => {
+    if (loop.value) {
+      player.play();
+    }
   });
 
   const [watch, subs] = await Promise.all([
@@ -157,6 +167,10 @@ div(data-vjs-player)
   )
     source(:src="videoUrl" type="video/mp4")
   c-context-menu(ref="contextMenu")
+    c-context-menu-item(
+      :icon="loop ? 'check' : 'arrow-counterclockwise'"
+      @click="loop = !loop"
+    ) Loop
     c-context-menu-item(icon="link" @click="copyUrl") Copy video URL
     c-context-menu-item(icon="link" @click="copyUrlTimestamp") Copy video URL at current time
 </template>
