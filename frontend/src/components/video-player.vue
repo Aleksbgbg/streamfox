@@ -67,7 +67,7 @@ function handleSpecificTimestamp(player: Player) {
   }
 }
 
-let player: Optional<Player> = empty();
+let player: Player;
 onMounted(async () => {
   player = videojs(playerElement.value ?? panic("player is null"), {
     autoplay: true,
@@ -86,7 +86,7 @@ onMounted(async () => {
 
   player.volume(getVolume());
   player.on("volumechange", function () {
-    setVolume(getValue(player).volume() ?? 0.5);
+    setVolume(player.volume() ?? 0.5);
   });
 
   const [watch, subs] = await Promise.all([
@@ -104,7 +104,7 @@ onMounted(async () => {
     player.on("play", () => getValue(timer).resume());
     player.on("pause", () => getValue(timer).pause());
     player.on("progress", () => {
-      conditionsTracker.percentage = getValue(player).bufferedPercent();
+      conditionsTracker.percentage = player.bufferedPercent();
       checkWatchConditions();
     });
 
@@ -142,7 +142,7 @@ function copyUrlTimestamp() {
     fullUrl(
       router.resolve({
         name: getValue(route.name),
-        query: { t: Math.round(player?.currentTime() || 0).toString() },
+        query: { t: Math.round(player.currentTime() || 0).toString() },
       }).fullPath,
     ),
   );
