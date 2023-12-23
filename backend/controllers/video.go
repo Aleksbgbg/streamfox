@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ldez/mimetype"
 )
 
 type VideoCreatedInfo struct {
@@ -348,7 +349,7 @@ func GetVideoPreview(c *gin.Context) {
 		return
 	}
 
-	c.Data(http.StatusOK, "image/jpeg", buf.Bytes())
+	c.Data(http.StatusOK, mimetype.ImageJpeg, buf.Bytes())
 }
 
 func GetVideoStream(c *gin.Context) {
