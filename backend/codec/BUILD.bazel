@@ -1,0 +1,17 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "codec",
+    srcs = [
+        "format.go",
+        "subtitles.go",
+        "thumbnail.go",
+    ],
+    importpath = "streamfox-backend/codec",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//files",
+        "//models",
+        "@in_gopkg_vansante_go_ffprobe_v2//:go-ffprobe_v2",
+    ],
+)

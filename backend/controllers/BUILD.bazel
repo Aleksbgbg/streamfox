@@ -1,0 +1,31 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "controllers",
+    srcs = [
+        "auth.go",
+        "content_range.go",
+        "deferred_response.go",
+        "errors.go",
+        "frontend.go",
+        "subtitle.go",
+        "token.go",
+        "user.go",
+        "utils.go",
+        "video.go",
+    ],
+    importpath = "streamfox-backend/controllers",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//codec",
+        "//files",
+        "//models",
+        "//utils",
+        "@com_github_abrander_ginproxy//:ginproxy",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_go_http_utils_headers//:headers",
+        "@com_github_go_playground_validator_v10//:validator",
+        "@com_github_golang_jwt_jwt_v5//:jwt",
+        "@com_github_ldez_mimetype//:mimetype",
+    ],
+)

@@ -1,0 +1,13 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "utils",
+    srcs = [
+        "env.go",
+        "envkey_string.go",
+        "strings.go",
+    ],
+    importpath = "streamfox-backend/utils",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_dchest_uniuri//:uniuri"],
+)
