@@ -118,6 +118,14 @@ func (user *User) IsAnonymous() bool {
 	return user.Username == nil
 }
 
+func (user *User) Name() string {
+	if user.IsAnonymous() {
+		return "Anonymous"
+	} else {
+		return *user.Username
+	}
+}
+
 // All data relevant to the anonymous user is merged into user, after which the anonymous user is
 // deleted from the database. Anonymous is no longer a valid user when this function call succeeds.
 func (user *User) Absorb(anonymous *User) error {

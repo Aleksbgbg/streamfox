@@ -13,16 +13,9 @@ type UserInfo struct {
 }
 
 func getUserInfo(user *models.User) UserInfo {
-	if user.IsAnonymous() {
-		return UserInfo{
-			Id:       user.Id.String(),
-			Username: "Anonymous",
-		}
-	}
-
 	return UserInfo{
 		Id:       user.Id.String(),
-		Username: *user.Username,
+		Username: user.Name(),
 	}
 }
 
