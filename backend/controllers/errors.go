@@ -146,7 +146,7 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 	case errGenericFileIo:
 		return errServer, "File input / output failed."
 	case errAuthGeneratingToken:
-		return errServer, "Error in generating token."
+		return errServer, "Error in generating authentication token."
 	case errAuthGeneratingUser:
 		return errServer, "Error in generating user."
 	case errUserMergeFailed:

@@ -15,11 +15,19 @@ import (
 const (
 	jwtKeyUserId     = "uid"
 	jwtKeyExpiration = "exp"
+	jwtKeyUsage      = "use"
 )
 
 var (
 	errClaimNoExist     = errors.New("claim does not exist")
 	errClaimTypeInvalid = errors.New("claim type is invalid")
+	errWrongUsage       = errors.New("token usage does not match expected usage")
+)
+
+type jwtUsage int
+
+const (
+	jwtUsageLogin jwtUsage = iota
 )
 
 var apiSecret []byte
@@ -45,12 +53,13 @@ type token struct {
 	expiry time.Time
 }
 
-func generateToken(userId models.Id) (*token, error) {
+func generateLoginToken(userId models.Id) (*token, error) {
 	expiry := time.Now().Add(time.Hour * time.Duration(config.Values.AppTokenLifespanHrs))
 
 	value, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		jwtKeyUserId:     userId.String(),
 		jwtKeyExpiration: expiry.Unix(),
+		jwtKeyUsage:      jwtUsageLogin,
 	}).SignedString(apiSecret)
 	if err != nil {
 		return nil, err
@@ -75,7 +84,16 @@ func getClaim[T any](claims jwt.MapClaims, key string) (T, error) {
 	return result, nil
 }
 
-func getUserId(tokenStr string) (models.Id, error) {
+func getClaimInt(claims jwt.MapClaims, key string) (int, error) {
+	claim, err := getClaim[float64](claims, key)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(claim), nil
+}
+
+func getUserId(tokenStr string, usage jwtUsage) (models.Id, error) {
 	token, err := parseToken(tokenStr)
 	if err != nil {
 		return models.NilId, err
@@ -84,6 +102,14 @@ func getUserId(tokenStr string) (models.Id, error) {
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
 		return models.NilId, nil
+	}
+
+	usageClaim, err := getClaimInt(claims, jwtKeyUsage)
+	if err != nil {
+		return models.NilId, err
+	}
+	if jwtUsage(usageClaim) != usage {
+		return models.NilId, errWrongUsage
 	}
 
 	userIdClaim, err := getClaim[string](claims, jwtKeyUserId)

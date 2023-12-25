@@ -15,7 +15,7 @@ func setAuthCookie(c *gin.Context, token string, expiry time.Time) {
 }
 
 func authenticate(c *gin.Context, user *models.User) error {
-	token, err := generateToken(user.Id)
+	token, err := generateLoginToken(user.Id)
 
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func ExtractUserMiddleware(c *gin.Context) {
 		return
 	}
 
-	userId, err := getUserId(tokenStr)
+	userId, err := getUserId(tokenStr, jwtUsageLogin)
 
 	if err != nil {
 		return
