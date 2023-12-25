@@ -86,7 +86,7 @@ export class ApiResponse<TData, TResponse> {
 }
 
 export async function request<TData, TResponse>(params: {
-  method: "get" | "put" | "post" | "delete";
+  method: "get" | "post" | "put" | "delete";
   url: string;
   data: TData;
   headers?: RawAxiosRequestHeaders;
@@ -134,18 +134,18 @@ export function get<TResponse>(url: string): Promise<ApiResponse<void, TResponse
   return request({ method: "get", url, data: null });
 }
 
-export function put<TData, TResponse>(
-  url: string,
-  data: TData,
-): Promise<ApiResponse<TData, TResponse>> {
-  return request({ method: "put", url, data });
-}
-
 export function post<TData, TResponse>(
   url: string,
   data: TData | null = null,
 ): Promise<ApiResponse<TData, TResponse>> {
   return request({ method: "post", url, data });
+}
+
+export function put<TData, TResponse>(
+  url: string,
+  data: TData,
+): Promise<ApiResponse<TData, TResponse>> {
+  return request({ method: "put", url, data });
 }
 
 export function delete_(url: string): Promise<ApiResponse<void, void>> {
