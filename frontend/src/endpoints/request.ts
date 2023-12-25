@@ -86,7 +86,7 @@ export class ApiResponse<TData, TResponse> {
 }
 
 export async function request<TData, TResponse>(params: {
-  method: "get" | "post" | "put" | "delete";
+  method: "get" | "post" | "put" | "patch" | "delete";
   url: string;
   data: TData;
   headers?: RawAxiosRequestHeaders;
@@ -146,6 +146,13 @@ export function put<TData, TResponse>(
   data: TData,
 ): Promise<ApiResponse<TData, TResponse>> {
   return request({ method: "put", url, data });
+}
+
+export function patch<TData, TResponse>(
+  url: string,
+  data: TData | null = null,
+): Promise<ApiResponse<TData, TResponse>> {
+  return request({ method: "patch", url, data });
 }
 
 export function delete_(url: string): Promise<ApiResponse<void, void>> {
