@@ -8,7 +8,7 @@ import { dateToElapsedTimeString, secsToDurationString } from "@/utils/strings";
 defineProps<{
   link: RouteLocationRaw;
   thumbnailUrl: string;
-  durationSecs: number;
+  durationSecs?: number;
   name: string;
   creator: User;
   beginAt: Date;
@@ -23,6 +23,7 @@ c-anchor-root.group.w-full(class="max-w-[416px]")
     img(src="@/assets/fox.png" alt="")
     img.absolute.top-0(:src="thumbnailUrl" alt="")
     span(
+      v-if="durationSecs"
       class="absolute bottom-0.5 right-0.5 text-sm opacity-85 bg-black px-1"
     ) {{ secsToDurationString(durationSecs) }}
   .flex.justify-between.gap-2.mt-2
