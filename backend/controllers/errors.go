@@ -75,6 +75,7 @@ const (
 	errVideoCannotOverwrite
 	errVideoSubtitlesCannotDoubleExtract
 	errVideoSubtitlesInvalidFormat
+	errLiveInvalidRoomId
 
 	errUserRequired
 
@@ -85,6 +86,7 @@ const (
 	errUserIdNonExistent
 	errVideoIdNonExistent
 	errVideoSubtitlesIdNonExistent
+	errLiveRoomIdNonExistent
 
 	errGenericDatabaseIo
 	errGenericFileIo
@@ -117,6 +119,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errValidation, "Video subtitles have already been extracted."
 	case errVideoSubtitlesInvalidFormat:
 		return errValidation, "Provided file cannot be converted to WebVTT (web subtitles)."
+	case errLiveInvalidRoomId:
+		return errValidation, "Live room ID is invalid."
 
 	case errUserRequired:
 		return errAuthentication, "No user was logged in but a user is required."
@@ -134,6 +138,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errNotFound, "Video does not exist."
 	case errVideoSubtitlesIdNonExistent:
 		return errNotFound, "Subtitle does not exist."
+	case errLiveRoomIdNonExistent:
+		return errNotFound, "Live room does not exist."
 
 	case errGenericDatabaseIo:
 		return errServer, "Database transaction failed."

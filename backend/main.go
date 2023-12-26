@@ -140,5 +140,13 @@ func main() {
 	)
 	specificSubtitle.GET("/content", controllers.GetSubtitleContent)
 
+	live := api.Group("/live")
+	liveRooms := live.Group("/rooms")
+	liveRooms.GET("", controllers.GetLiveRooms)
+	liveRooms.POST("", controllers.GenerateAnonymousUserMiddleware, controllers.CreateLiveRoom)
+	room := liveRooms.Group("/:id", controllers.ExtractLiveRoomMiddleware)
+	room.GET("", controllers.GetLiveRoom)
+	room.GET("/thumbnail", controllers.GetLiveRoomThumbnail)
+
 	router.Run(fmt.Sprintf(":%d", config.Values.AppPort))
 }

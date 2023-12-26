@@ -46,5 +46,16 @@ export const router = createRouter({
       name: "live",
       component: () => import("@/views/live/live.vue"),
     },
+    {
+      path: "/live/create",
+      name: "create-live-room",
+      component: () => import("@/views/live/create.vue"),
+    },
+    {
+      path: "/live/room/:id",
+      name: "live-room",
+      component: () => import("@/views/live/room.vue"),
+      props: true,
+    },
   ],
 });

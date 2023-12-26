@@ -69,3 +69,11 @@ export function dateToElapsedTimeString(date: Date): string {
 export function toLowerCamelCase(string: string): string {
   return (string.charAt(0).toLowerCase() + string.slice(1)).replace(" ", "");
 }
+
+export function toPossessive(string: string): string {
+  if (string.endsWith("s")) {
+    return string + "'";
+  } else {
+    return string + "'s";
+  }
+}
