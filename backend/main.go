@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"streamfox-backend/config"
@@ -15,6 +16,12 @@ func main() {
 	if err := config.SetupFromEnvironment(); err != nil {
 		log.Panicf("Error processing config from the environment: %v", err)
 	}
+
+	configJson, err := json.MarshalIndent(&config.Values, "", "\t")
+	if err != nil {
+		log.Panicf("Error printing environment config: %w", err)
+	}
+	log.Printf("Config values: %s\n", string(configJson))
 
 	files.Setup()
 
