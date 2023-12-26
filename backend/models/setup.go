@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"streamfox-backend/config"
 	"streamfox-backend/files"
 	"streamfox-backend/utils"
 
@@ -27,12 +28,12 @@ func Setup() error {
 	var err error
 	db, err = gorm.Open(
 		postgres.Open(fmt.Sprintf(
-			"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/London",
-			utils.GetEnvVar(utils.DB_HOST),
-			utils.GetEnvVar(utils.DB_USER),
-			utils.GetEnvVar(utils.DB_PASSWORD),
-			utils.GetEnvVar(utils.DB_NAME),
-			utils.GetEnvVar(utils.DB_PORT),
+			"host=%s port=%d dbname=%s user=%s password=%s sslmode=disable TimeZone=Europe/London",
+			config.Values.DbHost,
+			config.Values.DbPort,
+			config.Values.DbName,
+			config.Values.DbUser,
+			config.Values.DbPassword,
 		)),
 		&gorm.Config{
 			TranslateError: true,

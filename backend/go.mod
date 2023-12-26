@@ -11,6 +11,7 @@ require (
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/joho/godotenv v1.5.1
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/ldez/mimetype v0.2.0
 	golang.org/x/crypto v0.16.0
 	gopkg.in/vansante/go-ffprobe.v2 v2.1.1

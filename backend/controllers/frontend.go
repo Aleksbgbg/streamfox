@@ -10,8 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"streamfox-backend/config"
 	"streamfox-backend/models"
-	"streamfox-backend/utils"
 	"strings"
 
 	"github.com/abrander/ginproxy"
@@ -34,11 +34,7 @@ func ProdFrontendMiddleware(frontendPath string) gin.HandlerFunc {
 
 func DevFrontendMiddleware(apiPrefix string) gin.HandlerFunc {
 	g, _ := ginproxy.NewGinProxy(
-		fmt.Sprintf(
-			"http://%s:%s",
-			utils.GetEnvVar(utils.DEBUG_FORWARD_HOST),
-			utils.GetEnvVar(utils.DEBUG_FORWARD_PORT),
-		),
+		fmt.Sprintf("http://%s:%d", config.Values.DebugForwardHost, config.Values.DebugForwardPort),
 	)
 	return func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.URL.Path, apiPrefix) {
@@ -75,7 +71,7 @@ var homePageMetadataTemplate, _ = template.New("").Parse(`
 `)
 
 func formatBaseUrl(c *gin.Context) string {
-	return fmt.Sprintf("%s://%s", utils.GetEnvVar(utils.APP_SCHEME), c.Request.Host)
+	return fmt.Sprintf("%s://%s", config.Values.AppScheme, c.Request.Host)
 }
 
 func GenerateHtmlMetadata(handler gin.HandlerFunc) gin.HandlerFunc {

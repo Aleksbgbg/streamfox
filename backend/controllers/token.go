@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"streamfox-backend/config"
 	"streamfox-backend/files"
 	"streamfox-backend/models"
 	"streamfox-backend/utils"
@@ -40,10 +41,11 @@ func SetupApiSecret() error {
 }
 
 func generateToken(userId models.Id) (string, error) {
-	tokenLifespan := utils.GetEnvVarInt(utils.APP_TOKEN_LIFESPAN_HRS)
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		jwtKeyUserId:     userId.String(),
-		jwtKeyExpiration: time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix(),
+		jwtKeyUserId: userId.String(),
+		jwtKeyExpiration: time.Now().
+			Add(time.Hour * time.Duration(config.Values.AppTokenLifespanHrs)).
+			Unix(),
 	}).SignedString(apiSecret)
 }
 

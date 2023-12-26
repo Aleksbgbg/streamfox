@@ -3,7 +3,7 @@ package files
 import (
 	"fmt"
 	"os"
-	"streamfox-backend/utils"
+	"streamfox-backend/config"
 )
 
 const fsTree = `
@@ -39,8 +39,8 @@ const (
 var fs = ParseFsTree(fsTree)
 
 func Setup() {
-	fs.AddVar(ConfigRoot, utils.GetEnvVar(utils.APP_CONFIG_ROOT))
-	fs.AddVar(DataRoot, utils.GetEnvVar(utils.APP_DATA_ROOT))
+	fs.AddVar(ConfigRoot, config.Values.AppConfigRoot)
+	fs.AddVar(DataRoot, config.Values.AppDataRoot)
 }
 
 type Resolver struct {

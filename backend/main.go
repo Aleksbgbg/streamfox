@@ -3,18 +3,17 @@ package main
 import (
 	"fmt"
 	"log"
+	"streamfox-backend/config"
 	"streamfox-backend/controllers"
 	"streamfox-backend/files"
 	"streamfox-backend/models"
-	"streamfox-backend/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Panicf("Error loading .env file: %v", err)
+	if err := config.SetupFromEnvironment(); err != nil {
+		log.Panicf("Error processing config from the environment: %v", err)
 	}
 
 	files.Setup()
@@ -139,5 +138,5 @@ func main() {
 	)
 	specificSubtitle.GET("/content", controllers.GetSubtitleContent)
 
-	router.Run(fmt.Sprintf(":%s", utils.GetEnvVar(utils.APP_PORT)))
+	router.Run(fmt.Sprintf(":%d", config.Values.AppPort))
 }
