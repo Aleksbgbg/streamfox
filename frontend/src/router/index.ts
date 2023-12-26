@@ -57,5 +57,10 @@ export const router = createRouter({
       component: () => import("@/views/live/room.vue"),
       props: true,
     },
+    {
+      path: "/live/setup-obs",
+      name: "setup-obs",
+      component: () => import("@/views/live/setup-obs.vue"),
+    },
   ],
 });

@@ -32,7 +32,14 @@ c-empty-collection(
 )
   c-tile-grid
     c-live-room-preview(v-for="room of rooms" :room="room")
-.absolute.left-3.bottom-3.flex
+.absolute.left-3.bottom-3.flex.flex-col.gap-3
+  c-button.flex.items-center(
+    element="router-link"
+    theme="blue"
+    :to="{ name: 'setup-obs' }"
+  )
+    img.inline.w-5.h-5.mr-1(class="-ml-0.5" src="@/assets/obs-logo.png" alt="OBS logo")
+    span Setup OBS
   c-button(
     element="router-link"
     theme="red"

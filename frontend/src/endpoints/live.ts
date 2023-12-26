@@ -2,6 +2,10 @@ import { type ApiResponse, apiUrl, get, post } from "@/endpoints/request";
 import type { User } from "@/endpoints/user";
 import type { Id } from "@/types/id";
 
+export function getStreamKey(): Promise<ApiResponse<void, string>> {
+  return get("/live/upload/key");
+}
+
 export type LiveRoomId = Id;
 
 export enum Visibility {

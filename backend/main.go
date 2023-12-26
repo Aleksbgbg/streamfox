@@ -141,6 +141,10 @@ func main() {
 	specificSubtitle.GET("/content", controllers.GetSubtitleContent)
 
 	live := api.Group("/live")
+
+	liveUpload := live.Group("/upload")
+	liveUpload.GET("/key", controllers.GenerateAnonymousUserMiddleware, controllers.GetStreamKey)
+
 	liveRooms := live.Group("/rooms")
 	liveRooms.GET("", controllers.GetLiveRooms)
 	liveRooms.POST("", controllers.GenerateAnonymousUserMiddleware, controllers.CreateLiveRoom)

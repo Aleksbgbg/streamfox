@@ -114,3 +114,14 @@ func GetLiveRoom(c *gin.Context) {
 func GetLiveRoomThumbnail(c *gin.Context) {
 	c.Status(http.StatusNotFound)
 }
+
+func GetStreamKey(c *gin.Context) {
+	user := getUserParam(c)
+
+	token, err := generateStreamToken(user.Id)
+	if ok := checkServerError(c, err, errAuthGeneratingToken); !ok {
+		return
+	}
+
+	c.String(http.StatusOK, token)
+}

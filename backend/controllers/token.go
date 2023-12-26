@@ -28,6 +28,7 @@ type jwtUsage int
 
 const (
 	jwtUsageLogin jwtUsage = iota
+	jwtUsageStreaming
 )
 
 var apiSecret []byte
@@ -66,6 +67,16 @@ func generateLoginToken(userId models.Id) (*token, error) {
 	}
 
 	return &token{value, expiry}, nil
+}
+
+func generateStreamToken(userId models.Id) (string, error) {
+	// Stream keys intentionally do not expire to improve the user experience (avoid having to change
+	// stream keys). In the future we should add a way for the user to generate stream keys and revoke
+	// them, to mitigate key theft.
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		jwtKeyUserId: userId.String(),
+		jwtKeyUsage:  jwtUsageStreaming,
+	}).SignedString(apiSecret)
 }
 
 func getClaim[T any](claims jwt.MapClaims, key string) (T, error) {
