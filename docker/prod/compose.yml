@@ -13,12 +13,15 @@ services:
       - ${STREAMFOX_HOME}:/streamfox/home
     ports:
       - "8801:8801"
+      - "8804:8804/udp"
     environment:
       GIN_MODE: release
       APP_CONFIG_ROOT: /streamfox/home/config
       APP_DATA_ROOT: /streamfox/home/data/streamfox
       APP_PORT: 8801
       DB_HOST: postgres
+      LIVE_UDP_PORT: 8804
+      LIVE_PUBLIC_IP:
 
   postgres:
     image: postgres

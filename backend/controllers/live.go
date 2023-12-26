@@ -2,17 +2,24 @@ package controllers
 
 import (
 	"cmp"
+	"io"
 	"net/http"
 	"slices"
+	"streamfox-backend/live"
 	"streamfox-backend/models"
+	"strings"
 	"time"
 
+	"github.com/go-http-utils/headers"
+	"github.com/ldez/mimetype"
 	cmap "github.com/orcaman/concurrent-map/v2"
+	"github.com/pion/webrtc/v4"
 
 	"github.com/gin-gonic/gin"
 )
 
 var rooms = cmap.NewStringer[models.Id, *Room]()
+var uploadSessions = cmap.NewStringer[models.Id, *live.UploadSession]()
 
 const liveRoomParamKey = "live_room"
 
@@ -115,6 +122,28 @@ func GetLiveRoomThumbnail(c *gin.Context) {
 	c.Status(http.StatusNotFound)
 }
 
+const streamingUserKey = "streaming_user"
+
+func ExtractStreamingUserMiddleware(c *gin.Context) {
+	auth := strings.Split(c.GetHeader(headers.Authorization), " ")
+	if len(auth) != 2 {
+		userError(c, errAuthInvalidBearerFormat)
+		return
+	}
+
+	userId, err := getUserId(auth[1], jwtUsageStreaming)
+	if err != nil {
+		userError(c, errUserRequired)
+		return
+	}
+
+	c.Set(streamingUserKey, userId)
+}
+
+func getStreamingUserParam(c *gin.Context) models.Id {
+	return c.MustGet(streamingUserKey).(models.Id)
+}
+
 func GetStreamKey(c *gin.Context) {
 	user := getUserParam(c)
 
@@ -124,4 +153,63 @@ func GetStreamKey(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, token)
+}
+
+func BeginUploadSession(c *gin.Context) {
+	userId := getStreamingUserParam(c)
+
+	_, exists := uploadSessions.Get(userId)
+	if exists {
+		userError(c, errLiveAlreadyStreaming)
+		return
+	}
+
+	body, err := io.ReadAll(c.Request.Body)
+	if ok := checkServerError(c, err, errGenericSocketIo); !ok {
+		return
+	}
+
+	user, err := models.FetchUser(userId)
+	if ok := checkServerError(c, err, errUserRequired); !ok {
+		return
+	}
+
+	uploadSession, err := live.NewUploadSession(
+		webrtc.SessionDescription{Type: webrtc.SDPTypeOffer, SDP: string(body)},
+		user,
+	)
+	if ok := checkServerError(c, err, errLiveBeginUpload); !ok {
+		return
+	}
+
+	go func() {
+		for {
+			select {
+			case <-uploadSession.UploadBegin():
+				uploadSessions.Set(userId, uploadSession)
+			case <-uploadSession.Exit():
+				uploadSessions.Remove(userId)
+				return
+			}
+		}
+	}()
+
+	c.Header(headers.Location, c.Request.URL.Path)
+	c.Header(headers.ContentType, mimetype.ApplicationSdp)
+	c.String(http.StatusCreated, uploadSession.Description().SDP)
+}
+
+func EndUploadSession(c *gin.Context) {
+	userId := getStreamingUserParam(c)
+
+	uploadSession, exists := uploadSessions.Get(userId)
+	if !exists {
+		userError(c, errLiveNotStreaming)
+		return
+	}
+
+	err := uploadSession.Close()
+	recordError(c, err)
+
+	c.Status(http.StatusNoContent)
 }

@@ -33,6 +33,7 @@ services:
         condition: service_healthy
     ports:
       - "8701:8701"
+      - "8704:8704/udp"
     environment:
       APP_CONFIG_ROOT: /backend/streamfox_home_devenv/config
       APP_DATA_ROOT: /backend/streamfox_home_devenv/data/streamfox
@@ -40,6 +41,8 @@ services:
       DB_HOST: postgres
       DEBUG_FORWARD_HOST: frontend
       DEBUG_FORWARD_PORT: 8702
+      LIVE_UDP_PORT: 8704
+      LIVE_PUBLIC_IP:
 
   postgres:
     image: postgres

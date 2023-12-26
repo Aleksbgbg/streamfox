@@ -67,6 +67,7 @@ type predefinedError int
 
 const (
 	errGenericInvalidContentRange predefinedError = iota
+	errAuthInvalidBearerFormat
 	errAuthInvalidCredentials
 	errUserInvalidId
 	errVideoInvalidId
@@ -75,6 +76,7 @@ const (
 	errVideoCannotOverwrite
 	errVideoSubtitlesCannotDoubleExtract
 	errVideoSubtitlesInvalidFormat
+	errLiveAlreadyStreaming
 	errLiveInvalidRoomId
 
 	errUserRequired
@@ -87,7 +89,9 @@ const (
 	errVideoIdNonExistent
 	errVideoSubtitlesIdNonExistent
 	errLiveRoomIdNonExistent
+	errLiveNotStreaming
 
+	errGenericSocketIo
 	errGenericDatabaseIo
 	errGenericFileIo
 	errAuthGeneratingToken
@@ -97,12 +101,15 @@ const (
 	errVideoGenerateThumbnail
 	errVideoViewProcessWatchHint
 	errVideoSubtitlesExtract
+	errLiveBeginUpload
 )
 
 func getPredefinedError(predefined predefinedError) (errType, string) {
 	switch predefined {
 	case errGenericInvalidContentRange:
 		return errValidation, "Invalid Content-Range header."
+	case errAuthInvalidBearerFormat:
+		return errValidation, "Invalid bearer token format."
 	case errAuthInvalidCredentials:
 		return errValidation, "Invalid credentials."
 	case errUserInvalidId:
@@ -119,6 +126,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errValidation, "Video subtitles have already been extracted."
 	case errVideoSubtitlesInvalidFormat:
 		return errValidation, "Provided file cannot be converted to WebVTT (web subtitles)."
+	case errLiveAlreadyStreaming:
+		return errValidation, "User is already streaming."
 	case errLiveInvalidRoomId:
 		return errValidation, "Live room ID is invalid."
 
@@ -140,7 +149,11 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errNotFound, "Subtitle does not exist."
 	case errLiveRoomIdNonExistent:
 		return errNotFound, "Live room does not exist."
+	case errLiveNotStreaming:
+		return errValidation, "User is not streaming."
 
+	case errGenericSocketIo:
+		return errServer, "Failed to receive data sent over the network."
 	case errGenericDatabaseIo:
 		return errServer, "Database transaction failed."
 	case errGenericFileIo:
@@ -159,6 +172,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errServer, "Could not process watch hint."
 	case errVideoSubtitlesExtract:
 		return errServer, "Error in extracting subtitles."
+	case errLiveBeginUpload:
+		return errServer, "Unable to begin streaming."
 	}
 
 	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefined)

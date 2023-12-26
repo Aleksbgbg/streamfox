@@ -22,6 +22,9 @@ type Config struct {
 
 	DebugForwardHost string `split_words:"true"`
 	DebugForwardPort int    `split_words:"true"`
+
+	LiveUdpPort  int    `split_words:"true" required:"true"`
+	LivePublicIp string `split_words:"true" required:"true"`
 }
 
 var Values Config

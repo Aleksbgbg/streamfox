@@ -6,6 +6,7 @@ import (
 	"streamfox-backend/config"
 	"streamfox-backend/controllers"
 	"streamfox-backend/files"
+	"streamfox-backend/live"
 	"streamfox-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,10 @@ func main() {
 
 	if err := models.Setup(); err != nil {
 		log.Panicf("Error setting up database: %v", err)
+	}
+
+	if err := live.SetupWebRtc(); err != nil {
+		log.Panicf("Error setting up WebRTC: %v", err)
 	}
 
 	const API_PREFIX = "/api"
@@ -144,6 +149,16 @@ func main() {
 
 	liveUpload := live.Group("/upload")
 	liveUpload.GET("/key", controllers.GenerateAnonymousUserMiddleware, controllers.GetStreamKey)
+	liveUpload.POST(
+		"/stream",
+		controllers.ExtractStreamingUserMiddleware,
+		controllers.BeginUploadSession,
+	)
+	liveUpload.DELETE(
+		"/stream",
+		controllers.ExtractStreamingUserMiddleware,
+		controllers.EndUploadSession,
+	)
 
 	liveRooms := live.Group("/rooms")
 	liveRooms.GET("", controllers.GetLiveRooms)
