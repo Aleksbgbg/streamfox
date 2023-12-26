@@ -166,6 +166,19 @@ func main() {
 	room := liveRooms.Group("/:id", controllers.ExtractLiveRoomMiddleware)
 	room.GET("", controllers.GetLiveRoom)
 	room.GET("/thumbnail", controllers.GetLiveRoomThumbnail)
+	room.POST("/session", controllers.GenerateAnonymousUserMiddleware, controllers.JoinRoom)
+	room.PUT(
+		"/session",
+		controllers.GenerateAnonymousUserMiddleware,
+		controllers.ExtractRoomSessionMiddleware,
+		controllers.Renegotiate,
+	)
+	room.PATCH(
+		"/session",
+		controllers.GenerateAnonymousUserMiddleware,
+		controllers.ExtractRoomSessionMiddleware,
+		controllers.TrickeCandidate,
+	)
 
 	router.Run(fmt.Sprintf(":%d", config.Values.AppPort))
 }

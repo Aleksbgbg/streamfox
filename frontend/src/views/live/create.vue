@@ -11,7 +11,7 @@ import { type CreateLiveRoomInfo, Visibility, createLiveRoom } from "@/endpoints
 import { type ApiErr, emptyApiErr } from "@/endpoints/request";
 import type { User } from "@/endpoints/user";
 import { useUserStore } from "@/store/user";
-import { type Optional, getValue, hasValue } from "@/types/optional";
+import { type Option } from "@/types/option";
 import { toPossessive } from "@/utils/strings";
 
 const router = useRouter();
@@ -27,14 +27,13 @@ const room: CreateLiveRoomInfo = reactive({
 
 const err: Ref<ApiErr<CreateLiveRoomInfo>> = ref(emptyApiErr());
 
-function setRoomNameFromUser(user: Optional<User>) {
-  const username = hasValue(user) ? getValue(user).username : "Anonymous";
-  room.name = `${toPossessive(username)} Room`;
+function setRoomNameFromUser(user: Option<User>) {
+  room.name = `${toPossessive(user.mapOrElse((user) => user.username, "Anonymous"))} Room`;
 }
 
 setRoomNameFromUser(userStore.user);
 
-if (!hasValue(userStore.user)) {
+if (userStore.user.isNone()) {
   const unsubscribe = userStore.$subscribe((_, state) => {
     setRoomNameFromUser(state.user);
     unsubscribe();

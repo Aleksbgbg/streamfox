@@ -31,7 +31,11 @@ c-empty-collection(
   text-margin
 )
   c-tile-grid
-    c-live-room-preview(v-for="room of rooms" :room="room")
+    c-live-room-preview(
+      v-for="room of rooms"
+      :key="room.id"
+      :room="room"
+    )
 .absolute.left-3.bottom-3.flex.flex-col.gap-3
   c-button.flex.items-center(
     element="router-link"

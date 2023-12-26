@@ -78,6 +78,7 @@ const (
 	errVideoSubtitlesInvalidFormat
 	errLiveAlreadyStreaming
 	errLiveInvalidRoomId
+	errLiveParticipantNotFound
 
 	errUserRequired
 
@@ -102,6 +103,8 @@ const (
 	errVideoViewProcessWatchHint
 	errVideoSubtitlesExtract
 	errLiveBeginUpload
+	errLiveJoinSession
+	errLiveRenegotiateSession
 )
 
 func getPredefinedError(predefined predefinedError) (errType, string) {
@@ -130,6 +133,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errValidation, "User is already streaming."
 	case errLiveInvalidRoomId:
 		return errValidation, "Live room ID is invalid."
+	case errLiveParticipantNotFound:
+		return errValidation, "Participant is no longer in the live room."
 
 	case errUserRequired:
 		return errAuthentication, "No user was logged in but a user is required."
@@ -174,6 +179,10 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errServer, "Error in extracting subtitles."
 	case errLiveBeginUpload:
 		return errServer, "Unable to begin streaming."
+	case errLiveJoinSession:
+		return errServer, "Unable to join live session."
+	case errLiveRenegotiateSession:
+		return errServer, "Unable to renegotiate live session."
 	}
 
 	log.Panicf("getPredefinedError failed because predefinedError %d is not handled", predefined)

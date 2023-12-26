@@ -1,5 +1,5 @@
-import { check } from "@/utils/null";
+import { panic } from "@/utils/panic";
 
 export function getStrict<TKey, TValue>(map: Map<TKey, TValue>, key: TKey): TValue {
-  return check(map.get(key), "could not find key in map");
+  return map.get(key) ?? panic(`could not find key '${key}' in map`);
 }
