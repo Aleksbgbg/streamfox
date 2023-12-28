@@ -56,22 +56,23 @@ func NewUploadSession(
 
 	tracks := make(chan *webrtc.TrackLocalStaticRTP)
 	go func() {
-		timeout := time.After(trackTimeout)
-		errored := false
+		timeout := time.NewTicker(trackTimeout)
+		timedOut := false
 
 	loop:
 		for i := 0; i < len(uploadTransceivers); i += 1 {
 			select {
 			case track := <-tracks:
 				session.tracks[i] = track
-			case <-timeout:
-				errored = true
+			case <-timeout.C:
+				timedOut = true
 				session.sink.Fail(errTrackTimeout)
 				break loop
 			}
 		}
 
-		if !errored {
+		if !timedOut {
+			timeout.Stop()
 			begin(session)
 			defer end(session)
 		}

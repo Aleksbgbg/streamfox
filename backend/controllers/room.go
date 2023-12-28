@@ -124,7 +124,7 @@ func (room *Room) GetParticipant(id models.Id) (*participant, bool) {
 }
 
 func (room *Room) eventLoop() {
-	roomClose := time.After(roomTimeout)
+	roomClose := time.NewTimer(roomTimeout)
 
 	for {
 		select {
@@ -133,12 +133,14 @@ func (room *Room) eventLoop() {
 			case roomEventCreate:
 				room.create(event.participant)
 			case roomEventConnect:
-				roomClose = nil
+				if !roomClose.Stop() {
+					<-roomClose.C
+				}
 				room.connect(event.participant)
 			case roomEventDisconnect:
 				room.disconnect(event.participant)
 				if len(room.participants) == 0 {
-					roomClose = time.After(roomTimeout)
+					roomClose.Reset(roomTimeout)
 				}
 			case roomEventStartStream:
 				room.startStream(event.participant)
@@ -157,7 +159,7 @@ func (room *Room) eventLoop() {
 				)
 				room.disconnect(event.participant)
 			}
-		case <-roomClose:
+		case <-roomClose.C:
 			room.exit(room)
 			return
 		}
