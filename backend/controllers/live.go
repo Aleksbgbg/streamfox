@@ -103,13 +103,10 @@ func CreateLiveRoom(c *gin.Context) {
 	}
 
 	user := getUserParam(c)
-	room := NewLiveRoom(info.Name, *user, *info.Visibility)
-	rooms.Set(room.Id(), room)
-
-	go func() {
-		<-room.Closed()
+	room := NewLiveRoom(info.Name, *user, *info.Visibility, func(room *Room) {
 		rooms.Remove(room.Id())
-	}()
+	})
+	rooms.Set(room.Id(), room)
 
 	c.JSON(http.StatusCreated, LiveRoomCreatedInfo{room.Id().String()})
 }
@@ -200,29 +197,23 @@ func BeginUploadSession(c *gin.Context) {
 	uploadSession, err := live.NewUploadSession(
 		webrtc.SessionDescription{Type: webrtc.SDPTypeOffer, SDP: string(body)},
 		user,
+		func(uploadSession *live.UploadSession) {
+			uploadSessions.Set(userId, uploadSession)
+			forAllRooms(userId, func(room *Room, p *participant) {
+				p.uploadSession = uploadSession
+				room.events <- newRoomEvent(roomEventStartStream, p)
+			})
+		},
+		func(uploadSession *live.UploadSession) {
+			forAllRooms(userId, func(room *Room, p *participant) {
+				room.events <- newRoomEvent(roomEventStopStream, p)
+			})
+			uploadSessions.Remove(userId)
+		},
 	)
 	if ok := checkServerError(c, err, errLiveBeginUpload); !ok {
 		return
 	}
-
-	go func() {
-		for {
-			select {
-			case <-uploadSession.UploadBegin():
-				uploadSessions.Set(userId, uploadSession)
-				forAllRooms(userId, func(room *Room, p *participant) {
-					p.uploadSession = uploadSession
-					room.events <- newRoomEvent(roomEventStartStream, p)
-				})
-			case <-uploadSession.Exit():
-				forAllRooms(userId, func(room *Room, p *participant) {
-					room.events <- newRoomEvent(roomEventStopStream, p)
-				})
-				uploadSessions.Remove(userId)
-				return
-			}
-		}
-	}()
 
 	c.Header(headers.Location, c.Request.URL.Path)
 	c.Header(headers.ContentType, mimetype.ApplicationSdp)
@@ -282,15 +273,12 @@ func JoinRoom(c *gin.Context) {
 	roomsForUser.SetIfAbsent(user.Id, cmap.NewStringer[models.Id, struct{}]())
 	roomSet, _ := roomsForUser.Get(user.Id)
 	roomSet.Set(room.id, struct{}{})
-	exit, session, err := room.join(user, offer, uploadSession)
+	session, err := room.join(user, offer, uploadSession, func() {
+		roomSet.Remove(room.id)
+	})
 	if ok := checkServerError(c, err, errLiveJoinSession); !ok {
 		return
 	}
-
-	go func() {
-		<-exit
-		roomSet.Remove(room.id)
-	}()
 
 	c.JSON(http.StatusCreated, session.Description())
 }

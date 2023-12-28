@@ -89,7 +89,7 @@ func forwardRtp(sink *e.Sink, src *webrtc.TrackRemote, dst *webrtc.TrackLocalSta
 		}
 
 		_, err = dst.Write(rtpBuf[:bytesRead])
-		if ok := sink.Check("could not forward RTP packets", err, e.Silence(), e.Ignore(io.ErrClosedPipe)); !ok {
+		if ok := sink.Check("could not forward RTP packets", err, e.Silence(), e.Ignore()); !ok {
 			return
 		}
 	}
@@ -103,7 +103,7 @@ func forwardRtcp(sink *e.Sink, src *webrtc.RTPSender, dst *webrtc.PeerConnection
 		}
 
 		err = dst.WriteRTCP(rtcpPackets)
-		if ok := sink.Check("could not forward RTCP packets", err, e.Silence(io.ErrClosedPipe), e.Ignore()); !ok {
+		if ok := sink.Check("could not forward RTCP packets", err, e.Silence(), e.Ignore()); !ok {
 			return
 		}
 	}

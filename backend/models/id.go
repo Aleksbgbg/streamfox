@@ -27,6 +27,11 @@ func NewId() Id {
 	return IdFromInt(idGen.Generate().Int64())
 }
 
+func NewUnguessableId() Id {
+	// TODO(aleksbgbg): implmement non-snowflake IDs when we do not want URLs to be guessable
+	return NewId()
+}
+
 func IdFromString(value string) (Id, error) {
 	id, err := snowflake.ParseBase58([]byte(value))
 	return Id(id), err

@@ -23,18 +23,15 @@ var uploadTransceivers = [...]webrtc.RTPCodecType{
 
 type UploadSession struct {
 	connection *webrtc.PeerConnection
-
-	tracks [len(uploadTransceivers)]*webrtc.TrackLocalStaticRTP
-
-	sink *e.Sink
-
-	uploadBegin chan struct{}
-	exit        chan struct{}
+	tracks     [len(uploadTransceivers)]*webrtc.TrackLocalStaticRTP
+	sink       *e.Sink
 }
 
 func NewUploadSession(
 	offer webrtc.SessionDescription,
 	user *models.User,
+	begin func(*UploadSession),
+	end func(*UploadSession),
 ) (*UploadSession, error) {
 	api, err := newWebRtcApi()
 	if err != nil {
@@ -52,11 +49,9 @@ func NewUploadSession(
 	}
 
 	session := &UploadSession{
-		connection:  peerConnection,
-		tracks:      [len(uploadTransceivers)]*webrtc.TrackLocalStaticRTP{},
-		sink:        e.NewSink(),
-		uploadBegin: make(chan struct{}),
-		exit:        make(chan struct{}),
+		connection: peerConnection,
+		tracks:     [len(uploadTransceivers)]*webrtc.TrackLocalStaticRTP{},
+		sink:       e.NewSink(),
 	}
 
 	tracks := make(chan *webrtc.TrackLocalStaticRTP)
@@ -77,7 +72,8 @@ func NewUploadSession(
 		}
 
 		if !errored {
-			session.uploadBegin <- struct{}{}
+			begin(session)
+			defer end(session)
 		}
 
 		_, open := <-session.sink.Failed()
@@ -89,7 +85,6 @@ func NewUploadSession(
 			fmt.Sprintf("Upload session failed for user %s(%s):", user.Name(), user.Id),
 			e.LogLevelIgnored,
 		)
-		session.Close()
 	}()
 
 	peerConnection.OnTrack(func(remoteTrack *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
@@ -130,18 +125,9 @@ func NewUploadSession(
 func (session *UploadSession) Close() error {
 	err := session.connection.Close()
 	session.sink.Close()
-	session.exit <- struct{}{}
 	return err
 }
 
 func (session *UploadSession) Description() webrtc.SessionDescription {
 	return *session.connection.LocalDescription()
-}
-
-func (session *UploadSession) UploadBegin() <-chan struct{} {
-	return session.uploadBegin
-}
-
-func (session *UploadSession) Exit() <-chan struct{} {
-	return session.exit
 }

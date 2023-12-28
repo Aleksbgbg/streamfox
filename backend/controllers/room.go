@@ -67,22 +67,27 @@ type Room struct {
 	createdAt  time.Time
 	visibility roomVisibility
 
-	participants map[models.Id]*participant
+	exit func(*Room)
 
-	closed chan struct{}
+	participants map[models.Id]*participant
 
 	events chan roomEvent
 }
 
-func NewLiveRoom(name string, creator models.User, visibility roomVisibility) *Room {
+func NewLiveRoom(
+	name string,
+	creator models.User,
+	visibility roomVisibility,
+	exit func(*Room),
+) *Room {
 	room := &Room{
-		id:           models.NewId(),
+		id:           models.NewUnguessableId(),
 		creator:      creator,
 		createdAt:    time.Now(),
 		name:         name,
 		visibility:   visibility,
+		exit:         exit,
 		participants: make(map[models.Id]*participant),
-		closed:       make(chan struct{}),
 		events:       make(chan roomEvent),
 	}
 	go room.eventLoop()
@@ -116,10 +121,6 @@ func (room *Room) Participants() int {
 func (room *Room) GetParticipant(id models.Id) (*participant, bool) {
 	p, exists := room.participants[id]
 	return p, exists
-}
-
-func (room *Room) Closed() <-chan struct{} {
-	return room.closed
 }
 
 func (room *Room) eventLoop() {
@@ -157,7 +158,7 @@ func (room *Room) eventLoop() {
 				room.disconnect(event.participant)
 			}
 		case <-roomClose:
-			room.closed <- struct{}{}
+			room.exit(room)
 			return
 		}
 	}
@@ -167,21 +168,21 @@ func (room *Room) join(
 	user *models.User,
 	offer webrtc.SessionDescription,
 	uploadSession *live.UploadSession,
-) (<-chan struct{}, *live.RoomSession, error) {
+	exit func(),
+) (*live.RoomSession, error) {
 	sink := e.NewSink()
 	session, err := live.NewRoomSession(offer, sink)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	exit := make(chan struct{})
 
 	p := newParticipant(user, session, uploadSession, sink)
 	go func() {
+		defer exit()
+
 		select {
 		case <-sink.Failed():
 			room.events <- newRoomEvent(roomEventError, p)
-			exit <- struct{}{}
 			return
 		case <-session.Connected():
 			room.events <- newRoomEvent(roomEventConnect, p)
@@ -193,13 +194,11 @@ func (room *Room) join(
 		case <-session.Disconnected():
 			room.events <- newRoomEvent(roomEventDisconnect, p)
 		}
-
-		exit <- struct{}{}
 	}()
 
 	room.events <- newRoomEvent(roomEventCreate, p)
 
-	return exit, session, nil
+	return session, nil
 }
 
 func (room *Room) create(p *participant) {

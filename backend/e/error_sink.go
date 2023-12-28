@@ -66,10 +66,12 @@ func (s *Sink) Check(message string, err error, silenced SilencedErrs, ignored I
 		return true
 	}
 
+	err = fmt.Errorf("%s: %w", message, err)
+
 	for _, e := range ignored {
 		if errors.Is(err, e) {
 			s.lock.Lock()
-			s.ignored = append(s.ignored, e)
+			s.ignored = append(s.ignored, err)
 			s.lock.Unlock()
 			return true
 		}
@@ -78,7 +80,7 @@ func (s *Sink) Check(message string, err error, silenced SilencedErrs, ignored I
 	for _, e := range silenced {
 		if errors.Is(err, e) {
 			s.lock.Lock()
-			s.silenced = append(s.silenced, e)
+			s.silenced = append(s.silenced, err)
 			s.lock.Unlock()
 			return false
 		}
