@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, toRefs } from "vue";
+import CDropdownItem from "@/components/dropdown/item.vue";
 import { type SelectControl, selectControlKey } from "@/components/forms/select/select-control";
 import { injectStrict } from "@/utils/inject";
 
@@ -25,8 +26,5 @@ onUnmounted(() => {
 </script>
 
 <template lang="pug">
-li.bg-polar-darkest.truncate.max-w-full.px-3.py-2(
-  class="hover:bg-polar-dark"
-  @click="select"
-) {{ title }}
+c-dropdown-item(@click="select") {{ title }}
 </template>
