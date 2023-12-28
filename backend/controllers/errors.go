@@ -76,6 +76,7 @@ const (
 	errVideoCannotOverwrite
 	errVideoSubtitlesCannotDoubleExtract
 	errVideoSubtitlesInvalidFormat
+	errLiveInvalidSessionId
 	errLiveAlreadyStreaming
 	errLiveInvalidRoomId
 	errLiveParticipantNotFound
@@ -85,12 +86,13 @@ const (
 	errGenericAccessForbidden
 	errVideoNotOwned
 	errVideoUploadIncomplete
+	errLiveSessionNotOwned
 
 	errUserIdNonExistent
 	errVideoIdNonExistent
 	errVideoSubtitlesIdNonExistent
 	errLiveRoomIdNonExistent
-	errLiveNotStreaming
+	errLiveSessionIdNonExistent
 
 	errGenericSocketIo
 	errGenericDatabaseIo
@@ -145,17 +147,21 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errForbidden, "Cannot make modifications to a video you do not own."
 	case errVideoUploadIncomplete:
 		return errForbidden, "Video upload has not yet completed."
+	case errLiveSessionNotOwned:
+		return errForbidden, "Session was created by a different user."
 
 	case errUserIdNonExistent:
 		return errNotFound, "User does not exist."
+	case errLiveInvalidSessionId:
+		return errNotFound, "Session does not exist."
 	case errVideoIdNonExistent:
 		return errNotFound, "Video does not exist."
 	case errVideoSubtitlesIdNonExistent:
 		return errNotFound, "Subtitle does not exist."
 	case errLiveRoomIdNonExistent:
 		return errNotFound, "Live room does not exist."
-	case errLiveNotStreaming:
-		return errValidation, "User is not streaming."
+	case errLiveSessionIdNonExistent:
+		return errValidation, "Session does not exist."
 
 	case errGenericSocketIo:
 		return errServer, "Failed to receive data sent over the network."

@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -76,6 +78,30 @@ func genDefaultMetadata(metadata *bytes.Buffer, url string, baseUrl string) {
 		"Url":          url,
 		"ThumbnailUrl": fmt.Sprintf("%s/thumbnail.png", baseUrl),
 	})
+}
+
+func DebugYou(c *gin.Context) {
+	builder := strings.Builder{}
+	builder.WriteString(fmt.Sprintf("HTTP/1.1 %s %s\n", c.Request.Method, c.Request.URL.Path))
+	for name, values := range c.Request.Header {
+		builder.WriteString(fmt.Sprintf("%s: %s\n", name, strings.Join(values, "; ")))
+	}
+	builder.WriteRune('\n')
+	body, err := io.ReadAll(c.Request.Body)
+	c.Request.Body = io.NopCloser(strings.NewReader(string(body)))
+	if err == nil {
+		builder.Write(body)
+		builder.WriteRune('\n')
+	} else {
+		c.Error(err)
+	}
+	log.Print(builder.String())
+}
+
+func DebugMe(handler gin.HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		handler(c)
+	}
 }
 
 func GenerateHtmlMetadata(handler gin.HandlerFunc) gin.HandlerFunc {

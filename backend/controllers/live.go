@@ -3,7 +3,9 @@ package controllers
 import (
 	"cmp"
 	"encoding/json"
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"slices"
 	"streamfox-backend/live"
@@ -20,8 +22,20 @@ import (
 )
 
 var rooms = cmap.NewStringer[models.Id, *Room]()
-var uploadSessions = cmap.NewStringer[models.Id, *live.UploadSession]()
+var uploadSessionsBySessionId = cmap.NewStringer[models.Id, *UploadSession]()
+var uploadSessionsByUserId = cmap.NewStringer[models.Id, *live.UploadSession]()
 var roomsForUser = cmap.NewStringer[models.Id, cmap.ConcurrentMap[models.Id, struct{}]]()
+var roomSessionsById = cmap.NewStringer[models.Id, *RoomSession]()
+
+type UploadSession struct {
+	userId models.Id
+	upload *live.UploadSession
+}
+
+type RoomSession struct {
+	userId  models.Id
+	session *live.RoomSession
+}
 
 const liveRoomParamKey = "live_room"
 
@@ -121,6 +135,23 @@ func GetLiveRoomThumbnail(c *gin.Context) {
 	c.Status(http.StatusNotFound)
 }
 
+const sessionIdKey = "session_id"
+
+func ExtractSessionIdMiddleware(c *gin.Context) {
+	sessionIdString := c.Param("session-id")
+
+	sessionId, err := models.IdFromString(sessionIdString)
+	if ok := checkUserError(c, err, errLiveInvalidSessionId); !ok {
+		return
+	}
+
+	c.Set(sessionIdKey, sessionId)
+}
+
+func getSessionIdParam(c *gin.Context) models.Id {
+	return c.MustGet(sessionIdKey).(models.Id)
+}
+
 const streamingUserKey = "streaming_user"
 
 func ExtractStreamingUserMiddleware(c *gin.Context) {
@@ -178,7 +209,7 @@ func forAllRooms(userId models.Id, f func(*Room, *participant)) {
 func BeginUploadSession(c *gin.Context) {
 	userId := getStreamingUserParam(c)
 
-	_, exists := uploadSessions.Get(userId)
+	_, exists := uploadSessionsByUserId.Get(userId)
 	if exists {
 		userError(c, errLiveAlreadyStreaming)
 		return
@@ -194,42 +225,61 @@ func BeginUploadSession(c *gin.Context) {
 		return
 	}
 
+	sessionId := models.NewUnguessableId()
 	uploadSession, err := live.NewUploadSession(
 		webrtc.SessionDescription{Type: webrtc.SDPTypeOffer, SDP: string(body)},
 		user,
 		func(uploadSession *live.UploadSession) {
-			uploadSessions.Set(userId, uploadSession)
+			uploadSessionsByUserId.Set(userId, uploadSession)
 			forAllRooms(userId, func(room *Room, p *participant) {
 				p.uploadSession = uploadSession
 				room.events <- newRoomEvent(roomEventStartStream, p)
 			})
 		},
 		func(uploadSession *live.UploadSession) {
+			log.Println("Remove :)")
 			forAllRooms(userId, func(room *Room, p *participant) {
 				room.events <- newRoomEvent(roomEventStopStream, p)
 			})
-			uploadSessions.Remove(userId)
+			log.Println("Defo :)")
+			uploadSessionsByUserId.Remove(userId)
+			log.Println("Certi :)")
+			_, exists := uploadSessionsByUserId.Get(userId)
+			log.Println("Certi2 :)", exists)
+			uploadSessionsBySessionId.Remove(sessionId)
 		},
 	)
 	if ok := checkServerError(c, err, errLiveBeginUpload); !ok {
 		return
 	}
 
-	c.Header(headers.Location, c.Request.URL.Path)
+	s := &UploadSession{
+		userId: user.Id,
+		upload: uploadSession,
+	}
+	uploadSessionsBySessionId.Set(sessionId, s)
+
+	c.Header(headers.Location, fmt.Sprintf("%s/%s", c.Request.URL.Path, sessionId))
 	c.Header(headers.ContentType, mimetype.ApplicationSdp)
 	c.String(http.StatusCreated, uploadSession.Description().SDP)
 }
 
 func EndUploadSession(c *gin.Context) {
 	userId := getStreamingUserParam(c)
+	sessionId := getSessionIdParam(c)
 
-	uploadSession, exists := uploadSessions.Get(userId)
+	uploadSession, exists := uploadSessionsBySessionId.Get(sessionId)
 	if !exists {
-		userError(c, errLiveNotStreaming)
+		userError(c, errLiveSessionIdNonExistent)
 		return
 	}
 
-	err := uploadSession.Close()
+	if uploadSession.userId != userId {
+		userError(c, errLiveSessionNotOwned)
+		return
+	}
+
+	err := uploadSession.upload.Close()
 	recordError(c, err)
 
 	c.Status(http.StatusNoContent)
@@ -238,20 +288,30 @@ func EndUploadSession(c *gin.Context) {
 const roomSessionKey = "room_session"
 
 func ExtractRoomSessionMiddleware(c *gin.Context) {
-	room := getLiveRoomParam(c)
 	user := getUserParam(c)
+	sessionId := getSessionIdParam(c)
 
-	p, exists := room.GetParticipant(user.Id)
+	s, exists := roomSessionsById.Get(sessionId)
 	if !exists {
-		userError(c, errLiveParticipantNotFound)
+		userError(c, errLiveSessionIdNonExistent)
 		return
 	}
 
-	c.Set(roomSessionKey, p.session)
+	if s.userId != user.Id {
+		userError(c, errLiveSessionNotOwned)
+		return
+	}
+
+	c.Set(roomSessionKey, s)
 }
 
-func getRoomSessionParam(c *gin.Context) *live.RoomSession {
-	return c.MustGet(roomSessionKey).(*live.RoomSession)
+func getRoomSessionParam(c *gin.Context) *RoomSession {
+	return c.MustGet(roomSessionKey).(*RoomSession)
+}
+
+type RoomJoinedInfo struct {
+	SessionId   string                    `json:"sessionId"`
+	Description webrtc.SessionDescription `json:"description"`
 }
 
 func JoinRoom(c *gin.Context) {
@@ -268,19 +328,29 @@ func JoinRoom(c *gin.Context) {
 
 	room := getLiveRoomParam(c)
 	user := getUserParam(c)
-	uploadSession, _ := uploadSessions.Get(user.Id)
+	uploadSession, _ := uploadSessionsByUserId.Get(user.Id)
+	sessionId := models.NewUnguessableId()
 
 	roomsForUser.SetIfAbsent(user.Id, cmap.NewStringer[models.Id, struct{}]())
 	roomSet, _ := roomsForUser.Get(user.Id)
 	roomSet.Set(room.id, struct{}{})
 	session, err := room.join(user, offer, uploadSession, func() {
+		roomSessionsById.Remove(sessionId)
 		roomSet.Remove(room.id)
 	})
 	if ok := checkServerError(c, err, errLiveJoinSession); !ok {
 		return
 	}
 
-	c.JSON(http.StatusCreated, session.Description())
+	roomSessionsById.Set(sessionId, &RoomSession{
+		userId:  user.Id,
+		session: session,
+	})
+
+	c.JSON(http.StatusCreated, RoomJoinedInfo{
+		SessionId:   sessionId.String(),
+		Description: session.Description(),
+	})
 }
 
 func Renegotiate(c *gin.Context) {
@@ -297,7 +367,7 @@ func Renegotiate(c *gin.Context) {
 
 	session := getRoomSessionParam(c)
 
-	desc, err := session.Renegotiate(offer)
+	desc, err := session.session.Renegotiate(offer)
 	if ok := checkServerError(c, err, errLiveRenegotiateSession); !ok {
 		return
 	}
@@ -318,7 +388,7 @@ func TrickeCandidate(c *gin.Context) {
 	}
 
 	session := getRoomSessionParam(c)
-	err = session.AddIceCandidate(candidate)
+	err = session.session.AddIceCandidate(candidate)
 	recordError(c, err)
 
 	c.Status(http.StatusNoContent)

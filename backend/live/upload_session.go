@@ -3,6 +3,7 @@ package live
 import (
 	"errors"
 	"fmt"
+	"log"
 	"streamfox-backend/e"
 	"streamfox-backend/models"
 	"time"
@@ -58,11 +59,14 @@ func NewUploadSession(
 	go func() {
 		timeout := time.NewTicker(trackTimeout)
 		timedOut := false
+		log.Println("Stort")
 
 	loop:
 		for i := 0; i < len(uploadTransceivers); i += 1 {
+			log.Println("Loop")
 			select {
 			case track := <-tracks:
+				log.Println("Get Tracc")
 				session.tracks[i] = track
 			case <-timeout.C:
 				timedOut = true
@@ -71,14 +75,23 @@ func NewUploadSession(
 			}
 		}
 
+		log.Println("Break loop")
+
 		if !timedOut {
 			timeout.Stop()
 			begin(session)
-			defer end(session)
+
+			log.Println("Schedule")
+			defer func() {
+				end(session)
+				log.Println("End me!")
+			}()
 		}
+		log.Println("Nat")
 
 		_, open := <-session.sink.Failed()
 		if !open {
+			log.Println("End!!!")
 			return
 		}
 
@@ -86,6 +99,7 @@ func NewUploadSession(
 			fmt.Sprintf("Upload session failed for user %s(%s):", user.Name(), user.Id),
 			e.LogLevelIgnored,
 		)
+		log.Println("End2!!!")
 	}()
 
 	peerConnection.OnTrack(func(remoteTrack *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {

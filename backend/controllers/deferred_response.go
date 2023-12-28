@@ -43,6 +43,8 @@ func (w *deferredResponseWriter) Flush() {
 		return
 	}
 
+	fmt.Printf("Flash")
+
 	w.response.WriteHeader(w.status)
 	if w.body.Len() > 0 {
 		w.response.Header().Set(headers.ContentLength, fmt.Sprint(w.body.Len()))

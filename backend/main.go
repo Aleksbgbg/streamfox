@@ -37,6 +37,8 @@ func main() {
 	router := gin.Default()
 
 	if gin.Mode() == gin.DebugMode {
+		// router.Use(controllers.DebugMe(controllers.DebugYou))
+
 		router.NoRoute(controllers.GenerateHtmlMetadata(controllers.DevFrontendMiddleware(API_PREFIX)))
 	} else {
 		router.NoRoute(controllers.GenerateHtmlMetadata(controllers.ProdFrontendMiddleware(FRONTEND_PATH)))
@@ -155,8 +157,9 @@ func main() {
 		controllers.BeginUploadSession,
 	)
 	liveUpload.DELETE(
-		"/stream",
+		"/stream/:session-id",
 		controllers.ExtractStreamingUserMiddleware,
+		controllers.ExtractSessionIdMiddleware,
 		controllers.EndUploadSession,
 	)
 
@@ -168,14 +171,16 @@ func main() {
 	room.GET("/thumbnail", controllers.GetLiveRoomThumbnail)
 	room.POST("/session", controllers.GenerateAnonymousUserMiddleware, controllers.JoinRoom)
 	room.PUT(
-		"/session",
+		"/session/:session-id",
 		controllers.GenerateAnonymousUserMiddleware,
+		controllers.ExtractSessionIdMiddleware,
 		controllers.ExtractRoomSessionMiddleware,
 		controllers.Renegotiate,
 	)
 	room.PATCH(
-		"/session",
+		"/session/:session-id",
 		controllers.GenerateAnonymousUserMiddleware,
+		controllers.ExtractSessionIdMiddleware,
 		controllers.ExtractRoomSessionMiddleware,
 		controllers.TrickeCandidate,
 	)

@@ -1,4 +1,4 @@
-import { type ApiResponse, apiUrl, get, patch, post, put } from "@/endpoints/request";
+import { ApiResponse, apiUrl, get, patch, post, put } from "@/endpoints/request";
 import type { User } from "@/endpoints/user";
 import type { Id } from "@/types/id";
 import { panic } from "@/utils/panic";
@@ -8,6 +8,7 @@ export function getStreamKey(): Promise<ApiResponse<void, string>> {
 }
 
 export type LiveRoomId = Id;
+export type SessionId = Id;
 
 export enum Visibility {
   Unlisted,
@@ -50,31 +51,32 @@ export function createLiveRoom(
   return post("/live/rooms", info);
 }
 
+interface RoomJoinedInfo {
+  sessionId: SessionId;
+  description: RTCSessionDescriptionInit;
+}
+
 function createSession(
   id: LiveRoomId,
   offer: RTCSessionDescriptionInit,
-): Promise<ApiResponse<RTCSessionDescriptionInit, RTCSessionDescriptionInit>> {
-  return post<RTCSessionDescriptionInit, RTCSessionDescriptionInit>(
-    `/live/rooms/${id}/session`,
-    offer,
-  );
+): Promise<ApiResponse<RTCSessionDescriptionInit, RoomJoinedInfo>> {
+  return post(`/live/rooms/${id}/session`, offer);
 }
 
 function renegotiateSession(
   id: LiveRoomId,
+  sessionId: SessionId,
   offer: RTCSessionDescriptionInit,
 ): Promise<ApiResponse<RTCSessionDescriptionInit, RTCSessionDescriptionInit>> {
-  return put<RTCSessionDescriptionInit, RTCSessionDescriptionInit>(
-    `/live/rooms/${id}/session`,
-    offer,
-  );
+  return put(`/live/rooms/${id}/session/${sessionId}`, offer);
 }
 
 function trickleCandidate(
   id: LiveRoomId,
+  sessionId: SessionId,
   candidate: RTCIceCandidateInit,
 ): Promise<ApiResponse<RTCIceCandidateInit, void>> {
-  return patch<RTCIceCandidateInit, void>(`/live/rooms/${id}/session`, candidate);
+  return patch(`/live/rooms/${id}/session/${sessionId}`, candidate);
 }
 
 interface Message {
@@ -126,6 +128,8 @@ async function readWebRtcMessageAsString(message: unknown): Promise<string> {
 }
 
 export function joinLiveRoom(id: LiveRoomId, handlers: SessionHandlers): RTCPeerConnection {
+  let sessionId: SessionId;
+
   const peerConnection = new RTCPeerConnection({
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   });
@@ -144,10 +148,22 @@ export function joinLiveRoom(id: LiveRoomId, handlers: SessionHandlers): RTCPeer
       return;
     }
 
-    trickleCandidate(id, event.candidate.toJSON());
+    trickleCandidate(id, sessionId, event.candidate.toJSON());
   });
 
-  let negotiateSession = createSession;
+  let negotiateSession = async function (
+    id: LiveRoomId,
+    offer: RTCSessionDescriptionInit,
+  ): Promise<ApiResponse<RTCSessionDescriptionInit, RTCSessionDescriptionInit>> {
+    const answer = await createSession(id, offer);
+
+    if (answer.success()) {
+      sessionId = answer.value().sessionId;
+      return ApiResponse.success(answer.value().description);
+    } else {
+      return ApiResponse.failure(answer.err());
+    }
+  };
   peerConnection.addEventListener("negotiationneeded", async function () {
     const offer = await peerConnection.createOffer();
 
@@ -160,7 +176,12 @@ export function joinLiveRoom(id: LiveRoomId, handlers: SessionHandlers): RTCPeer
     await peerConnection.setLocalDescription(offer);
     await peerConnection.setRemoteDescription(answer.value());
 
-    negotiateSession = renegotiateSession;
+    negotiateSession = function (
+      id: LiveRoomId,
+      offer: RTCSessionDescriptionInit,
+    ): Promise<ApiResponse<RTCSessionDescriptionInit, RTCSessionDescriptionInit>> {
+      return renegotiateSession(id, sessionId, offer);
+    };
   });
 
   const channel = peerConnection.createDataChannel("main");
