@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
 import CButton from "@/components/button.vue";
+import CDropdownButton from "@/components/dropdown/button.vue";
+import CDropdownItem from "@/components/dropdown/item.vue";
 import CIcon from "@/components/icon.vue";
 import CUserBadge from "@/components/user/badge.vue";
 import { useUserStore } from "@/store/user";
@@ -16,10 +18,10 @@ const store = useUserStore();
 <template lang="pug">
 .flex.items-center.gap-3
   template(v-if="hasValue(store.user)")
-    c-user-badge(:user="getValue(store.user)")
-    c-button.min-w-fit(theme="invisible" @click="logout")
-      span Log Out
-      c-icon(name="box-arrow-in-right")
+    c-dropdown-button(theme="purple")
+      c-user-badge(:user="getValue(store.user)")
+      template(#dropdown)
+        c-dropdown-item(@click="logout") Log Out
   template(v-else)
     c-button.min-w-fit(
       theme="invisible"
