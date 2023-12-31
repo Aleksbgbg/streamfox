@@ -22,14 +22,12 @@ const store = useUserStore();
       c-icon(name="box-arrow-in-right")
   template(v-else)
     c-button.min-w-fit(
-      element="router-link"
       theme="invisible"
       :to="{ name: 'login', query: { returnUrl: returnUrl(route) } }"
     )
       c-icon(name="box-arrow-in-right")
       span Log In
     c-button.min-w-fit(
-      element="router-link"
       theme="invisible"
       :to="{ name: 'register', query: { returnUrl: returnUrl(route) } }"
     )

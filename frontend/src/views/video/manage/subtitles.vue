@@ -203,7 +203,7 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
   .flex.gap-3
     c-button(padding="small" @click="create()")
       c-icon.text-xl(name="plus")
-    c-button(element="label" padding="small" for="file-input" class="hover:cursor-pointer")
+    c-button(padding="small" for="file-input" class="hover:cursor-pointer")
       c-icon.text-xl(name="file-earmark-plus")
       input.hidden#file-input(
         type="file"
