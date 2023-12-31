@@ -24,6 +24,6 @@ function click() {
 <template lang="pug">
 .relative.min-w-0(@click="click" @focusout="lostFocus" @mousedown="mouseDown")
   slot(name="button" :toggled="toggled")
-  ul.absolute.w-full.z-50(v-show="toggled")
+  ul.absolute.w-full.-mt-1.z-50(v-show="toggled")
     slot
 </template>
