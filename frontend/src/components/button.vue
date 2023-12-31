@@ -41,7 +41,7 @@ const themeColors: Colors = {
 </script>
 
 <template lang="pug">
-component.group.rounded.transition.duration-150(
+component.rounded.transition.duration-150(
   :is="element"
   :class="[themeColors.default, themeColors.hover, { 'px-4 py-2': padding === 'normal', 'px-2 py-1': padding === 'small' }]"
   role="button"
