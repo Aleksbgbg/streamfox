@@ -80,6 +80,15 @@ func FetchAllVideos() ([]Video, error) {
 	return videos, err
 }
 
+func FetchVideosFor(user *User) ([]Video, error) {
+	var videos []Video
+	err := db.Preload("Creator").
+		Order("id DESC").
+		Find(&videos, &Video{Settings: Settings{CreatorId: user.Id}}).
+		Error
+	return videos, err
+}
+
 func (video *Video) IsCreator(user *User) bool {
 	return video.CreatorId == user.Id
 }

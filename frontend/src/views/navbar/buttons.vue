@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
+import CAnchorCover from "@/components/anchor/cover.vue";
 import CButton from "@/components/button.vue";
 import CDropdownButton from "@/components/dropdown/button.vue";
 import CDropdownItem from "@/components/dropdown/item.vue";
@@ -21,6 +22,12 @@ const store = useUserStore();
     c-dropdown-button(theme="purple")
       c-user-badge(:user="getValue(store.user)")
       template(#dropdown)
+        c-dropdown-item
+          router-link.block(
+            :to="{ name: 'user', params: { userId: getValue(store.user).id } }"
+          )
+            span Profile
+            c-anchor-cover
         c-dropdown-item(@click="logout") Log Out
   template(v-else)
     c-button.min-w-fit(

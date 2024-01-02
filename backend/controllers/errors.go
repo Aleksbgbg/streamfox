@@ -68,6 +68,7 @@ type predefinedError int
 const (
 	errGenericInvalidContentRange predefinedError = iota
 	errAuthInvalidCredentials
+	errUserInvalidId
 	errVideoInvalidId
 	errVideoSubtitlesInvalidId
 	errVideoInvalidFormat
@@ -81,6 +82,7 @@ const (
 	errVideoNotOwned
 	errVideoUploadIncomplete
 
+	errUserIdNonExistent
 	errVideoIdNonExistent
 	errVideoSubtitlesIdNonExistent
 
@@ -101,6 +103,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 		return errValidation, "Invalid Content-Range header."
 	case errAuthInvalidCredentials:
 		return errValidation, "Invalid credentials."
+	case errUserInvalidId:
+		return errValidation, "User ID is invalid."
 	case errVideoInvalidId:
 		return errValidation, "Video ID is invalid."
 	case errVideoSubtitlesInvalidId:
@@ -124,6 +128,8 @@ func getPredefinedError(predefined predefinedError) (errType, string) {
 	case errVideoUploadIncomplete:
 		return errForbidden, "Video upload has not yet completed."
 
+	case errUserIdNonExistent:
+		return errNotFound, "User does not exist."
 	case errVideoIdNonExistent:
 		return errNotFound, "Video does not exist."
 	case errVideoSubtitlesIdNonExistent:

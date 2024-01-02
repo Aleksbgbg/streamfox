@@ -35,5 +35,11 @@ export const router = createRouter({
       component: () => import("@/views/video/manage/edit.vue"),
       props: true,
     },
+    {
+      path: "/user/:userId",
+      name: "user",
+      component: () => import("@/views/user.vue"),
+      props: true,
+    },
   ],
 });

@@ -1,6 +1,6 @@
 import type { AxiosProgressEvent } from "axios";
 import { type ApiResponse, apiUrl, get, post, put, request } from "@/endpoints/request";
-import type { User } from "@/endpoints/user";
+import type { User, UserId } from "@/endpoints/user";
 import type { Id } from "@/types/id";
 import type { UploadReportFunc } from "@/utils/upload-progress";
 
@@ -93,4 +93,8 @@ export function getVideoInfo(id: VideoId): Promise<ApiResponse<void, VideoInfo>>
 
 export function getVideos(): Promise<ApiResponse<void, VideoInfo[]>> {
   return get("/videos");
+}
+
+export function getUserVideos(userId: UserId): Promise<ApiResponse<void, VideoInfo[]>> {
+  return get(`/users/${userId}/videos`);
 }

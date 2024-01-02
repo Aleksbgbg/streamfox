@@ -1,4 +1,4 @@
-import { get } from "@/endpoints/request";
+import { ApiResponse, get } from "@/endpoints/request";
 import type { Id } from "@/types/id";
 import { type Optional, empty } from "@/types/optional";
 
@@ -17,4 +17,8 @@ export async function getUser(): Promise<Optional<User>> {
   } else {
     return empty();
   }
+}
+
+export function getUserById(id: UserId): Promise<ApiResponse<void, User>> {
+  return get(`/users/${id}`);
 }

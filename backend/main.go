@@ -50,6 +50,8 @@ func main() {
 		controllers.EnsureNotAnonymousMiddleware,
 		controllers.GetUser,
 	)
+	api.GET("/users/:user-id", controllers.ExtractUrlUserMiddleware, controllers.GetUserById)
+	api.GET("/users/:user-id/videos", controllers.ExtractUrlUserMiddleware, controllers.GetUserVideos)
 
 	videos := api.Group("/videos")
 	videos.POST("", controllers.GenerateAnonymousUserMiddleware, controllers.CreateVideo)

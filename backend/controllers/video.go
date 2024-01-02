@@ -266,6 +266,42 @@ func GetVideos(c *gin.Context) {
 	c.JSON(http.StatusOK, videoInfos)
 }
 
+func GetUserVideos(c *gin.Context) {
+	user := getUrlUserParam(c)
+
+	videos, err := models.FetchVideosFor(user)
+	if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
+		return
+	}
+
+	var visible func(*models.Video) bool
+	if hasUserParam(c) && getUserParam(c).Id == user.Id {
+		visible = func(_ *models.Video) bool {
+			return true
+		}
+	} else {
+		visible = func(video *models.Video) bool {
+			return video.Visibility >= models.PUBLIC
+		}
+	}
+
+	videoInfos := make([]*VideoInfo, 0)
+	for _, video := range videos {
+		if !visible(&video) {
+			continue
+		}
+
+		videoInfo, err := getVideoInfo(&video)
+		if ok := checkServerError(c, err, errGenericDatabaseIo); !ok {
+			return
+		}
+
+		videoInfos = append(videoInfos, videoInfo)
+	}
+
+	c.JSON(http.StatusOK, videoInfos)
+}
+
 func GetVideoInfo(c *gin.Context) {
 	video := getVideoParam(c)
 
