@@ -2,6 +2,7 @@
 import type { RouteLocationRaw } from "vue-router";
 import CAnchorCover from "@/components/anchor/cover.vue";
 import CAnchorRoot from "@/components/anchor/root.vue";
+import CIcon from "@/components/icon.vue";
 import type { User } from "@/endpoints/user";
 import { dateToElapsedTimeString, secsToDurationString } from "@/utils/strings";
 
@@ -14,6 +15,7 @@ defineProps<{
   beginAt: Date;
   viewership: number;
   viewershipName: string;
+  icon?: string;
 }>();
 </script>
 
@@ -25,14 +27,17 @@ c-anchor-root.group.w-full(class="max-w-[416px]")
     span(
       class="absolute bottom-0.5 right-0.5 text-sm opacity-85 bg-black px-1"
     ) {{ secsToDurationString(durationSecs) }}
-  router-link(:to="link")
-    h3.break-words.line-clamp-2.font-semibold.mt-2(
-      class="group-hover:underline group-hover:text-aurora-yellow"
-    ) {{ name }}
-    c-anchor-cover
-  p.text-sm {{ creator.username }}
-  p.text-sm
-    | {{ viewership }} {{ viewershipName + (viewership === 1 ? '' : 's') }}
-    | •
-    | {{ dateToElapsedTimeString(beginAt) }}
+  .flex.justify-between.gap-2.mt-2
+    .min-w-0
+      router-link(:to="link")
+        h3.break-words.line-clamp-2.font-semibold(
+          class="group-hover:underline group-hover:text-aurora-yellow"
+        ) {{ name }}
+        c-anchor-cover
+      p.text-sm {{ creator.username }}
+      p.text-sm
+        | {{ viewership }} {{ viewershipName + (viewership === 1 ? '' : 's') }}
+        | •
+        | {{ dateToElapsedTimeString(beginAt) }}
+    c-icon.text-slate-300(v-if="icon" :name="icon")
 </template>
