@@ -9,6 +9,6 @@ defineProps<{
 
 <template lang="pug">
 .flex.truncate
-  c-user-avatar(:user="user" size="25px")
+  c-user-avatar.w-6(:user="user")
   span.truncate.ml-2 {{ user.username }}
 </template>

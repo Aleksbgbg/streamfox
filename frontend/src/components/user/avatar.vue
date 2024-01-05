@@ -5,7 +5,6 @@ import { newRng } from "@/utils/rng";
 
 const props = defineProps<{
   user: User;
-  size: string;
 }>();
 
 const colour = computed(() => {
@@ -21,7 +20,7 @@ const colour = computed(() => {
 
 <template lang="pug">
 .flex.items-center.justify-center.rounded-full.aspect-square.select-none(
-  :style="{ 'background-color': `hsl(${colour.h}, ${colour.s}%, ${colour.l}%)`, 'width': size, 'height': size, 'container-type': 'inline-size' }"
+  :style="{ 'background-color': `hsl(${colour.h}, ${colour.s}%, ${colour.l}%)`, 'container-type': 'inline-size' }"
 )
   span.font-bold.uppercase(:style="{ 'font-size': '60cqw' }") {{ user.username.charAt(0) }}
 </template>
