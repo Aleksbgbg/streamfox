@@ -1,22 +1,34 @@
 <script setup lang="ts">
-import type { RouteLocationRaw } from "vue-router";
+import { computed, defineProps, withDefaults } from "vue";
+import type { RouteLocationNamedRaw, RouteLocationRaw } from "vue-router";
 import CAnchorCover from "@/components/anchor/cover.vue";
 import CAnchorRoot from "@/components/anchor/root.vue";
+import CButton from "@/components/button.vue";
+import CDropdown from "@/components/dropdown/dropdown.vue";
+import CDropdownItem from "@/components/dropdown/item.vue";
 import CIcon from "@/components/icon.vue";
 import type { User } from "@/endpoints/user";
 import { dateToElapsedTimeString, secsToDurationString } from "@/utils/strings";
 
-defineProps<{
-  link: RouteLocationRaw;
-  thumbnailUrl: string;
-  durationSecs: number;
-  name: string;
-  creator: User;
-  beginAt: Date;
-  viewership: number;
-  viewershipName: string;
-  icon?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    link: RouteLocationRaw;
+    thumbnailUrl: string;
+    durationSecs: number;
+    name: string;
+    creator: User;
+    beginAt: Date;
+    viewership: number;
+    viewershipName: string;
+    icon?: string;
+    kebabMenu?: boolean;
+  }>(),
+  { icon: undefined, kebabMenu: false },
+);
+
+const videoId = computed(() => {
+  return `${(props.link as RouteLocationNamedRaw)?.params?.id?.toString() ?? props.link}`;
+});
 </script>
 
 <template lang="pug">
@@ -39,5 +51,15 @@ c-anchor-root.group.w-full(class="max-w-[416px]")
         | {{ viewership }} {{ viewershipName + (viewership === 1 ? '' : 's') }}
         | •
         | {{ dateToElapsedTimeString(beginAt) }}
-    c-icon.text-slate-300(v-if="icon" :name="icon")
+    .flex.flex-col.justify-between.items-center
+      template(v-if="kebabMenu")
+        c-dropdown.flex.justify-center(class="[&_>_ul]:w-fit [&_>_ul]:right-0 [&_>_ul]:top-full")
+          c-dropdown-item(class="[&_>_li]:!bg-frost-blue hover:[&_>_li]:!bg-frost-deep")
+            router-link.block(:to="{ name: 'edit', params: { videoId: videoId } }")
+              span Edit video
+              c-anchor-cover
+
+          template(#button="{ toggled }")
+            c-button.text-xl(class="!p-0 !px-2" :theme="toggled ? 'blue' : 'invisible'") ⋮
+      c-icon.text-slate-300(v-if="icon" :name="icon")
 </template>

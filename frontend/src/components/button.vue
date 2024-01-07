@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAttrs } from "vue";
+import { computed, useAttrs } from "vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -32,27 +32,29 @@ const props = withDefaults(defineProps<Props>(), {
   padding: "normal",
 });
 
-const themeColors: Colors = {
-  ...{
-    blue: {
-      default: "bg-frost-blue",
-      hover: "hover:bg-frost-deep",
-    },
-    red: {
-      default: "bg-aurora-red",
-      hover: "hover:bg-aurora-red-700",
-    },
-    purple: {
-      default: "bg-aurora-purple",
-      hover: "hover:bg-aurora-purple-700",
-    },
-    invisible: {
-      default: "bg-transparent",
-      hover: "hover:bg-polar-light",
-    },
-  }[props.theme],
-  ...props.colors,
-};
+const themeColors = computed<Colors>(() => {
+  return {
+    ...{
+      blue: {
+        default: "bg-frost-blue",
+        hover: "hover:bg-frost-deep",
+      },
+      red: {
+        default: "bg-aurora-red",
+        hover: "hover:bg-aurora-red-700",
+      },
+      purple: {
+        default: "bg-aurora-purple",
+        hover: "hover:bg-aurora-purple-700",
+      },
+      invisible: {
+        default: "bg-transparent",
+        hover: "hover:bg-polar-light",
+      },
+    }[props.theme],
+    ...props.colors,
+  };
+});
 </script>
 
 <template lang="pug">
