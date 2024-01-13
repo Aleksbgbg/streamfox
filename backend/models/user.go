@@ -11,13 +11,13 @@ import (
 type User struct {
 	Base
 
-	Username          *string `gorm:"type:varchar(32); unique;"`
-	CanonicalUsername *string `gorm:"type:varchar(32); unique;"`
+	Username          *string `gorm:"type:varchar(32); unique"`
+	CanonicalUsername *string `gorm:"type:varchar(32); unique"`
 
-	EmailAddress          *string `gorm:"type:text; unique;"`
-	CanonicalEmailAddress *string `gorm:"type:text; unique;"`
+	EmailAddress          *string `gorm:"type:text; unique"`
+	CanonicalEmailAddress *string `gorm:"type:text; unique"`
 
-	Password *string `gorm:"type:char(60);"`
+	Password *string `gorm:"type:char(60)"`
 }
 
 func ValidateCredentials(username, password string) (*User, error) {
