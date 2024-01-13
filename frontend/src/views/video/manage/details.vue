@@ -71,7 +71,7 @@ form.flex.flex-col.justify-center.gap-6.h-full.px-5.py-4(class="md:flex-row" @su
     ) watch/{{ videoId }}
     template(v-if="route.query.filename")
       label.font-semibold(for="file") File
-      p.break-all#file {{ route.query.filename }}
+      p.break-words.min-w-full.w-0#file {{ route.query.filename }}
   .flex-grow.flex.flex-col.items-center.gap-3.min-w-0
     c-form-input(
       title="Name"
