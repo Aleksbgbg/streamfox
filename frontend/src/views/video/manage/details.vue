@@ -64,7 +64,7 @@ async function save() {
 <template lang="pug">
 form.flex.flex-col.justify-center.gap-6.h-full.px-5.py-4(class="md:flex-row" @submit.prevent="save")
   .flex.flex-col.items-center(class="md:items-start")
-    img.mb-2(class="max-w-[416px]" :src="videoThumbnail(props.videoId)")
+    img.mb-2(:src="videoThumbnail(props.videoId)")
     label.font-semibold(for="video-link") Video link
     router-link.break-all.underline.text-frost-cyan.mb-2#video-link(
       :to="{ name: 'watch', params: { id: videoId } }"
