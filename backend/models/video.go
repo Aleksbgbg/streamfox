@@ -24,19 +24,19 @@ const (
 )
 
 type Metadata struct {
-	Status             VideoStatus
-	MimeType           string `gorm:"type:text"`
-	DurationSecs       int32
-	SizeBytes          int64 `gorm:"not null"`
-	SubtitlesExtracted bool  `gorm:"not null; default:false"`
+	Status             VideoStatus `gorm:"not null"`
+	MimeType           string      `gorm:"not null; type:text"`
+	DurationSecs       int32       `gorm:"not null"`
+	SizeBytes          int64       `gorm:"not null"`
+	SubtitlesExtracted bool        `gorm:"not null; default:false"`
 }
 
 type Settings struct {
-	CreatorId   Id
+	CreatorId   Id `gorm:"not null"`
 	Creator     User
-	Name        string `gorm:"type:text"`
-	Description string `gorm:"type:text"`
-	Visibility  Visibility
+	Name        string     `gorm:"not null; type:text"`
+	Description string     `gorm:"not null; type:text"`
+	Visibility  Visibility `gorm:"not null"`
 }
 
 type Video struct {

@@ -10,6 +10,6 @@ type Base struct {
 }
 
 type RowMetadata struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `gorm:"not null"`
+	UpdatedAt time.Time `gorm:"not null"`
 }
