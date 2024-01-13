@@ -12,7 +12,7 @@ defineProps<{
 </script>
 
 <template lang="pug">
-c-form-layout(title="Edit Video")
+c-form-layout(class="md:h-full" title="Edit Video")
   c-tabs
     c-tab(title="Details")
       c-edit-details(:video-id="videoId")
