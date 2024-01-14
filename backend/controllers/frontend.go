@@ -70,10 +70,6 @@ var homePageMetadataTemplate, _ = template.New("").Parse(`
 <meta property="og:image" content="{{.ThumbnailUrl}}">
 `)
 
-func formatBaseUrl(c *gin.Context) string {
-	return fmt.Sprintf("%s://%s", config.Values.AppScheme, c.Request.Host)
-}
-
 func genDefaultMetadata(metadata *bytes.Buffer, url string, baseUrl string) {
 	homePageMetadataTemplate.Execute(metadata, gin.H{
 		"Description":  "Streamfox is an open-source video streaming service.",
@@ -99,15 +95,15 @@ func GenerateHtmlMetadata(handler gin.HandlerFunc) gin.HandlerFunc {
 			return
 		}
 
-		baseUrl := formatBaseUrl(c)
+		baseUrl := fmt.Sprintf("%s://%s", config.Values.AppScheme, c.Request.Host)
+		url := fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path)
+
 		var metadata bytes.Buffer
 
 		defer func() {
 			b := bytes.Replace(baseBuffer.body.Bytes(), metadataInsertionMarker, metadata.Bytes(), 1)
 			baseBuffer.body = bytes.NewBuffer(b)
 		}()
-
-		url := fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path)
 
 		match := watchPageRegex.FindStringSubmatch(c.Request.URL.Path)
 
