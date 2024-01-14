@@ -74,6 +74,14 @@ func formatBaseUrl(c *gin.Context) string {
 	return fmt.Sprintf("%s://%s", config.Values.AppScheme, c.Request.Host)
 }
 
+func genDefaultMetadata(metadata *bytes.Buffer, url string, baseUrl string) {
+	homePageMetadataTemplate.Execute(metadata, gin.H{
+		"Description":  "Streamfox is an open-source video streaming service.",
+		"Url":          url,
+		"ThumbnailUrl": fmt.Sprintf("%s/thumbnail.png", baseUrl),
+	})
+}
+
 func GenerateHtmlMetadata(handler gin.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		baseBuffer := &deferredResponseWriter{
@@ -94,40 +102,39 @@ func GenerateHtmlMetadata(handler gin.HandlerFunc) gin.HandlerFunc {
 		baseUrl := formatBaseUrl(c)
 		var metadata bytes.Buffer
 
+		defer func() {
+			b := bytes.Replace(baseBuffer.body.Bytes(), metadataInsertionMarker, metadata.Bytes(), 1)
+			baseBuffer.body = bytes.NewBuffer(b)
+		}()
+
 		url := fmt.Sprintf("%s%s", baseUrl, c.Request.URL.Path)
 
 		match := watchPageRegex.FindStringSubmatch(c.Request.URL.Path)
 
-		if len(match) == 2 {
-			videoId, err := models.IdFromString(match[1])
-
-			if ok := recordError(c, err); !ok {
-				return
-			}
-
-			video, err := models.FetchVideo(videoId)
-
-			if ok := recordError(c, err); !ok {
-				return
-			}
-
-			watchPageMetadataTemplate.Execute(&metadata, gin.H{
-				"Title":        video.Name,
-				"Description":  video.Description,
-				"Url":          url,
-				"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/preview", baseUrl, videoId),
-				"StreamUrl":    fmt.Sprintf("%s/api/videos/%s/stream", baseUrl, videoId),
-				"MimeType":     video.MimeType,
-			})
-		} else {
-			homePageMetadataTemplate.Execute(&metadata, gin.H{
-				"Description":  "Streamfox is an open-source video streaming service.",
-				"Url":          url,
-				"ThumbnailUrl": fmt.Sprintf("%s/thumbnail.png", baseUrl),
-			})
+		if len(match) != 2 {
+			genDefaultMetadata(&metadata, url, baseUrl)
+			return
 		}
 
-		b := bytes.Replace(baseBuffer.body.Bytes(), metadataInsertionMarker, metadata.Bytes(), 1)
-		baseBuffer.body = bytes.NewBuffer(b)
+		videoId, err := models.IdFromString(match[1])
+		if ok := recordError(c, err); !ok {
+			genDefaultMetadata(&metadata, url, baseUrl)
+			return
+		}
+
+		video, err := models.FetchVideo(videoId)
+		if ok := recordError(c, err); !ok {
+			genDefaultMetadata(&metadata, url, baseUrl)
+			return
+		}
+
+		watchPageMetadataTemplate.Execute(&metadata, gin.H{
+			"Title":        video.Name,
+			"Description":  video.Description,
+			"Url":          url,
+			"ThumbnailUrl": fmt.Sprintf("%s/api/videos/%s/preview", baseUrl, videoId),
+			"StreamUrl":    fmt.Sprintf("%s/api/videos/%s/stream", baseUrl, videoId),
+			"MimeType":     video.MimeType,
+		})
 	}
 }
