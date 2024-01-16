@@ -57,7 +57,7 @@ describe("UploadProgressReporter", () => {
 
   test("begins recording before reporting elapsed time", () => {
     let isRecording = false;
-    const reportProgress = createProgressReporter(function (_) {}, {
+    const reportProgress = createProgressReporter(function () {}, {
       beginRecording() {
         isRecording = true;
       },

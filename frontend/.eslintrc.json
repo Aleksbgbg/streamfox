@@ -6,6 +6,7 @@
   "extends": [
     "eslint:recommended",
     "plugin:vue/vue3-essential",
+    "plugin:vue-pug/vue3-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
   "overrides": [],
@@ -19,8 +20,6 @@
   "rules": {
     "no-empty-function": "off",
     "@typescript-eslint/no-empty-function": "off",
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "off",
     "vue/multi-word-component-names": "off"
   }
 }
