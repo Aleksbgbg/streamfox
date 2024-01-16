@@ -23,7 +23,7 @@ import {
 } from "@/endpoints/subtitle";
 import type { VideoId } from "@/endpoints/video";
 import { mapCopy } from "@/utils/arrays";
-import { panic } from "@/utils/panic";
+import { check } from "@/utils/null";
 
 const toaster = useToaster();
 
@@ -121,11 +121,11 @@ async function create(content = "") {
 }
 
 function createFromFile() {
-  const file = fileInput.value?.files?.[0] ?? panic("no file found");
+  const file = check(fileInput.value?.files?.[0]);
 
   const reader = new FileReader();
   reader.onloadend = async function () {
-    await create(reader.result?.toString() ?? panic("no file read result"));
+    await create(check(reader.result?.toString()));
   };
   reader.readAsText(file);
 }

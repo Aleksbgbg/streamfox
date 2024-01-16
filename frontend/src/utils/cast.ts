@@ -1,5 +1,5 @@
-import { panic } from "@/utils/panic";
+import { check } from "@/utils/null";
 
 export function asInputElement(eventTarget: EventTarget | null) {
-  return (eventTarget ?? panic("no event target")) as HTMLInputElement;
+  return check(eventTarget) as HTMLInputElement;
 }

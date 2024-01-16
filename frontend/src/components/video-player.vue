@@ -13,7 +13,6 @@ import { ContinuousCallbackTimer } from "@/utils/callback-timer";
 import { clipboardCopy } from "@/utils/clipboard";
 import { check } from "@/utils/null";
 import { once } from "@/utils/once";
-import { panic } from "@/utils/panic";
 import { fullUrl } from "@/utils/url";
 
 const router = useRouter();
@@ -42,7 +41,7 @@ function handleSpecificTimestamp(player: Player) {
 let player: Player;
 let timer: ContinuousCallbackTimer;
 onMounted(async () => {
-  player = videojs(playerElement.value ?? panic("player is null"), {
+  player = videojs(check(playerElement.value), {
     autoplay: true,
     controls: true,
     loop: false,

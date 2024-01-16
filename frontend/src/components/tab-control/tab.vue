@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref, toRef } from "vue";
 import { type TabControl, type TabRef, tabControlKey } from "@/components/tab-control/tab-control";
 import { injectStrict } from "@/utils/inject";
-import { panic } from "@/utils/panic";
+import { check } from "@/utils/null";
 
 const emit = defineEmits<{
   (e: "selected"): void;
@@ -21,7 +21,7 @@ const isActive = ref(false);
 let index = -1;
 onMounted(() => {
   index = tabControl.attach({
-    ref: self.value ?? panic("self not available"),
+    ref: check(self.value),
     title: toRef(props, "title"),
     activate() {
       emit("selected");

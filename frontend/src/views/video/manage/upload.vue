@@ -12,7 +12,7 @@ import {
   uploadVideo,
 } from "@/endpoints/video";
 import { fracToPercent } from "@/utils/math";
-import { panic } from "@/utils/panic";
+import { check } from "@/utils/null";
 import { createProgressReporter } from "@/utils/upload-progress";
 
 const router = useRouter();
@@ -85,7 +85,7 @@ async function fileSelected() {
   createErr.value = emptyApiErr();
   uploadErr.value = emptyApiErr();
 
-  const file = fileInput.value?.files?.[0] ?? panic("no file found");
+  const file = check(fileInput.value?.files?.[0]);
 
   if (!upload.created) {
     const createResponse = await createVideo();
