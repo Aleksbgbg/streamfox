@@ -65,6 +65,7 @@ provide<TabControl>(tabControlKey, {
       class="hover:bg-polar-lightest hover:cursor-pointer"
       :class="{ 'flex-col': !vertical, 'flex-row-reverse w-full': vertical }"
       v-for="(child, index) of children"
+      :key="index"
     )
       button.flex-grow.text-center.truncate.py-1.px-2(
         type="button"

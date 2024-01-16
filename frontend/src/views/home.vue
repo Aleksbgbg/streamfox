@@ -25,5 +25,5 @@ onBeforeMount(async () => {
 <template lang="pug">
 c-empty-collection(:collection="videos" empty="No videos yet. Upload one!" text-margin)
   c-tile-grid
-    c-video-preview(v-for="video of videos" :video="video")
+    c-video-preview(v-for="video of videos" :key="video.id" :video="video")
 </template>

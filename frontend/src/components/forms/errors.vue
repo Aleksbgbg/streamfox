@@ -6,5 +6,5 @@ defineProps<{
 
 <template lang="pug">
 div(v-show="errors && errors.length > 0")
-  p.text-aurora-red-400(v-for="error of errors") {{ error }}
+  p.text-aurora-red-400(v-for="error of errors" :key="error") {{ error }}
 </template>

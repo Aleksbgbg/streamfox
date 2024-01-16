@@ -57,5 +57,10 @@ c-empty-collection(
   text-margin
 )
   c-tile-grid
-    c-user-video-preview(v-for="video of videos" :show-visibility="isPersonalPage" :video="video")
+    c-user-video-preview(
+      v-for="video of videos"
+      :key="video.id"
+      :show-visibility="isPersonalPage"
+      :video="video"
+    )
 </template>
