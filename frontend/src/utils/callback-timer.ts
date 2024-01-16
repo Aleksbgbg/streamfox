@@ -1,4 +1,4 @@
-import { type Optional, empty, getValue, hasValue } from "@/types/optional";
+import { type Option, none, some } from "@/types/option";
 
 export type CallbackFn = () => void;
 
@@ -6,8 +6,8 @@ export class ContinuousCallbackTimer {
   private readonly _timeoutMs: number;
   private readonly _callback: CallbackFn;
 
-  private _timeout: Optional<ReturnType<typeof setTimeout>> = empty();
-  private _startTime: Optional<number> = empty();
+  private _timeout: Option<ReturnType<typeof setTimeout>> = none();
+  private _startTime: Option<number> = none();
   private _timeRemainingMs = 0;
 
   public constructor(timeoutMs: number, callback: CallbackFn) {
@@ -18,26 +18,26 @@ export class ContinuousCallbackTimer {
   }
 
   public pause() {
-    if (!hasValue(this._startTime)) {
+    if (this._startTime.isNone()) {
       return;
     }
 
-    this._timeRemainingMs -= performance.now() - getValue(this._startTime);
+    this._timeRemainingMs -= performance.now() - this._startTime.get();
     this.cancel();
   }
 
   public resume() {
-    this._startTime = performance.now();
-    this._timeout = setTimeout(this.callback.bind(this), this._timeRemainingMs);
+    this._startTime = some(performance.now());
+    this._timeout = some(setTimeout(this.callback.bind(this), this._timeRemainingMs));
   }
 
   public cancel() {
-    if (!hasValue(this._timeout)) {
+    if (this._timeout.isNone()) {
       return;
     }
 
-    clearTimeout(getValue(this._timeout));
-    this._timeout = empty();
+    clearTimeout(this._timeout.get());
+    this._timeout = none();
   }
 
   private restart() {

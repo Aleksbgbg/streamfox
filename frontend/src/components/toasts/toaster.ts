@@ -1,5 +1,5 @@
 import type { App, InjectionKey } from "vue";
-import { type Optional, getValue } from "@/types/optional";
+import { type Option, none, some } from "@/types/option";
 import { injectStrict } from "@/utils/inject";
 
 export enum ToastType {
@@ -34,10 +34,10 @@ export const toasterKey = Symbol() as InjectionKey<Toaster>;
 export const registerToastAreaKey = Symbol() as InjectionKey<RegisterToastArea>;
 
 export function toaster(app: App) {
-  let toastArea: Optional<ToastArea> = null;
+  let toastArea: Option<ToastArea> = none();
 
   function addToast(toast: Toast) {
-    getValue(toastArea).add(toast);
+    toastArea.get().add(toast);
   }
 
   app.provide(toasterKey, {
@@ -60,7 +60,7 @@ export function toaster(app: App) {
   });
   app.provide(registerToastAreaKey, {
     register(area) {
-      toastArea = area;
+      toastArea = some(area);
     },
   });
 }

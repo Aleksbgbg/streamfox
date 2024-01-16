@@ -7,7 +7,6 @@ import CDropdownItem from "@/components/dropdown/item.vue";
 import CIcon from "@/components/icon.vue";
 import CUserBadge from "@/components/user/badge.vue";
 import { useUserStore } from "@/store/user";
-import { getValue, hasValue } from "@/types/optional";
 import { logout } from "@/utils/auth";
 import { returnUrl } from "@/utils/navigation";
 
@@ -18,13 +17,13 @@ const store = useUserStore();
 
 <template lang="pug">
 .flex.items-center.gap-3
-  template(v-if="hasValue(store.user)")
+  template(v-if="store.user.isSome()")
     c-dropdown-button(theme="purple")
-      c-user-badge(:user="getValue(store.user)")
+      c-user-badge(:user="store.user.get()")
       template(#dropdown)
         c-dropdown-item
           router-link.block(
-            :to="{ name: 'user', params: { userId: getValue(store.user).id } }"
+            :to="{ name: 'user', params: { userId: store.user.get().id } }"
           )
             span Profile
             c-anchor-cover

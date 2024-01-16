@@ -9,9 +9,9 @@ import { getAllSubtitles, subtitleContentUrl } from "@/endpoints/subtitle";
 import { type VideoId, postWatchHint, videoStream } from "@/endpoints/video";
 import { getLoop, setLoop } from "@/settings/loop";
 import { getVolume, setVolume } from "@/settings/volume";
-import { getValue } from "@/types/optional";
 import { ContinuousCallbackTimer } from "@/utils/callback-timer";
 import { clipboardCopy } from "@/utils/clipboard";
+import { check } from "@/utils/null";
 import { once } from "@/utils/once";
 import { panic } from "@/utils/panic";
 import { fullUrl } from "@/utils/url";
@@ -107,7 +107,7 @@ function copyUrlTimestamp() {
   clipboardCopy(
     fullUrl(
       router.resolve({
-        name: getValue(route.name),
+        name: check(route.name),
         query: { t: Math.round(player.currentTime() || 0).toString() },
       }).fullPath,
     ),

@@ -1,6 +1,6 @@
 import { ApiResponse, get } from "@/endpoints/request";
 import type { Id } from "@/types/id";
-import { type Optional, empty } from "@/types/optional";
+import { type Option, none, some } from "@/types/option";
 
 export type UserId = Id;
 
@@ -9,13 +9,13 @@ export interface User {
   username: string;
 }
 
-export async function getUser(): Promise<Optional<User>> {
+export async function getUser(): Promise<Option<User>> {
   const response = await get<User>("/user");
 
   if (response.success()) {
-    return response.value();
+    return some(response.value());
   } else {
-    return empty();
+    return none();
   }
 }
 

@@ -1,5 +1,5 @@
 import axios, { AxiosError, type AxiosProgressEvent, type RawAxiosRequestHeaders } from "axios";
-import { type Optional, empty, getValue, hasValue } from "@/types/optional";
+import { type Option, none, some } from "@/types/option";
 
 const ISO_8601_REGEX = /^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/;
 
@@ -50,28 +50,30 @@ export function emptyApiErr<TResponse>(): ApiErr<TResponse> {
 }
 
 export class ApiResponse<TData, TResponse> {
-  private _response: Optional<TResponse>;
-  private _err: Optional<ApiErr<TData>>;
+  private _response: Option<TResponse>;
+  private _err: Option<ApiErr<TData>>;
 
-  constructor(response: Optional<TResponse>, err: Optional<ApiErr<TData>>) {
+  constructor(response: Option<TResponse>, err: Option<ApiErr<TData>>) {
     this._response = response;
     this._err = err;
   }
 
-  public static success<TData, TResponse>(response: TResponse): ApiResponse<TData, TResponse> {
-    return new ApiResponse(response, empty());
+  public static success<TData, TResponse>(
+    response: NonNullable<TResponse>,
+  ): ApiResponse<TData, TResponse> {
+    return new ApiResponse(some(response), none());
   }
 
   public static failure<TData, TResponse>(err: ApiErr<TData>): ApiResponse<TData, TResponse> {
-    return new ApiResponse(empty(), err);
+    return new ApiResponse(none(), some(err));
   }
 
   public success(): boolean {
-    return hasValue(this._response);
+    return !this._response.isNone();
   }
 
   public value(): TResponse {
-    return getValue(this._response);
+    return this._response.get();
   }
 
   public transform<T>(func: (val: TResponse) => T): T {
@@ -79,7 +81,7 @@ export class ApiResponse<TData, TResponse> {
   }
 
   public err(): ApiErr<TData> {
-    return getValue(this._err);
+    return this._err.get();
   }
 }
 
