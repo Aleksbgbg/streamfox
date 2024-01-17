@@ -59,7 +59,7 @@ provide<TabControl>(tabControlKey, {
 </script>
 
 <template lang="pug">
-.flex-grow.flex.gap-5.w-full.min-h-0(:class="{ 'flex-col': !vertical }")
+.flex.gap-5.w-full.h-full.min-h-0(:class="{ 'flex-col': !vertical }")
   div(:class="vertical ? 'flex flex-col min-w-0 w-1/3 overflow-y-auto' : 'grid grid-cols-[repeat(auto-fit,_minmax(0,_1fr))]'")
     .flex(
       class="hover:bg-polar-lightest hover:cursor-pointer"

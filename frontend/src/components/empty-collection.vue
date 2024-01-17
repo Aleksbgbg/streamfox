@@ -11,8 +11,9 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template lang="pug">
-template(v-if="collection.length > 0")
-  slot
-template(v-else)
-  p.text-aurora-yellow-300.text-center(:class="{ 'm-5': textMargin }") {{ empty }}
+div
+  template(v-if="collection.length > 0")
+    slot
+  template(v-else)
+    p.text-aurora-yellow-300.text-center(:class="{ 'm-5': textMargin }") {{ empty }}
 </template>

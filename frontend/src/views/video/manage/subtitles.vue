@@ -177,7 +177,7 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
       p.text-center(v-show="extracting")
         c-spinner.mr-2
         span Extracting...
-  c-empty-collection(:collection="subtitles" empty="No subtitles here. Add some!")
+  c-empty-collection.grow(:collection="subtitles" empty="No subtitles here. Add some!")
     c-tabs(vertical)
       c-tab(
         v-for="(subtitle, index) of subtitles"
