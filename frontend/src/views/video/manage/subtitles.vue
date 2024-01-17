@@ -181,7 +181,7 @@ async function deleteSub(subtitle: SubtitleWithContent, index: number) {
     c-tabs(vertical)
       c-tab(
         v-for="(subtitle, index) of subtitles"
-        :key="index"
+        :key="subtitle.id"
         :title="subtitle.name"
         @selected.once="loadSubtitle(subtitle)"
       )
