@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, toRef } from "vue";
-import { type TabControl, type TabRef, tabControlKey } from "@/components/tab-control/tab-control";
+import {
+  type TabControl,
+  type TabKey,
+  type TabRef,
+  tabControlKey,
+} from "@/components/tab-control/tab-control";
 import { injectStrict } from "@/utils/inject";
 import { check } from "@/utils/null";
 
@@ -18,9 +23,9 @@ const self: TabRef = ref(null);
 
 const isActive = ref(false);
 
-let index = -1;
+let key: TabKey;
 onMounted(() => {
-  index = tabControl.attach({
+  key = tabControl.attach({
     ref: check(self.value),
     title: toRef(props, "title"),
     activate() {
@@ -33,7 +38,7 @@ onMounted(() => {
   });
 });
 onUnmounted(() => {
-  tabControl.detach(index);
+  tabControl.detach(key);
 });
 </script>
 

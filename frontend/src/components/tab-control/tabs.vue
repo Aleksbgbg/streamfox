@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { provide, reactive, ref } from "vue";
+import { provide, reactive, shallowRef } from "vue";
 import {
   type TabChild,
   type TabControl,
+  type TabKey,
+  newKey,
   tabControlKey,
 } from "@/components/tab-control/tab-control";
+import { type Option, none, some } from "@/types/option";
+import { getStrict } from "@/utils/maps";
 
 interface Props {
   vertical?: boolean;
@@ -13,47 +17,46 @@ withDefaults(defineProps<Props>(), {
   vertical: false,
 });
 
-const children: TabChild[] = reactive([]);
-const activeIndex = ref(-1);
+const children = reactive(new Map<TabKey, TabChild>());
+const active = shallowRef(none<TabKey>());
 
-function switchActiveTab(newIndex: number) {
-  const lastIndex = activeIndex.value;
-  if (lastIndex !== -1) {
-    children[lastIndex].deactivate();
+function activate(key: Option<TabKey>) {
+  if (key.eq(active.value)) {
+    return;
   }
 
-  activate(newIndex);
-}
+  active.value.ifSome((value) => getStrict(children, value).deactivate());
+  key.ifSome((value) => getStrict(children, value).activate());
 
-function activate(newIndex: number) {
-  activeIndex.value = newIndex;
-  if (newIndex !== -1) {
-    children[newIndex].activate();
-  }
+  active.value = key;
 }
 
 provide<TabControl>(tabControlKey, {
   attach(child) {
-    const newIndex = children.length;
+    const id = newKey();
 
-    children.push(child);
-
-    if (newIndex === 0) {
-      switchActiveTab(0);
+    children.set(id, reactive(child));
+    if (children.size === 1) {
+      activate(some(id));
     }
 
-    return newIndex;
+    return id;
   },
-  detach(index) {
-    children.splice(index, 1);
+  detach(id) {
+    if (id === active.value.get()) {
+      let newActive = none<TabKey>();
 
-    if (children.length > 0) {
-      if (activeIndex.value >= index) {
-        activate(activeIndex.value - 1);
+      for (const key of children.keys()) {
+        if (key !== id) {
+          newActive = some(key);
+          break;
+        }
       }
-    } else {
-      activeIndex.value = -1;
+
+      activate(newActive);
     }
+
+    children.delete(id);
   },
 });
 </script>
@@ -64,15 +67,15 @@ provide<TabControl>(tabControlKey, {
     .flex(
       class="hover:bg-polar-lightest hover:cursor-pointer"
       :class="{ 'flex-col': !vertical, 'flex-row-reverse w-full': vertical }"
-      v-for="(child, index) of children"
-      :key="index"
+      v-for="[key, child] of children"
+      :key="key"
     )
       button.flex-grow.text-center.truncate.py-1.px-2(
         type="button"
-        @click="switchActiveTab(index)"
+        @click="activate(some(key))"
       ) {{ child.title || '(unnamed)' }}
       .shrink-0(
-        :class="{ 'bg-frost-blue': index === activeIndex, 'w-1': vertical, 'h-1': !vertical }"
+        :class="{ 'bg-frost-blue': active.get() === key, 'w-1': vertical, 'h-1': !vertical }"
       )
   slot
 </template>

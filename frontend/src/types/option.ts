@@ -15,6 +15,10 @@ export class Option<T> {
     return new Option<NonNullable<T>>(null);
   }
 
+  public eq(other: Option<T>): boolean {
+    return this._value === other._value;
+  }
+
   public get(): T {
     return check(this._value);
   }
@@ -33,6 +37,14 @@ export class Option<T> {
 
   public mapOrElse<R>(map: (val: T) => R, fallback: R): R {
     return this.isSome() ? map(this.get()) : fallback;
+  }
+
+  public ifSome(apply: (val: T) => void) {
+    if (this.isNone()) {
+      return;
+    }
+
+    apply(this.get());
   }
 }
 
