@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { provide, reactive, shallowRef } from "vue";
+import { onMounted, provide, reactive, shallowRef } from "vue";
 import {
   type TabChild,
   type TabControl,
@@ -31,12 +31,17 @@ function activate(key: Option<TabKey>) {
   active.value = key;
 }
 
+let focusLatestChild = false;
+onMounted(() => {
+  focusLatestChild = true;
+});
+
 provide<TabControl>(tabControlKey, {
   attach(child) {
     const id = newKey();
 
     children.set(id, reactive(child));
-    if (children.size === 1) {
+    if (focusLatestChild || children.size === 1) {
       activate(some(id));
     }
 
