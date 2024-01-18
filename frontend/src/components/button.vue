@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAttrs } from "vue";
+import { computed, useAttrs } from "vue";
 
 defineOptions({
   inheritAttrs: false,
@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
   padding: "normal",
 });
 
-const themeColors: Colors = {
+const themeColors = computed(() => ({
   ...{
     blue: {
       default: "bg-frost-blue",
@@ -52,7 +52,7 @@ const themeColors: Colors = {
     },
   }[props.theme],
   ...props.colors,
-};
+}));
 </script>
 
 <template lang="pug">
