@@ -12,7 +12,7 @@ defineOptions({
 c-dropdown
   slot(name="dropdown")
   template(#button="{ toggled }")
-    c-button.flex.w-full(v-bind="$attrs")
+    c-button.flex.w-full(:class="{ 'rounded-b-none': toggled }" v-bind="$attrs")
       slot
       .border-l.border-white.mx-3
       c-dropdown-arrow.self-center(:toggled="toggled")

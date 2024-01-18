@@ -71,7 +71,7 @@ div(:class="center ? 'w-80 max-w-full px-5' : 'w-full'")
     slot
     template(#button="{ toggled }")
       button.flex.bg-transparent.rounded.ring-1.ring-frost-blue.ring-inset.w-full.h-10.py-2.px-3(
-        class="aria-invalid:[&:not(:focus)]:ring-aurora-red hover:ring-2 focus:ring-2 focus:ring-aurora-yellow focus:outline-none"
+        :class="[{ 'rounded-b-none': toggled }, 'aria-invalid:[&:not(:focus)]:ring-aurora-red hover:ring-2 focus:ring-2 focus:ring-aurora-yellow focus:outline-none']"
         type="button"
         :id="label"
         :aria-invalid="!valid"
