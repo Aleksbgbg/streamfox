@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import CPreviewGeneric from "@/components/content-grid/preview/generic.vue";
+import CIcon from "@/components/icon.vue";
 import { type VideoInfo, Visibility, videoThumbnail } from "@/endpoints/video";
 
 const props = defineProps<{
@@ -32,6 +33,6 @@ c-preview-generic(
   :beginAt="video.uploadedAt"
   :viewership="video.views"
   viewershipName="view"
-  :icon="showVisibility ? icon : undefined"
 )
+  c-icon.text-slate-300(v-if="showVisibility" :name="icon")
 </template>

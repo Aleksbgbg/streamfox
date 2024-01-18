@@ -2,7 +2,6 @@
 import type { RouteLocationRaw } from "vue-router";
 import CAnchorCover from "@/components/anchor/cover.vue";
 import CAnchorRoot from "@/components/anchor/root.vue";
-import CIcon from "@/components/icon.vue";
 import type { User } from "@/endpoints/user";
 import { dateToElapsedTimeString, secsToDurationString } from "@/utils/strings";
 
@@ -15,7 +14,6 @@ defineProps<{
   beginAt: Date;
   viewership: number;
   viewershipName: string;
-  icon?: string;
 }>();
 </script>
 
@@ -39,5 +37,5 @@ c-anchor-root.group.w-full(class="max-w-[416px]")
         | {{ viewership }} {{ viewershipName + (viewership === 1 ? '' : 's') }}
         | •
         | {{ dateToElapsedTimeString(beginAt) }}
-    c-icon.text-slate-300(v-if="icon" :name="icon")
+    slot
 </template>
