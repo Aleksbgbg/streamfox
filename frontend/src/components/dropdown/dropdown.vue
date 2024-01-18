@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+interface Props {
+  align?: "left" | "right";
+}
+
+withDefaults(defineProps<Props>(), {
+  align: "left",
+});
+
 const toggled = ref(false);
 
 let clickedInside = true;
@@ -24,6 +32,9 @@ function click() {
 <template lang="pug">
 .relative.min-w-0(@click="click" @focusout="lostFocus" @mousedown="mouseDown")
   slot(name="button" :toggled="toggled")
-  ul.absolute.w-full.z-50(v-show="toggled")
+  ul.absolute.min-w-fit.w-full.z-50(
+    :class="{ 'right-0': align === 'right' }"
+    v-show="toggled"
+  )
     slot
 </template>

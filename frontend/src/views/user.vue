@@ -60,7 +60,7 @@ c-empty-collection(
     c-user-video-preview(
       v-for="video of videos"
       :key="video.id"
-      :show-visibility="isPersonalPage"
+      :is-personal-page="isPersonalPage"
       :video="video"
     )
 </template>
