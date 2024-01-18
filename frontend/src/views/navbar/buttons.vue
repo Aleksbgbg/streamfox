@@ -22,7 +22,7 @@ const store = useUserStore();
       c-user-badge(:user="store.user.get()")
       template(#dropdown)
         c-dropdown-item
-          router-link.block(
+          router-link(
             :to="{ name: 'user', params: { userId: store.user.get().id } }"
           )
             span Profile
