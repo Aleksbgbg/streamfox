@@ -18,7 +18,7 @@ const store = useUserStore();
 <template lang="pug">
 .flex.items-center.gap-3
   template(v-if="store.user.isSome()")
-    c-dropdown-button(theme="purple")
+    c-dropdown-button
       c-user-badge(:user="store.user.get()")
       template(#dropdown)
         c-dropdown-item
