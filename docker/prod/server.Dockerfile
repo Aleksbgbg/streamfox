@@ -2,6 +2,10 @@
 FROM golang:alpine AS backend
 
 WORKDIR /streamfox
+
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
 COPY backend .
 RUN go build -o backend
 
@@ -9,8 +13,11 @@ RUN go build -o backend
 FROM node:alpine AS frontend
 
 WORKDIR /streamfox
-COPY frontend .
+
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm i
+
+COPY frontend .
 RUN npm run build
 
 # ==== Output prod env
