@@ -6,7 +6,7 @@ WORKDIR /streamfox
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 
-COPY backend .
+COPY backend ./
 RUN go build -o backend
 
 # ==== Build frontend
@@ -17,7 +17,7 @@ WORKDIR /streamfox
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm i
 
-COPY frontend .
+COPY frontend ./
 RUN npm run build
 
 # ==== Output prod env
