@@ -11,7 +11,7 @@ FROM node:alpine AS frontend
 WORKDIR /streamfox
 COPY frontend .
 RUN npm i
-RUN npm run build -- --outDir frontend
+RUN npm run build
 
 # ==== Output prod env
 FROM alpine:latest
