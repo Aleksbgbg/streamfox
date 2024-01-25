@@ -9,25 +9,16 @@ export const router = createRouter({
       component: () => import("@/views/home.vue"),
     },
     {
-      path: "/register",
-      name: "register",
-      component: () => import("@/views/accounts/register.vue"),
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: () => import("@/views/accounts/login.vue"),
-    },
-    {
       path: "/watch/:id",
       name: "watch",
       component: () => import("@/views/video/watch.vue"),
       props: true,
     },
     {
-      path: "/upload",
-      name: "upload",
-      component: () => import("@/views/video/manage/upload.vue"),
+      path: "/user/:userId",
+      name: "user",
+      component: () => import("@/views/user.vue"),
+      props: true,
     },
     {
       path: "/edit/:videoId",
@@ -36,10 +27,19 @@ export const router = createRouter({
       props: true,
     },
     {
-      path: "/user/:userId",
-      name: "user",
-      component: () => import("@/views/user.vue"),
-      props: true,
+      path: "/upload",
+      name: "upload",
+      component: () => import("@/views/video/manage/upload.vue"),
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/accounts/login.vue"),
+    },
+    {
+      path: "/register",
+      name: "register",
+      component: () => import("@/views/accounts/register.vue"),
     },
   ],
 });
