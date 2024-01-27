@@ -40,13 +40,23 @@ func SetupApiSecret() error {
 	return nil
 }
 
-func generateToken(userId models.Id) (string, error) {
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		jwtKeyUserId: userId.String(),
-		jwtKeyExpiration: time.Now().
-			Add(time.Hour * time.Duration(config.Values.AppTokenLifespanHrs)).
-			Unix(),
+type token struct {
+	value  string
+	expiry time.Time
+}
+
+func generateToken(userId models.Id) (*token, error) {
+	expiry := time.Now().Add(time.Hour * time.Duration(config.Values.AppTokenLifespanHrs))
+
+	value, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		jwtKeyUserId:     userId.String(),
+		jwtKeyExpiration: expiry.Unix(),
 	}).SignedString(apiSecret)
+	if err != nil {
+		return nil, err
+	}
+
+	return &token{value, expiry}, nil
 }
 
 func getClaim[T any](claims jwt.MapClaims, key string) (T, error) {

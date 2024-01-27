@@ -3,14 +3,15 @@ package controllers
 import (
 	"net/http"
 	"streamfox-backend/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 const AUTHORIZATION_COOKIE = "Authorization"
 
-func setAuthCookie(c *gin.Context, token string) {
-	c.SetCookie(AUTHORIZATION_COOKIE, token, 0, "", "", false, false)
+func setAuthCookie(c *gin.Context, token string, expiry time.Time) {
+	c.SetCookie(AUTHORIZATION_COOKIE, token, int(time.Until(expiry).Seconds()), "", "", false, false)
 }
 
 func authenticate(c *gin.Context, user *models.User) error {
@@ -20,7 +21,7 @@ func authenticate(c *gin.Context, user *models.User) error {
 		return err
 	}
 
-	setAuthCookie(c, token)
+	setAuthCookie(c, token.value, token.expiry)
 	return nil
 }
 
