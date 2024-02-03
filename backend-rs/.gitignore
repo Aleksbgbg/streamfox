@@ -1,0 +1,5 @@
+# Rust
+/target
+
+# Application data
+/streamfox_home*
