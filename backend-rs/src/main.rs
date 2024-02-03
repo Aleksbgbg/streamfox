@@ -1,3 +1,5 @@
+mod config;
+
 use axum::{routing, Router};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
@@ -6,6 +8,8 @@ use tracing::{info, Level};
 
 #[tokio::main]
 async fn main() {
+  let config = config::load();
+
   tracing_subscriber::fmt()
     .with_target(false)
     .compact()
@@ -19,7 +23,7 @@ async fn main() {
         .on_response(DefaultOnResponse::new().level(Level::INFO)),
     );
 
-  let listener = TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], 8601)))
+  let listener = TcpListener::bind(SocketAddr::from((config.app.host, config.app.port)))
     .await
     .expect("could not bind");
 
