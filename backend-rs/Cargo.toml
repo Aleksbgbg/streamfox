@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 axum = "0.7.4"
 serde = { version = "1.0.196", features = ["derive"] }
+thiserror = "1.0.56"
 tokio = { version = "1.36.0", features = ["rt-multi-thread"] }
 toml-env = "1.1.1"
 tower-http = { version = "0.5.1", features = ["trace"] }
