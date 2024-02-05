@@ -1,7 +1,11 @@
 mod config;
+mod models;
 
 use crate::config::ConfigError;
+use crate::models::migrations::migrator::Migrator;
 use axum::{routing, Router};
+use sea_orm::{Database, DbErr};
+use sea_orm_migration::MigratorTrait;
 use std::io;
 use std::net::SocketAddr;
 use thiserror::Error;
@@ -13,6 +17,10 @@ use tracing::{info, Level};
 enum AppError {
   #[error("could not load config")]
   LoadConfig(#[from] ConfigError),
+  #[error("could not connect to database")]
+  ConnectToDatabase(DbErr),
+  #[error("could not run database migrations")]
+  MigrateDatabase(DbErr),
   #[error("could not bind to network interface")]
   BindTcpListener(io::Error),
   #[error("could not get TCP listener address")]
@@ -29,6 +37,13 @@ async fn main() -> Result<(), AppError> {
     .with_target(false)
     .compact()
     .init();
+
+  let connection = Database::connect(&config.database.connection_string())
+    .await
+    .map_err(AppError::ConnectToDatabase)?;
+  Migrator::up(&connection, None)
+    .await
+    .map_err(AppError::MigrateDatabase)?;
 
   let app = Router::new()
     .route("/api/hello-world", routing::get(hello_world))
