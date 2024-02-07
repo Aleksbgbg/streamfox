@@ -1,11 +1,16 @@
+mod app_state;
 mod config;
+mod controllers;
 mod models;
 
+use crate::app_state::AppState;
 use crate::config::ConfigError;
+use crate::controllers::user;
 use crate::models::migrations::migrator::Migrator;
 use axum::{routing, Router};
 use sea_orm::{Database, DbErr};
 use sea_orm_migration::MigratorTrait;
+use snowflake::SnowflakeIdBucket;
 use std::io;
 use std::net::SocketAddr;
 use thiserror::Error;
@@ -46,12 +51,16 @@ async fn main() -> Result<(), AppError> {
     .map_err(AppError::MigrateDatabase)?;
 
   let app = Router::new()
-    .route("/api/hello-world", routing::get(hello_world))
+    .route("/api/auth/register", routing::post(user::register))
     .layer(
       TraceLayer::new_for_http()
         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
         .on_response(DefaultOnResponse::new().level(Level::INFO)),
-    );
+    )
+    .with_state(AppState {
+      connection,
+      user_snowflake: SnowflakeIdBucket::new(1, 1),
+    });
 
   let listener = TcpListener::bind(SocketAddr::from((config.app.host, config.app.port)))
     .await
@@ -69,8 +78,4 @@ async fn main() -> Result<(), AppError> {
     .map_err(AppError::ServeApp)?;
 
   Ok(())
-}
-
-async fn hello_world() -> &'static str {
-  "Hello, world!"
 }
