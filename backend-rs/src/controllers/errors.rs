@@ -1,3 +1,4 @@
+use crate::controllers::user::AuthError;
 use crate::models::user;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -56,6 +57,8 @@ pub enum HandlerError {
   Database(#[from] DbErr),
   #[error("Could not create user.")]
   CreateUser(#[from] user::CreateError),
+  #[error("Could not authenticate: {0}.")]
+  Authenticate(#[from] AuthError),
 }
 
 impl HandlerError {
@@ -77,6 +80,7 @@ impl IntoResponse for HandlerError {
       HandlerError::EmailTaken => self.failed_validation(StatusCode::BAD_REQUEST, "emailAddress"),
       HandlerError::Database(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
       HandlerError::CreateUser(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
+      HandlerError::Authenticate(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
     }
     .into_response()
   }

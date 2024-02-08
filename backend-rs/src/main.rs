@@ -13,6 +13,7 @@ use sea_orm_migration::MigratorTrait;
 use snowflake::SnowflakeIdBucket;
 use std::io;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use thiserror::Error;
 use tokio::net::TcpListener;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
@@ -36,7 +37,7 @@ enum AppError {
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
-  let config = config::load()?;
+  let config = Arc::new(config::load()?);
 
   tracing_subscriber::fmt()
     .with_target(false)
@@ -58,6 +59,7 @@ async fn main() -> Result<(), AppError> {
         .on_response(DefaultOnResponse::new().level(Level::INFO)),
     )
     .with_state(AppState {
+      config: Arc::clone(&config),
       connection,
       user_snowflake: SnowflakeIdBucket::new(1, 1),
     });

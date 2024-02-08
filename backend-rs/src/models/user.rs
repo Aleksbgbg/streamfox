@@ -1,16 +1,18 @@
 use crate::app_state::AppState;
 use crate::models::base::exists;
+use crate::models::id::Id;
 use bcrypt::BcryptError;
 use chrono::Local;
 use sea_orm::entity::prelude::*;
 use sea_orm::ActiveValue;
 use thiserror::Error;
+pub use Model as User;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "user")]
 pub struct Model {
   #[sea_orm(primary_key, auto_increment = false)]
-  pub id: i64,
+  pub id: Id,
   pub created_at: DateTimeWithTimeZone,
   pub updated_at: DateTimeWithTimeZone,
   #[sea_orm(unique)]
@@ -61,23 +63,23 @@ pub enum CreateError {
   Hash(#[from] BcryptError),
 }
 
-pub async fn create(state: &mut AppState, user: CreateUser<'_>) -> Result<(), CreateError> {
+pub async fn create(state: &mut AppState, user: CreateUser<'_>) -> Result<User, CreateError> {
   let id = state.user_snowflake.get_id();
   let time = Local::now().fixed_offset();
   let hashed_pasword = bcrypt::hash(user.password, bcrypt::DEFAULT_COST)?;
 
-  Entity::insert(ActiveModel {
-    id: ActiveValue::set(id),
-    created_at: ActiveValue::set(time),
-    updated_at: ActiveValue::set(time),
-    username: ActiveValue::set(Some(user.username.to_owned())),
-    canonical_username: ActiveValue::set(Some(user.username.to_lowercase())),
-    email_address: ActiveValue::set(Some(user.email_address.to_owned())),
-    canonical_email_address: ActiveValue::set(Some(user.email_address.to_lowercase())),
-    password: ActiveValue::set(Some(hashed_pasword)),
-  })
-  .exec(&state.connection)
-  .await?;
-
-  Ok(())
+  Ok(
+    ActiveModel {
+      id: ActiveValue::set(Id::from(id)),
+      created_at: ActiveValue::set(time),
+      updated_at: ActiveValue::set(time),
+      username: ActiveValue::set(Some(user.username.to_owned())),
+      canonical_username: ActiveValue::set(Some(user.username.to_lowercase())),
+      email_address: ActiveValue::set(Some(user.email_address.to_owned())),
+      canonical_email_address: ActiveValue::set(Some(user.email_address.to_lowercase())),
+      password: ActiveValue::set(Some(hashed_pasword)),
+    }
+    .insert(&state.connection)
+    .await?,
+  )
 }

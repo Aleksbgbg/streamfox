@@ -1,4 +1,6 @@
+use chrono::Duration;
 use serde::{Deserialize, Serialize};
+use serde_with::{serde_as, DurationSeconds};
 use thiserror::Error;
 use toml_env::Args;
 
@@ -15,10 +17,13 @@ pub struct Config {
   pub database: Database,
 }
 
+#[serde_as]
 #[derive(Serialize, Deserialize)]
 pub struct App {
   pub host: Ipv4Array,
   pub port: Port,
+  #[serde_as(as = "DurationSeconds<i64>")]
+  pub token_lifespan: Duration,
 }
 
 #[derive(Serialize, Deserialize)]
