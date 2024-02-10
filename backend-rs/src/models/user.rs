@@ -26,6 +26,12 @@ pub struct Model {
   pub password: Option<String>,
 }
 
+impl Model {
+  pub fn visible_username(&self) -> &str {
+    self.username.as_ref().map_or("Anonymous", String::as_str)
+  }
+}
+
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}
 
@@ -82,4 +88,8 @@ pub async fn create(state: &mut AppState, user: CreateUser<'_>) -> Result<User, 
     .insert(&state.connection)
     .await?,
   )
+}
+
+pub async fn find(state: &AppState, id: Id) -> Result<Option<User>, DbErr> {
+  Entity::find_by_id(id).one(&state.connection).await
 }

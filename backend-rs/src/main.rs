@@ -52,7 +52,8 @@ async fn main() -> Result<(), AppError> {
     .map_err(AppError::MigrateDatabase)?;
 
   let app = Router::new()
-    .route("/api/auth/register", routing::post(user::register))
+    .route("/auth/register", routing::post(user::register))
+    .route("/user", routing::get(user::get_user))
     .layer(
       TraceLayer::new_for_http()
         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
@@ -63,6 +64,7 @@ async fn main() -> Result<(), AppError> {
       connection,
       user_snowflake: SnowflakeIdBucket::new(1, 1),
     });
+  let api = Router::new().nest("/api", app);
 
   let listener = TcpListener::bind(SocketAddr::from((config.app.host, config.app.port)))
     .await
@@ -75,7 +77,7 @@ async fn main() -> Result<(), AppError> {
       .map_err(AppError::GetListenerAddress)?
   );
 
-  axum::serve(listener, app)
+  axum::serve(listener, api)
     .await
     .map_err(AppError::ServeApp)?;
 

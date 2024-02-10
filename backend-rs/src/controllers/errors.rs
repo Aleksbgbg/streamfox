@@ -1,4 +1,3 @@
-use crate::controllers::user::AuthError;
 use crate::models::user;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -52,13 +51,18 @@ pub enum HandlerError {
   UsernameTaken,
   #[error("Email Address must not be taken.")]
   EmailTaken,
+  #[error("Authentication token is invalid.")]
+  DecodeJwt(jsonwebtoken::errors::Error),
+
+  #[error("No user was logged in but a user is required.")]
+  UserRequired,
 
   #[error("Database transaction failed.")]
   Database(#[from] DbErr),
   #[error("Could not create user.")]
   CreateUser(#[from] user::CreateError),
-  #[error("Could not authenticate: {0}.")]
-  Authenticate(#[from] AuthError),
+  #[error("Could not encode JWT.")]
+  EncodeJwt(jsonwebtoken::errors::Error),
 }
 
 impl HandlerError {
@@ -78,9 +82,13 @@ impl IntoResponse for HandlerError {
     match self {
       HandlerError::UsernameTaken => self.failed_validation(StatusCode::BAD_REQUEST, "username"),
       HandlerError::EmailTaken => self.failed_validation(StatusCode::BAD_REQUEST, "emailAddress"),
+      HandlerError::DecodeJwt(_) => self.into_generic(StatusCode::BAD_REQUEST),
+
+      HandlerError::UserRequired => self.into_generic(StatusCode::UNAUTHORIZED),
+
       HandlerError::Database(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
       HandlerError::CreateUser(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
-      HandlerError::Authenticate(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
+      HandlerError::EncodeJwt(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
     }
     .into_response()
   }
