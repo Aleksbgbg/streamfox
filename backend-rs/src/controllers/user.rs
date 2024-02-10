@@ -1,5 +1,4 @@
-use crate::controllers::errors::HandlerError;
-use crate::controllers::validate::ValidatedJson;
+use crate::controllers::errors::{HandlerError, ValidatedJson};
 use crate::models::id::Id;
 use crate::models::user::{self, CreateUser, User};
 use crate::AppState;
