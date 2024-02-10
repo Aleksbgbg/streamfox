@@ -89,6 +89,39 @@ pub async fn create(
   )
 }
 
+#[derive(Error, Debug)]
+pub enum ValidateCredentialsError {
+  #[error(transparent)]
+  Database(#[from] DbErr),
+  #[error(transparent)]
+  Hash(#[from] BcryptError),
+}
+
+pub async fn login_with_credentials(
+  connection: &DatabaseConnection,
+  name: &str,
+  password: &str,
+) -> Result<Option<User>, ValidateCredentialsError> {
+  let user = Entity::find()
+    .filter(Column::Username.eq(name))
+    .one(connection)
+    .await?;
+
+  match user {
+    None => Ok(None),
+    Some(user) => match &user.password {
+      None => Ok(None),
+      Some(hash) => {
+        if bcrypt::verify(password, hash)? {
+          Ok(Some(user))
+        } else {
+          Ok(None)
+        }
+      }
+    },
+  }
+}
+
 pub async fn find(connection: &DatabaseConnection, id: Id) -> Result<Option<User>, DbErr> {
   Entity::find_by_id(id).one(connection).await
 }

@@ -86,6 +86,29 @@ pub async fn register(
   Ok((StatusCode::CREATED, cookies))
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LoginUser {
+  username: String,
+  password: String,
+}
+
+pub async fn login(
+  State(state): State<AppState>,
+  cookies: CookieJar,
+  Json(details): Json<LoginUser>,
+) -> Result<(StatusCode, CookieJar), HandlerError> {
+  if let Some(user) =
+    user::login_with_credentials(&state.connection, &details.username, &details.password).await?
+  {
+    let cookies = authenticate(cookies, &user, state.config.app.token_lifespan)?;
+
+    Ok((StatusCode::CREATED, cookies))
+  } else {
+    Err(HandlerError::InvalidCredentials)
+  }
+}
+
 #[async_trait]
 impl FromRequestParts<AppState> for User {
   type Rejection = HandlerError;

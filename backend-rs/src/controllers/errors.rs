@@ -61,6 +61,8 @@ pub enum HandlerError {
   UsernameTaken,
   #[error("Email Address must not be taken.")]
   EmailTaken,
+  #[error("Login credentials are invalid.")]
+  InvalidCredentials,
   #[error("Authentication token is invalid.")]
   DecodeJwt(jsonwebtoken::errors::Error),
 
@@ -71,6 +73,8 @@ pub enum HandlerError {
   Database(#[from] DbErr),
   #[error("Could not create user.")]
   CreateUser(#[from] user::CreateError),
+  #[error("Could not validate credentials.")]
+  ValidateCredentials(#[from] user::ValidateCredentialsError),
   #[error("Could not encode JWT.")]
   EncodeJwt(jsonwebtoken::errors::Error),
 }
@@ -128,12 +132,14 @@ impl IntoResponse for HandlerError {
       }),
       HandlerError::UsernameTaken => self.failed_validation(StatusCode::BAD_REQUEST, "username"),
       HandlerError::EmailTaken => self.failed_validation(StatusCode::BAD_REQUEST, "emailAddress"),
+      HandlerError::InvalidCredentials => self.into_generic(StatusCode::BAD_REQUEST),
       HandlerError::DecodeJwt(_) => self.into_generic(StatusCode::BAD_REQUEST),
 
       HandlerError::UserRequired => self.into_generic(StatusCode::UNAUTHORIZED),
 
       HandlerError::Database(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
       HandlerError::CreateUser(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
+      HandlerError::ValidateCredentials(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
       HandlerError::EncodeJwt(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
     }
     .into_response()

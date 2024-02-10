@@ -67,6 +67,7 @@ async fn main() -> Result<(), AppError> {
 
   let app = Router::new()
     .route("/auth/register", routing::post(user::register))
+    .route("/auth/login", routing::post(user::login))
     .route("/user", routing::get(user::get_user))
     .layer(
       TraceLayer::new_for_http()
