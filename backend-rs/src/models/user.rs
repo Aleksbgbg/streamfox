@@ -71,7 +71,7 @@ pub async fn create(
 ) -> Result<User, CreateError> {
   let id = snowflakes.user_snowflake.lock().await.get_id();
   let time = Local::now().fixed_offset();
-  let hashed_pasword = bcrypt::hash(user.password, bcrypt::DEFAULT_COST)?;
+  let hashed_pasword = bcrypt::hash(user.password, 10)?;
 
   Ok(
     ActiveModel {
