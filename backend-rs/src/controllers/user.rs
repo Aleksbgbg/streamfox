@@ -1,8 +1,8 @@
-use crate::app_state::AppState;
 use crate::controllers::errors::HandlerError;
 use crate::controllers::validate::ValidatedJson;
 use crate::models::id::Id;
 use crate::models::user::{self, CreateUser, User};
+use crate::AppState;
 use axum::extract::{FromRequestParts, State};
 use axum::http::request::Parts;
 use axum::http::StatusCode;
@@ -60,19 +60,20 @@ pub struct RegisterUser {
 }
 
 pub async fn register(
-  State(mut state): State<AppState>,
+  State(state): State<AppState>,
   cookies: CookieJar,
   ValidatedJson(details): ValidatedJson<RegisterUser>,
 ) -> Result<(StatusCode, CookieJar), HandlerError> {
-  if user::name_exists(&state, &details.username).await? {
+  if user::name_exists(&state.connection, &details.username).await? {
     return Err(HandlerError::UsernameTaken);
   }
-  if user::email_exists(&state, &details.email_address).await? {
+  if user::email_exists(&state.connection, &details.email_address).await? {
     return Err(HandlerError::EmailTaken);
   }
 
   let user = user::create(
-    &mut state,
+    &state.connection,
+    &state.snowflakes,
     CreateUser {
       username: &details.username,
       email_address: &details.email_address,
@@ -107,7 +108,7 @@ impl FromRequestParts<AppState> for User {
     .map_err(HandlerError::DecodeJwt)?
     .claims;
 
-    user::find(state, claims.uid)
+    user::find(&state.connection, claims.uid)
       .await?
       .ok_or(HandlerError::UserRequired)
   }

@@ -1,14 +1,12 @@
-mod app_state;
 mod config;
 mod controllers;
 mod models;
 
-use crate::app_state::AppState;
-use crate::config::ConfigError;
+use crate::config::{Config, ConfigError};
 use crate::controllers::user;
 use crate::models::migrations::migrator::Migrator;
 use axum::{routing, Router};
-use sea_orm::{Database, DbErr};
+use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;
 use snowflake::SnowflakeIdBucket;
 use std::io;
@@ -16,6 +14,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 
@@ -35,6 +34,17 @@ enum AppError {
   ServeApp(io::Error),
 }
 
+#[derive(Clone)]
+pub struct AppState {
+  config: Arc<Config>,
+  connection: DatabaseConnection,
+  snowflakes: Arc<Snowflakes>,
+}
+
+pub struct Snowflakes {
+  pub user_snowflake: Mutex<SnowflakeIdBucket>,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
   let config = Arc::new(config::load()?);
@@ -51,6 +61,10 @@ async fn main() -> Result<(), AppError> {
     .await
     .map_err(AppError::MigrateDatabase)?;
 
+  let listener = TcpListener::bind(SocketAddr::from((config.app.host, config.app.port)))
+    .await
+    .map_err(AppError::BindTcpListener)?;
+
   let app = Router::new()
     .route("/auth/register", routing::post(user::register))
     .route("/user", routing::get(user::get_user))
@@ -60,15 +74,13 @@ async fn main() -> Result<(), AppError> {
         .on_response(DefaultOnResponse::new().level(Level::INFO)),
     )
     .with_state(AppState {
-      config: Arc::clone(&config),
+      config,
       connection,
-      user_snowflake: SnowflakeIdBucket::new(1, 1),
+      snowflakes: Arc::new(Snowflakes {
+        user_snowflake: Mutex::new(SnowflakeIdBucket::new(1, 1)),
+      }),
     });
   let api = Router::new().nest("/api", app);
-
-  let listener = TcpListener::bind(SocketAddr::from((config.app.host, config.app.port)))
-    .await
-    .map_err(AppError::BindTcpListener)?;
 
   info!(
     "backend available at: {}",
