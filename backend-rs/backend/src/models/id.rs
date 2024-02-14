@@ -1,7 +1,7 @@
 use sea_orm::{DbErr, DeriveValueType, TryFromU64};
 use serde::de::{Unexpected, Visitor};
 use serde::{Deserialize, Serialize};
-use std::fmt::Formatter;
+use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, DeriveValueType)]
 pub struct Id(i64);
@@ -38,9 +38,13 @@ fn decode(str: &str) -> Result<Id, bs58::decode::Error> {
   Ok(Id::from(i64::from_be_bytes(decoded)))
 }
 
-impl ToString for Id {
-  fn to_string(&self) -> String {
-    encode(*self).expect("could not encode ID into base 58")
+impl Display for Id {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(
+      f,
+      "{}",
+      encode(*self).expect("could not encode ID into base 58")
+    )
   }
 }
 
