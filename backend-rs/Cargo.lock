@@ -800,6 +800,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "fs"
+version = "0.0.0"
+dependencies = [
+ "fs-file",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
+]
+
+[[package]]
+name = "fs-file"
+version = "0.0.0"
+
+[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
