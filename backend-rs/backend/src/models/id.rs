@@ -2,6 +2,7 @@ use sea_orm::{DbErr, DeriveValueType, TryFromU64};
 use serde::de::{Unexpected, Visitor};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, DeriveValueType)]
 pub struct Id(i64);
@@ -45,6 +46,14 @@ impl Display for Id {
       "{}",
       encode(*self).expect("could not encode ID into base 58")
     )
+  }
+}
+
+impl FromStr for Id {
+  type Err = bs58::decode::Error;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    decode(s)
   }
 }
 

@@ -1,3 +1,4 @@
+use crate::controllers::user::AuthError;
 use crate::models::user;
 use axum::extract::rejection::JsonRejection;
 use axum::extract::{FromRequest, Request};
@@ -63,11 +64,11 @@ pub enum HandlerError {
   EmailTaken,
   #[error("Login credentials are invalid.")]
   InvalidCredentials,
-  #[error("Authentication token is invalid.")]
-  DecodeJwt(jsonwebtoken::errors::Error),
+  #[error("User cannot be logged into.")]
+  ImpossibleLogin,
 
-  #[error("No user was logged in but a user is required.")]
-  UserRequired,
+  #[error("No user was logged in but a user is required: {0}.")]
+  UserRequired(#[from] AuthError),
 
   #[error("Database transaction failed.")]
   Database(#[from] DbErr),
@@ -133,9 +134,9 @@ impl IntoResponse for HandlerError {
       HandlerError::UsernameTaken => self.failed_validation(StatusCode::BAD_REQUEST, "username"),
       HandlerError::EmailTaken => self.failed_validation(StatusCode::BAD_REQUEST, "emailAddress"),
       HandlerError::InvalidCredentials => self.into_generic(StatusCode::BAD_REQUEST),
-      HandlerError::DecodeJwt(_) => self.into_generic(StatusCode::BAD_REQUEST),
+      HandlerError::ImpossibleLogin => self.into_generic(StatusCode::BAD_REQUEST),
 
-      HandlerError::UserRequired => self.into_generic(StatusCode::UNAUTHORIZED),
+      HandlerError::UserRequired(_) => self.into_generic(StatusCode::UNAUTHORIZED),
 
       HandlerError::Database(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
       HandlerError::CreateUser(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),

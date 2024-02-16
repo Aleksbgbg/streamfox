@@ -10,14 +10,14 @@ use axum_extra::extract::cookie::{Cookie, CookieJar};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+use thiserror::Error;
 use validator::Validate;
 
 const AUTH_COOKIE_KEY: &str = "Authorization";
-const SECRET: &str = "123456";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
-  uid: Id,
   exp: usize,
 }
 
@@ -29,12 +29,20 @@ fn authenticate(
   let cookie = Cookie::build((
     AUTH_COOKIE_KEY,
     jsonwebtoken::encode(
-      &Header::default(),
+      &Header {
+        kid: Some(user.id.to_string()),
+        ..Default::default()
+      },
       &Claims {
-        uid: user.id,
         exp: (Utc::now() + lifespan).timestamp().try_into().unwrap(),
       },
-      &EncodingKey::from_secret(SECRET.as_ref()),
+      &EncodingKey::from_secret(
+        user
+          .password
+          .as_ref()
+          .ok_or(HandlerError::ImpossibleLogin)?
+          .as_bytes(),
+      ),
     )
     .map_err(HandlerError::EncodeJwt)?,
   ))
@@ -109,6 +117,22 @@ pub async fn login(
   }
 }
 
+#[derive(Error, Debug)]
+pub enum AuthError {
+  #[error("authorization cookie not present")]
+  NoAuthCookie,
+  #[error("could not decode header")]
+  DecodeHeader(jsonwebtoken::errors::Error),
+  #[error("user ID was not present")]
+  NoKid,
+  #[error("could not decode user ID")]
+  DecodeId(bs58::decode::Error),
+  #[error("user ID was not found")]
+  UserNotFound,
+  #[error("could not decode authentication token")]
+  DecodeJwt(jsonwebtoken::errors::Error),
+}
+
 #[async_trait]
 impl FromRequestParts<AppState> for User {
   type Rejection = HandlerError;
@@ -120,19 +144,33 @@ impl FromRequestParts<AppState> for User {
     let cookies = parts.extract::<CookieJar>().await.unwrap();
     let token = cookies
       .get(AUTH_COOKIE_KEY)
-      .ok_or(HandlerError::UserRequired)?
+      .ok_or(AuthError::NoAuthCookie)?
       .value();
-    let claims = jsonwebtoken::decode::<Claims>(
+    let id = jsonwebtoken::decode_header(token)
+      .map_err(AuthError::DecodeHeader)?
+      .kid
+      .ok_or(AuthError::NoKid)?;
+    let user = user::find(
+      &state.connection,
+      Id::from_str(&id).map_err(AuthError::DecodeId)?,
+    )
+    .await?
+    .ok_or(AuthError::UserNotFound)?;
+    let _claims = jsonwebtoken::decode::<Claims>(
       token,
-      &DecodingKey::from_secret(SECRET.as_ref()),
+      &DecodingKey::from_secret(
+        user
+          .password
+          .as_ref()
+          .ok_or(HandlerError::ImpossibleLogin)?
+          .as_bytes(),
+      ),
       &Validation::default(),
     )
-    .map_err(HandlerError::DecodeJwt)?
+    .map_err(AuthError::DecodeJwt)?
     .claims;
 
-    user::find(&state.connection, claims.uid)
-      .await?
-      .ok_or(HandlerError::UserRequired)
+    Ok(user)
   }
 }
 
