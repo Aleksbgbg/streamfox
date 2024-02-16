@@ -59,8 +59,8 @@ pub enum User {
   CreatedAt,
   UpdatedAt,
   Username,
-  EmailAddress,
-  Password,
   CanonicalUsername,
+  EmailAddress,
   CanonicalEmailAddress,
+  Password,
 }

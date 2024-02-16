@@ -15,14 +15,15 @@ pub struct Model {
   pub id: Id,
   pub created_at: DateTimeWithTimeZone,
   pub updated_at: DateTimeWithTimeZone,
-  #[sea_orm(unique)]
+  #[sea_orm(column_type = "Text", nullable, unique)]
   pub username: Option<String>,
-  #[sea_orm(unique)]
+  #[sea_orm(column_type = "Text", nullable, unique)]
   pub canonical_username: Option<String>,
   #[sea_orm(column_type = "Text", nullable, unique)]
   pub email_address: Option<String>,
   #[sea_orm(column_type = "Text", nullable, unique)]
   pub canonical_email_address: Option<String>,
+  #[sea_orm(column_type = "Text", nullable)]
   pub password: Option<String>,
 }
 
