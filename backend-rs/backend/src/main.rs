@@ -1,11 +1,15 @@
 mod config;
 mod controllers;
 mod models;
+mod secure;
 
 use crate::config::{Config, ConfigError};
 use crate::controllers::user;
 use crate::models::migrations::migrator::Migrator;
+use crate::models::user::CreateDefaultUsersError;
 use axum::{routing, Router};
+use cascade::cascade;
+use fs::filesystem;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;
 use snowflake::SnowflakeIdBucket;
@@ -18,6 +22,14 @@ use tokio::sync::Mutex;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 
+filesystem!(
+  MainFs,
+  r"
+<ConfigRoot>
+  streamfox_default_password #streamfox_default_password
+"
+);
+
 #[derive(Error, Debug)]
 enum AppError {
   #[error("could not load config")]
@@ -26,6 +38,8 @@ enum AppError {
   ConnectToDatabase(DbErr),
   #[error("could not run database migrations")]
   MigrateDatabase(DbErr),
+  #[error("could not create default users")]
+  CreateDefaultUsers(#[from] CreateDefaultUsersError),
   #[error("could not bind to network interface")]
   BindTcpListener(io::Error),
   #[error("could not get TCP listener address")]
@@ -48,6 +62,10 @@ pub struct Snowflakes {
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
   let config = Arc::new(config::load()?);
+  let fs = cascade! {
+    MainFs::new();
+    ..set(MainFsVar::ConfigRoot, config.app.config_root.clone());
+  };
 
   tracing_subscriber::fmt()
     .with_target(false)
@@ -60,6 +78,8 @@ async fn main() -> Result<(), AppError> {
   Migrator::up(&connection, None)
     .await
     .map_err(AppError::MigrateDatabase)?;
+
+  models::user::create_default_users(&connection, &fs).await?;
 
   let listener = TcpListener::bind(SocketAddr::from((config.app.host, config.app.port)))
     .await

@@ -8,7 +8,7 @@ use std::str::FromStr;
 pub struct Id(i64);
 
 impl Id {
-  pub fn from(value: i64) -> Self {
+  pub const fn from(value: i64) -> Self {
     Self(value)
   }
 }

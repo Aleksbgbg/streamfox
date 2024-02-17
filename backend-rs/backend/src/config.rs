@@ -20,6 +20,7 @@ pub struct Config {
 #[serde_as]
 #[derive(Serialize, Deserialize)]
 pub struct App {
+  pub config_root: String,
   pub host: Ipv4Array,
   pub port: Port,
   #[serde_as(as = "DurationSeconds<i64>")]

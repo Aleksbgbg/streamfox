@@ -1,11 +1,17 @@
 use crate::models::base::exists;
 use crate::models::id::Id;
-use crate::Snowflakes;
+use crate::secure::{random_bytes, Bytes};
+use crate::{MainFs, Snowflakes};
+use base64::engine::general_purpose;
+use base64::Engine;
 use bcrypt::BcryptError;
 use chrono::Local;
+use ring::error::Unspecified;
+use ring::rand::SystemRandom;
 use sea_orm::entity::prelude::*;
 use sea_orm::ActiveValue;
 use thiserror::Error;
+use tokio::io::AsyncWriteExt;
 pub use Model as User;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
@@ -37,6 +43,56 @@ impl Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Error, Debug)]
+pub enum CreateDefaultUsersError {
+  #[error(transparent)]
+  Database(#[from] DbErr),
+  #[error(transparent)]
+  Io(#[from] std::io::Error),
+  #[error(transparent)]
+  Create(#[from] CreateError),
+  #[error(transparent)]
+  GeneratePassword(#[from] Unspecified),
+}
+
+pub async fn create_default_users(
+  connection: &DatabaseConnection,
+  fs: &MainFs,
+) -> Result<(), CreateDefaultUsersError> {
+  const STREAMFOX_ID: Id = Id::from(1);
+  const ANONYMOUS_ID: Id = Id::from(2);
+  const DELETED_ID: Id = Id::from(3);
+
+  if !id_exists(connection, STREAMFOX_ID).await? {
+    let mut file = fs.streamfox_default_password().create().await?;
+    let password = general_purpose::STANDARD.encode(random_bytes(&SystemRandom::new(), Bytes(32))?);
+    file.write_all(password.as_bytes()).await?;
+
+    create_base(
+      connection,
+      STREAMFOX_ID,
+      Some("Streamfox"),
+      None,
+      Some(&password),
+    )
+    .await?;
+  }
+
+  if !id_exists(connection, ANONYMOUS_ID).await? {
+    create_base(connection, ANONYMOUS_ID, Some("Anonymous"), None, None).await?;
+  }
+
+  if !id_exists(connection, DELETED_ID).await? {
+    create_base(connection, DELETED_ID, Some("Deleted"), None, None).await?;
+  }
+
+  Ok(())
+}
+
+async fn id_exists(connection: &DatabaseConnection, id: Id) -> Result<bool, DbErr> {
+  exists::<Entity>(connection, Column::Id, id).await
+}
 
 pub async fn name_exists(connection: &DatabaseConnection, name: &str) -> Result<bool, DbErr> {
   exists::<Entity>(connection, Column::CanonicalUsername, name.to_lowercase()).await
@@ -70,20 +126,42 @@ pub async fn create(
   snowflakes: &Snowflakes,
   user: CreateUser<'_>,
 ) -> Result<User, CreateError> {
-  let id = snowflakes.user_snowflake.lock().await.get_id();
+  create_base(
+    connection,
+    Id::from(snowflakes.user_snowflake.lock().await.get_id()),
+    Some(user.username),
+    Some(user.email_address),
+    Some(user.password),
+  )
+  .await
+}
+
+async fn create_base(
+  connection: &DatabaseConnection,
+  id: Id,
+  username: Option<&str>,
+  email_address: Option<&str>,
+  password: Option<&str>,
+) -> Result<User, CreateError> {
   let time = Local::now().fixed_offset();
-  let hashed_pasword = bcrypt::hash(user.password, 10)?;
+  let hashed_pasword = {
+    if let Some(password) = password {
+      Some(bcrypt::hash(password, 10)?)
+    } else {
+      None
+    }
+  };
 
   Ok(
     ActiveModel {
-      id: ActiveValue::set(Id::from(id)),
+      id: ActiveValue::set(id),
       created_at: ActiveValue::set(time),
       updated_at: ActiveValue::set(time),
-      username: ActiveValue::set(Some(user.username.to_owned())),
-      canonical_username: ActiveValue::set(Some(user.username.to_lowercase())),
-      email_address: ActiveValue::set(Some(user.email_address.to_owned())),
-      canonical_email_address: ActiveValue::set(Some(user.email_address.to_lowercase())),
-      password: ActiveValue::set(Some(hashed_pasword)),
+      username: ActiveValue::set(username.map(str::to_string)),
+      canonical_username: ActiveValue::set(username.map(str::to_lowercase)),
+      email_address: ActiveValue::set(email_address.map(str::to_string)),
+      canonical_email_address: ActiveValue::set(email_address.map(str::to_lowercase)),
+      password: ActiveValue::set(hashed_pasword),
     }
     .insert(connection)
     .await?,

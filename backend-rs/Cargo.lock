@@ -819,6 +819,9 @@ dependencies = [
 [[package]]
 name = "fs-file"
 version = "0.0.0"
+dependencies = [
+ "tokio",
+]
 
 [[package]]
 name = "funty"
@@ -2637,12 +2640,17 @@ version = "0.0.0"
 dependencies = [
  "axum",
  "axum-extra",
+ "base64",
  "bcrypt",
  "bs58",
+ "cascade",
  "chrono",
  "convert_case",
+ "fs",
+ "fs-file",
  "jsonwebtoken",
  "lazy_static",
+ "ring",
  "rs-snowflake",
  "sea-orm",
  "sea-orm-migration",
