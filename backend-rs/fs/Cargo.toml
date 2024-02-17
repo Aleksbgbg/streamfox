@@ -11,3 +11,6 @@ fs-file = { version = "0.0.0", path = "../fs-file", default-features = false }
 proc-macro2 = { version = "1.0.78", default-features = false }
 quote = { version = "1.0.35", default-features = false }
 syn = { version = "2.0.48", default-features = false, features = ["parsing", "proc-macro"] }
+
+[dev-dependencies]
+cascade = "1.0.1"

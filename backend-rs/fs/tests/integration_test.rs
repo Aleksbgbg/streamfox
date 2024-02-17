@@ -1,3 +1,4 @@
+use cascade::cascade;
 use fs::filesystem;
 use std::path::PathBuf;
 
@@ -25,11 +26,13 @@ fn generates_file_method_resolving_vars() {
 
   assert_eq!(
     PathBuf::from("parent/filename.txt"),
-    TestFs::new()
-      .set(TestFsVar::Parent, "parent".into())
-      .set(TestFsVar::Filename, "filename".into())
-      .set(TestFsVar::Extension, "txt".into())
-      .file()
-      .path()
+    cascade! {
+    TestFs::new();
+      ..set(TestFsVar::Parent, "parent".into());
+      ..set(TestFsVar::Filename, "filename".into());
+      ..set(TestFsVar::Extension, "txt".into());
+    }
+    .file()
+    .path()
   );
 }
