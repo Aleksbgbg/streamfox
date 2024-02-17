@@ -27,7 +27,7 @@ impl TryFromU64 for Id {
 
 fn encode(id: Id) -> Result<String, bs58::encode::Error> {
   let mut encoded = String::new();
-  bs58::encode(id.0.to_be_bytes()).onto(&mut encoded)?;
+  bs58::encode(id.0.to_le_bytes()).onto(&mut encoded)?;
 
   Ok(encoded)
 }
@@ -36,7 +36,7 @@ fn decode(str: &str) -> Result<Id, bs58::decode::Error> {
   let mut decoded = [0; 8];
   bs58::decode(str).onto(&mut decoded)?;
 
-  Ok(Id::from(i64::from_be_bytes(decoded)))
+  Ok(Id::from(i64::from_le_bytes(decoded)))
 }
 
 impl Display for Id {
