@@ -49,14 +49,14 @@ enum AppError {
 }
 
 #[derive(Clone)]
-pub struct AppState {
+struct AppState {
   config: Arc<Config>,
   connection: DatabaseConnection,
   snowflakes: Arc<Snowflakes>,
 }
 
-pub struct Snowflakes {
-  pub user_snowflake: SnowflakeGenerator,
+struct Snowflakes {
+  user_snowflake: SnowflakeGenerator,
 }
 
 #[tokio::main]
