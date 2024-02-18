@@ -1,5 +1,5 @@
 [package]
-name = "streamfox_backend"
+name = "streamfox"
 version = "0.0.0"
 edition = "2021"
 
