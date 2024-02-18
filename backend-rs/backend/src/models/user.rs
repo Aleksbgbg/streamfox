@@ -128,7 +128,7 @@ pub async fn create(
 ) -> Result<User, CreateError> {
   create_base(
     connection,
-    Id::from(snowflakes.user_snowflake.lock().await.get_id()),
+    Id::from(snowflakes.user_snowflake.generate_id().await),
     Some(user.username),
     Some(user.email_address),
     Some(user.password),

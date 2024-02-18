@@ -1841,12 +1841,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rs-snowflake"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e60ef3b82994702bbe4e134d98aadca4b49ed04440148985678d415c68127666"
-
-[[package]]
 name = "rsa"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2574,7 +2568,6 @@ dependencies = [
  "jsonwebtoken",
  "lazy_static",
  "ring",
- "rs-snowflake",
  "sea-orm",
  "sea-orm-migration",
  "serde",

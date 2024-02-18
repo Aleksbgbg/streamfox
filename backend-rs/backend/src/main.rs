@@ -2,23 +2,23 @@ mod config;
 mod controllers;
 mod models;
 mod secure;
+mod snowflake;
 
 use crate::config::{Config, ConfigError};
 use crate::controllers::user;
 use crate::models::migrations::migrator::Migrator;
 use crate::models::user::CreateDefaultUsersError;
+use crate::snowflake::SnowflakeGenerator;
 use axum::{routing, Router};
 use cascade::cascade;
 use fs::filesystem;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;
-use snowflake::SnowflakeIdBucket;
 use std::io;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::net::TcpListener;
-use tokio::sync::Mutex;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 
@@ -56,7 +56,7 @@ pub struct AppState {
 }
 
 pub struct Snowflakes {
-  pub user_snowflake: Mutex<SnowflakeIdBucket>,
+  pub user_snowflake: SnowflakeGenerator,
 }
 
 #[tokio::main]
@@ -98,7 +98,7 @@ async fn main() -> Result<(), AppError> {
       config,
       connection,
       snowflakes: Arc::new(Snowflakes {
-        user_snowflake: Mutex::new(SnowflakeIdBucket::new(1, 1)),
+        user_snowflake: SnowflakeGenerator::new(0),
       }),
     });
   let api = Router::new().nest("/api", app);
