@@ -13,6 +13,7 @@ use serde::Serialize;
 use serde_json::json;
 use std::collections::HashMap;
 use thiserror::Error;
+use tracing::error;
 use validator::{Validate, ValidationErrors, ValidationErrorsKind};
 
 lazy_static! {
@@ -138,10 +139,22 @@ impl IntoResponse for HandlerError {
 
       HandlerError::UserRequired(_) => self.into_generic(StatusCode::UNAUTHORIZED),
 
-      HandlerError::Database(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
-      HandlerError::CreateUser(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
-      HandlerError::ValidateCredentials(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
-      HandlerError::EncodeJwt(_) => self.into_generic(StatusCode::INTERNAL_SERVER_ERROR),
+      HandlerError::Database(ref inner) => {
+        error!("Database: {}", inner);
+        self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)
+      }
+      HandlerError::CreateUser(ref inner) => {
+        error!("Create user: {}", inner);
+        self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)
+      }
+      HandlerError::ValidateCredentials(ref inner) => {
+        error!("Validate credentials: {}", inner);
+        self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)
+      }
+      HandlerError::EncodeJwt(ref inner) => {
+        error!("Encode JWT: {}", inner);
+        self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)
+      }
     }
     .into_response()
   }
