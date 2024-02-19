@@ -12,7 +12,7 @@ use crate::snowflake::SnowflakeGenerator;
 use axum::{routing, Router};
 use cascade::cascade;
 use fs::filesystem;
-use sea_orm::{Database, DatabaseConnection, DbErr};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;
 use std::io;
 use std::net::SocketAddr;
@@ -70,11 +70,15 @@ async fn main() -> Result<(), AppError> {
   tracing_subscriber::fmt()
     .with_target(false)
     .compact()
+    .with_max_level(tracing::Level::DEBUG)
     .init();
 
-  let connection = Database::connect(&config.database.connection_string())
-    .await
-    .map_err(AppError::ConnectToDatabase)?;
+  let connection = Database::connect(cascade! {
+    ConnectOptions::new(config.database.connection_string());
+    ..sqlx_logging(false);
+  })
+  .await
+  .map_err(AppError::ConnectToDatabase)?;
   Migrator::up(&connection, None)
     .await
     .map_err(AppError::MigrateDatabase)?;
