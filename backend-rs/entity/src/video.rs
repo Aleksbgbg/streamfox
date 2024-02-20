@@ -1,4 +1,4 @@
-use crate::models::id::Id;
+use crate::id::Id;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 

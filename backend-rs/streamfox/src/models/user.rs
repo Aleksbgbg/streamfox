@@ -1,73 +1,34 @@
 use crate::models::base::exists;
-use crate::models::id::Id;
 use crate::secure::{random_bytes, Bytes};
 use crate::{MainFs, Snowflakes};
 use base64::engine::general_purpose;
 use base64::Engine;
 use bcrypt::BcryptError;
 use chrono::Local;
+use entity::id::Id;
+use entity::user;
 use ring::error::Unspecified;
 use ring::rand::SystemRandom;
-use sea_orm::entity::prelude::*;
+use sea_orm::prelude::*;
 use sea_orm::ActiveValue;
 use thiserror::Error;
 use tokio::io::AsyncWriteExt;
-pub use Model as User;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "user")]
-pub struct Model {
-  #[sea_orm(primary_key, auto_increment = false)]
+pub struct User {
   pub id: Id,
-  pub created_at: DateTimeWithTimeZone,
-  pub updated_at: DateTimeWithTimeZone,
-  #[sea_orm(column_type = "Text", nullable, unique)]
-  pub username: Option<String>,
-  #[sea_orm(column_type = "Text", nullable, unique)]
-  pub canonical_username: Option<String>,
-  #[sea_orm(column_type = "Text", nullable, unique)]
-  pub email_address: Option<String>,
-  #[sea_orm(column_type = "Text", nullable, unique)]
-  pub canonical_email_address: Option<String>,
-  #[sea_orm(column_type = "Text", nullable)]
+  pub username: String,
   pub password: Option<String>,
 }
 
-impl Model {
-  pub fn visible_username(&self) -> &str {
-    self.username.as_ref().map_or("Anonymous", String::as_str)
+impl From<user::Model> for User {
+  fn from(value: user::Model) -> Self {
+    User {
+      id: value.id,
+      username: value.username.unwrap_or("Anonymous".into()),
+      password: value.password,
+    }
   }
 }
-
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
-  #[sea_orm(has_many = "super::video::Entity")]
-  Video,
-  #[sea_orm(has_many = "super::view::Entity")]
-  View,
-  #[sea_orm(has_many = "super::watch::Entity")]
-  Watch,
-}
-
-impl Related<super::video::Entity> for Entity {
-  fn to() -> RelationDef {
-    Relation::Video.def()
-  }
-}
-
-impl Related<super::view::Entity> for Entity {
-  fn to() -> RelationDef {
-    Relation::View.def()
-  }
-}
-
-impl Related<super::watch::Entity> for Entity {
-  fn to() -> RelationDef {
-    Relation::Watch.def()
-  }
-}
-
-impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Error, Debug)]
 pub enum CreateDefaultUsersError {
@@ -116,17 +77,22 @@ pub async fn create_default_users(
 }
 
 async fn id_exists(connection: &DatabaseConnection, id: Id) -> Result<bool, DbErr> {
-  exists::<Entity>(connection, Column::Id, id).await
+  exists::<user::Entity>(connection, user::Column::Id, id).await
 }
 
 pub async fn name_exists(connection: &DatabaseConnection, name: &str) -> Result<bool, DbErr> {
-  exists::<Entity>(connection, Column::CanonicalUsername, name.to_lowercase()).await
+  exists::<user::Entity>(
+    connection,
+    user::Column::CanonicalUsername,
+    name.to_lowercase(),
+  )
+  .await
 }
 
 pub async fn email_exists(connection: &DatabaseConnection, email: &str) -> Result<bool, DbErr> {
-  exists::<Entity>(
+  exists::<user::Entity>(
     connection,
-    Column::CanonicalEmailAddress,
+    user::Column::CanonicalEmailAddress,
     email.to_lowercase(),
   )
   .await
@@ -151,14 +117,17 @@ pub async fn create(
   snowflakes: &Snowflakes,
   user: CreateUser<'_>,
 ) -> Result<User, CreateError> {
-  create_base(
-    connection,
-    Id::from(snowflakes.user_snowflake.generate_id().await),
-    Some(user.username),
-    Some(user.email_address),
-    Some(user.password),
+  Ok(
+    create_base(
+      connection,
+      Id::from(snowflakes.user_snowflake.generate_id().await),
+      Some(user.username),
+      Some(user.email_address),
+      Some(user.password),
+    )
+    .await?
+    .into(),
   )
-  .await
 }
 
 async fn create_base(
@@ -167,7 +136,7 @@ async fn create_base(
   username: Option<&str>,
   email_address: Option<&str>,
   password: Option<&str>,
-) -> Result<User, CreateError> {
+) -> Result<user::Model, CreateError> {
   let time = Local::now().fixed_offset();
   let hashed_pasword = {
     if let Some(password) = password {
@@ -178,7 +147,7 @@ async fn create_base(
   };
 
   Ok(
-    ActiveModel {
+    user::ActiveModel {
       id: ActiveValue::set(id),
       created_at: ActiveValue::set(time),
       updated_at: ActiveValue::set(time),
@@ -206,8 +175,8 @@ pub async fn login_with_credentials(
   name: &str,
   password: &str,
 ) -> Result<Option<User>, ValidateCredentialsError> {
-  let user = Entity::find()
-    .filter(Column::Username.eq(name))
+  let user = user::Entity::find()
+    .filter(user::Column::Username.eq(name))
     .one(connection)
     .await?;
 
@@ -217,7 +186,7 @@ pub async fn login_with_credentials(
       None => Ok(None),
       Some(hash) => {
         if bcrypt::verify(password, hash)? {
-          Ok(Some(user))
+          Ok(Some(user.into()))
         } else {
           Ok(None)
         }
@@ -227,5 +196,10 @@ pub async fn login_with_credentials(
 }
 
 pub async fn find(connection: &DatabaseConnection, id: Id) -> Result<Option<User>, DbErr> {
-  Entity::find_by_id(id).one(connection).await
+  Ok(
+    user::Entity::find_by_id(id)
+      .one(connection)
+      .await?
+      .map(Into::into),
+  )
 }

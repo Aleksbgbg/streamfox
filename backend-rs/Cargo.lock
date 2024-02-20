@@ -616,6 +616,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "entity"
+version = "0.0.0"
+dependencies = [
+ "bs58",
+ "sea-orm",
+ "serde",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2450,6 +2459,7 @@ dependencies = [
  "cascade",
  "chrono",
  "convert_case",
+ "entity",
  "fs",
  "fs-file",
  "jsonwebtoken",

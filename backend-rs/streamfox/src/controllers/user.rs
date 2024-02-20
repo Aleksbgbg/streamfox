@@ -1,5 +1,4 @@
 use crate::controllers::errors::{HandlerError, ValidatedJson};
-use crate::models::id::Id;
 use crate::models::user::{self, CreateUser, User};
 use crate::AppState;
 use axum::extract::{FromRequestParts, State};
@@ -8,6 +7,7 @@ use axum::http::StatusCode;
 use axum::{async_trait, Json, RequestPartsExt};
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use chrono::{Duration, Utc};
+use entity::id::Id;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -181,9 +181,15 @@ pub struct UserResponse {
   username: String,
 }
 
+impl From<User> for UserResponse {
+  fn from(value: User) -> Self {
+    UserResponse {
+      id: value.id,
+      username: value.username,
+    }
+  }
+}
+
 pub async fn get_user(user: User) -> Json<UserResponse> {
-  Json(UserResponse {
-    id: user.id,
-    username: user.visible_username().to_string(),
-  })
+  Json(user.into())
 }

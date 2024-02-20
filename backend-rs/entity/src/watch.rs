@@ -1,4 +1,4 @@
-use crate::models::id::Id;
+use crate::id::Id;
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
