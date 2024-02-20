@@ -5,7 +5,7 @@ mod secure;
 mod snowflake;
 
 use crate::config::{Config, ConfigError};
-use crate::controllers::user;
+use crate::controllers::{user, video};
 use crate::models::user::CreateDefaultUsersError;
 use crate::snowflake::SnowflakeGenerator;
 use axum::{routing, Router};
@@ -93,6 +93,7 @@ async fn main() -> Result<(), AppError> {
     .route("/auth/register", routing::post(user::register))
     .route("/auth/login", routing::post(user::login))
     .route("/user", routing::get(user::get_user))
+    .route("/videos", routing::get(video::get_videos))
     .layer(
       TraceLayer::new_for_http()
         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
