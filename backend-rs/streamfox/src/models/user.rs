@@ -58,7 +58,7 @@ pub async fn create_default_users(
     create_base(
       connection,
       STREAMFOX_ID,
-      Some("Streamfox"),
+      Some("Streamfox".into()),
       None,
       Some(&password),
     )
@@ -66,11 +66,18 @@ pub async fn create_default_users(
   }
 
   if !id_exists(connection, ANONYMOUS_ID).await? {
-    create_base(connection, ANONYMOUS_ID, Some("Anonymous"), None, None).await?;
+    create_base(
+      connection,
+      ANONYMOUS_ID,
+      Some("Anonymous".into()),
+      None,
+      None,
+    )
+    .await?;
   }
 
   if !id_exists(connection, DELETED_ID).await? {
-    create_base(connection, DELETED_ID, Some("Deleted"), None, None).await?;
+    create_base(connection, DELETED_ID, Some("Deleted".into()), None, None).await?;
   }
 
   Ok(())
@@ -99,8 +106,8 @@ pub async fn email_exists(connection: &DatabaseConnection, email: &str) -> Resul
 }
 
 pub struct CreateUser<'a> {
-  pub username: &'a str,
-  pub email_address: &'a str,
+  pub username: String,
+  pub email_address: String,
   pub password: &'a str,
 }
 
@@ -133,8 +140,8 @@ pub async fn create(
 async fn create_base(
   connection: &DatabaseConnection,
   id: Id,
-  username: Option<&str>,
-  email_address: Option<&str>,
+  username: Option<String>,
+  email_address: Option<String>,
   password: Option<&str>,
 ) -> Result<user::Model, CreateError> {
   let time = Local::now().fixed_offset();
@@ -151,10 +158,10 @@ async fn create_base(
       id: ActiveValue::set(id),
       created_at: ActiveValue::set(time),
       updated_at: ActiveValue::set(time),
-      username: ActiveValue::set(username.map(str::to_string)),
-      canonical_username: ActiveValue::set(username.map(str::to_lowercase)),
-      email_address: ActiveValue::set(email_address.map(str::to_string)),
-      canonical_email_address: ActiveValue::set(email_address.map(str::to_lowercase)),
+      canonical_username: ActiveValue::set(username.as_deref().map(str::to_lowercase)),
+      username: ActiveValue::set(username),
+      canonical_email_address: ActiveValue::set(email_address.as_deref().map(str::to_lowercase)),
+      email_address: ActiveValue::set(email_address),
       password: ActiveValue::set(hashed_pasword),
     }
     .insert(connection)

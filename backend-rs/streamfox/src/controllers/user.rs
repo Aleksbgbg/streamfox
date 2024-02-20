@@ -82,8 +82,8 @@ pub async fn register(
     &state.connection,
     &state.snowflakes,
     CreateUser {
-      username: &details.username,
-      email_address: &details.email_address,
+      username: details.username,
+      email_address: details.email_address,
       password: &details.password,
     },
   )
