@@ -1,4 +1,4 @@
-use crate::models::migrations::m20240204_000001_users::User;
+use crate::m20240204_000001_users::User;
 use sea_orm_migration::prelude::*;
 
 pub struct Migration;

@@ -16,9 +16,10 @@ fs = { version = "0.0.0", path = "../fs", default-features = false }
 fs-file = { version = "0.0.0", path = "../fs-file", default-features = false }
 jsonwebtoken = { version = "9.2.0", default-features = false }
 lazy_static = "1.4.0"
+migration = { version = "0.0.0", path = "../migration", default-features = false }
 ring = "0.17.7"
 sea-orm = { version = "0.12.14", features = ["runtime-tokio-rustls", "sqlx-postgres", "debug-print"] }
-sea-orm-migration = "0.12.12"
+sea-orm-migration = { version = "0.12.14", default-features = false }
 serde = { version = "1.0.196", features = ["derive"] }
 serde_json = "1.0.113"
 serde_with = { version = "3.6.0", features = ["chrono_0_4"] }

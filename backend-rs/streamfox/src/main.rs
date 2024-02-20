@@ -6,14 +6,14 @@ mod snowflake;
 
 use crate::config::{Config, ConfigError};
 use crate::controllers::user;
-use crate::models::migrations::migrator::Migrator;
 use crate::models::user::CreateDefaultUsersError;
 use crate::snowflake::SnowflakeGenerator;
 use axum::{routing, Router};
 use cascade::cascade;
 use fs::filesystem;
+use migration::migrator::Migrator;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
-use sea_orm_migration::MigratorTrait;
+use sea_orm_migration::migrator::MigratorTrait;
 use std::io;
 use std::net::SocketAddr;
 use std::sync::Arc;

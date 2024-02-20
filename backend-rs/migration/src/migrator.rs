@@ -1,4 +1,4 @@
-use crate::models::migrations::{
+use crate::{
   m20240204_000001_users, m20240218_000002_videos, m20240218_000003_views, m20240218_000004_watches,
 };
 use sea_orm_migration::prelude::*;
