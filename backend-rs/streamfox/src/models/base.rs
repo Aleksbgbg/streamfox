@@ -1,4 +1,10 @@
+use crate::snowflake::SnowflakeGenerator;
+use entity::id::Id;
 use sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, Value};
+
+pub async fn new_id(snowflake: &SnowflakeGenerator) -> Id {
+  Id::from(snowflake.generate_id().await)
+}
 
 pub async fn exists<E: EntityTrait>(
   connection: &DatabaseConnection,

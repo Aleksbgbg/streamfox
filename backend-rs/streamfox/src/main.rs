@@ -57,6 +57,7 @@ struct AppState {
 
 struct Snowflakes {
   user_snowflake: SnowflakeGenerator,
+  video_snowflake: SnowflakeGenerator,
 }
 
 #[tokio::main]
@@ -94,6 +95,7 @@ async fn main() -> Result<(), AppError> {
     .route("/auth/login", routing::post(user::login))
     .route("/user", routing::get(user::get_user))
     .route("/videos", routing::get(video::get_videos))
+    .route("/videos", routing::post(video::create_video))
     .layer(
       TraceLayer::new_for_http()
         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
@@ -104,6 +106,7 @@ async fn main() -> Result<(), AppError> {
       connection,
       snowflakes: Arc::new(Snowflakes {
         user_snowflake: SnowflakeGenerator::new(0),
+        video_snowflake: SnowflakeGenerator::new(1),
       }),
     });
   let api = Router::new().nest("/api", app);

@@ -1,4 +1,4 @@
-use crate::models::base::exists;
+use crate::models::base;
 use crate::secure::{random_bytes, Bytes};
 use crate::{MainFs, Snowflakes};
 use base64::engine::general_purpose;
@@ -84,11 +84,11 @@ pub async fn create_default_users(
 }
 
 async fn id_exists(connection: &DatabaseConnection, id: Id) -> Result<bool, DbErr> {
-  exists::<user::Entity>(connection, user::Column::Id, id).await
+  base::exists::<user::Entity>(connection, user::Column::Id, id).await
 }
 
 pub async fn name_exists(connection: &DatabaseConnection, name: &str) -> Result<bool, DbErr> {
-  exists::<user::Entity>(
+  base::exists::<user::Entity>(
     connection,
     user::Column::CanonicalUsername,
     name.to_lowercase(),
@@ -97,7 +97,7 @@ pub async fn name_exists(connection: &DatabaseConnection, name: &str) -> Result<
 }
 
 pub async fn email_exists(connection: &DatabaseConnection, email: &str) -> Result<bool, DbErr> {
-  exists::<user::Entity>(
+  base::exists::<user::Entity>(
     connection,
     user::Column::CanonicalEmailAddress,
     email.to_lowercase(),
@@ -127,7 +127,7 @@ pub async fn create(
   Ok(
     create_base(
       connection,
-      Id::from(snowflakes.user_snowflake.generate_id().await),
+      base::new_id(&snowflakes.user_snowflake).await,
       Some(user.username),
       Some(user.email_address),
       Some(user.password),

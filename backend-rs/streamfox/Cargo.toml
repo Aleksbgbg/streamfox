@@ -18,6 +18,7 @@ fs-file = { version = "0.0.0", path = "../fs-file", default-features = false }
 jsonwebtoken = { version = "9.2.0", default-features = false }
 lazy_static = "1.4.0"
 migration = { version = "0.0.0", path = "../migration", default-features = false }
+mime = { version = "0.3.17", default-features = false }
 ring = "0.17.7"
 sea-orm = { version = "0.12.14", features = ["runtime-tokio-rustls", "sqlx-postgres", "debug-print"] }
 sea-orm-migration = { version = "0.12.14", default-features = false }
