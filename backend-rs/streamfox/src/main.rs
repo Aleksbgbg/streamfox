@@ -48,11 +48,12 @@ enum AppError {
   ServeApp(io::Error),
 }
 
-#[derive(Clone)]
-struct AppState {
-  config: Arc<Config>,
+type AppState = Arc<State>;
+
+struct State {
+  config: Config,
   connection: DatabaseConnection,
-  snowflakes: Arc<Snowflakes>,
+  snowflakes: Snowflakes,
 }
 
 struct Snowflakes {
@@ -62,7 +63,7 @@ struct Snowflakes {
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
-  let config = Arc::new(config::load()?);
+  let config = config::load()?;
   let fs = cascade! {
     MainFs::new();
     ..set(MainFsVar::ConfigRoot, config.app.config_root.clone());
@@ -90,14 +91,14 @@ async fn main() -> Result<(), AppError> {
     .await
     .map_err(AppError::BindTcpListener)?;
 
-  let state = AppState {
+  let state = Arc::new(State {
     config,
     connection,
-    snowflakes: Arc::new(Snowflakes {
+    snowflakes: Snowflakes {
       user_snowflake: SnowflakeGenerator::new(0),
       video_snowflake: SnowflakeGenerator::new(1),
-    }),
-  };
+    },
+  });
 
   let unauthenticated = Router::new()
     .route("/auth/register", routing::post(user::register))
@@ -106,7 +107,10 @@ async fn main() -> Result<(), AppError> {
   let authenticated = Router::new()
     .route("/user", routing::get(user::get_user))
     .route("/videos", routing::post(video::create_video))
-    .layer(middleware::from_fn_with_state(state.clone(), user::extract));
+    .layer(middleware::from_fn_with_state(
+      Arc::clone(&state),
+      user::extract,
+    ));
   let app = Router::new()
     .merge(unauthenticated)
     .merge(authenticated)
