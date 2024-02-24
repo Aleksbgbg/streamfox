@@ -72,8 +72,8 @@ pub fn filesystem(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Default::default()
       }
 
-      pub fn set(&mut self, var: #vars_enum, val: String) {
-        self.vars.insert(var, val);
+      pub fn set(&mut self, var: #vars_enum, val: impl Into<String>) {
+        self.vars.insert(var, val.into());
       }
 
       #(#funcs)*

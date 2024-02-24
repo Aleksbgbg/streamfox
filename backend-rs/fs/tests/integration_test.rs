@@ -28,9 +28,9 @@ fn generates_file_method_resolving_vars() {
     PathBuf::from("parent/filename.txt"),
     cascade! {
     TestFs::new();
-      ..set(TestFsVar::Parent, "parent".into());
-      ..set(TestFsVar::Filename, "filename".into());
-      ..set(TestFsVar::Extension, "txt".into());
+      ..set(TestFsVar::Parent, "parent");
+      ..set(TestFsVar::Filename, "filename");
+      ..set(TestFsVar::Extension, "txt");
     }
     .file()
     .path()
