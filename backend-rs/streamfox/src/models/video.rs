@@ -45,7 +45,7 @@ pub async fn find_all(connection: &DatabaseConnection) -> Result<Vec<(VideoResul
         video,
         creator
           .map(Into::into)
-          .ok_or(DbErr::Custom("video creator was empty".into()))?,
+          .ok_or_else(|| DbErr::Custom("video creator was empty".into()))?,
       ))
     })
     .collect()
