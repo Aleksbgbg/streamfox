@@ -1,16 +1,18 @@
 use crate::controllers::errors::{HandlerError, ValidatedJson};
 use crate::models::user::{self, CreateUser, User};
 use crate::AppState;
-use axum::extract::{FromRequestParts, State};
-use axum::http::request::Parts;
+use axum::extract::{Request, State};
 use axum::http::StatusCode;
-use axum::{async_trait, Json, RequestPartsExt};
+use axum::middleware::Next;
+use axum::response::Response;
+use axum::{Extension, Json};
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use chrono::{Duration, Utc};
 use entity::id::Id;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
+use std::sync::Arc;
 use thiserror::Error;
 use validator::Validate;
 
@@ -133,45 +135,43 @@ pub enum AuthError {
   DecodeJwt(jsonwebtoken::errors::Error),
 }
 
-#[async_trait]
-impl FromRequestParts<AppState> for User {
-  type Rejection = HandlerError;
+pub async fn extract(
+  State(state): State<AppState>,
+  cookies: CookieJar,
+  mut request: Request,
+  next: Next,
+) -> Result<Response, HandlerError> {
+  let token = cookies
+    .get(AUTH_COOKIE_KEY)
+    .ok_or(AuthError::NoAuthCookie)?
+    .value();
+  let id = jsonwebtoken::decode_header(token)
+    .map_err(AuthError::DecodeHeader)?
+    .kid
+    .ok_or(AuthError::NoKid)?;
+  let user = user::find(
+    &state.connection,
+    Id::from_str(&id).map_err(AuthError::DecodeId)?,
+  )
+  .await?
+  .ok_or(AuthError::UserNotFound)?;
+  let _claims = jsonwebtoken::decode::<Claims>(
+    token,
+    &DecodingKey::from_secret(
+      user
+        .password
+        .as_ref()
+        .ok_or(HandlerError::ImpossibleLogin)?
+        .as_bytes(),
+    ),
+    &Validation::default(),
+  )
+  .map_err(AuthError::DecodeJwt)?
+  .claims;
 
-  async fn from_request_parts(
-    parts: &mut Parts,
-    state: &AppState,
-  ) -> Result<Self, Self::Rejection> {
-    let cookies = parts.extract::<CookieJar>().await.unwrap();
-    let token = cookies
-      .get(AUTH_COOKIE_KEY)
-      .ok_or(AuthError::NoAuthCookie)?
-      .value();
-    let id = jsonwebtoken::decode_header(token)
-      .map_err(AuthError::DecodeHeader)?
-      .kid
-      .ok_or(AuthError::NoKid)?;
-    let user = user::find(
-      &state.connection,
-      Id::from_str(&id).map_err(AuthError::DecodeId)?,
-    )
-    .await?
-    .ok_or(AuthError::UserNotFound)?;
-    let _claims = jsonwebtoken::decode::<Claims>(
-      token,
-      &DecodingKey::from_secret(
-        user
-          .password
-          .as_ref()
-          .ok_or(HandlerError::ImpossibleLogin)?
-          .as_bytes(),
-      ),
-      &Validation::default(),
-    )
-    .map_err(AuthError::DecodeJwt)?
-    .claims;
+  request.extensions_mut().insert(Arc::new(user));
 
-    Ok(user)
-  }
+  Ok(next.run(request).await)
 }
 
 #[derive(Serialize)]
@@ -190,6 +190,15 @@ impl From<User> for UserResponse {
   }
 }
 
-pub async fn get_user(user: User) -> Json<UserResponse> {
-  Json(user.into())
+impl From<&User> for UserResponse {
+  fn from(value: &User) -> Self {
+    UserResponse {
+      id: value.id,
+      username: value.username.clone(),
+    }
+  }
+}
+
+pub async fn get_user(Extension(user): Extension<Arc<User>>) -> Json<UserResponse> {
+  Json(user.as_ref().into())
 }

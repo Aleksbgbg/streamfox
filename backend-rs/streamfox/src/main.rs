@@ -8,7 +8,7 @@ use crate::config::{Config, ConfigError};
 use crate::controllers::{user, video};
 use crate::models::user::CreateDefaultUsersError;
 use crate::snowflake::SnowflakeGenerator;
-use axum::{routing, Router};
+use axum::{middleware, routing, Router};
 use cascade::cascade;
 use fs::filesystem;
 use migration::migrator::Migrator;
@@ -90,25 +90,32 @@ async fn main() -> Result<(), AppError> {
     .await
     .map_err(AppError::BindTcpListener)?;
 
-  let app = Router::new()
+  let state = AppState {
+    config,
+    connection,
+    snowflakes: Arc::new(Snowflakes {
+      user_snowflake: SnowflakeGenerator::new(0),
+      video_snowflake: SnowflakeGenerator::new(1),
+    }),
+  };
+
+  let unauthenticated = Router::new()
     .route("/auth/register", routing::post(user::register))
     .route("/auth/login", routing::post(user::login))
+    .route("/videos", routing::get(video::get_videos));
+  let authenticated = Router::new()
     .route("/user", routing::get(user::get_user))
-    .route("/videos", routing::get(video::get_videos))
     .route("/videos", routing::post(video::create_video))
+    .layer(middleware::from_fn_with_state(state.clone(), user::extract));
+  let app = Router::new()
+    .merge(unauthenticated)
+    .merge(authenticated)
     .layer(
       TraceLayer::new_for_http()
         .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
         .on_response(DefaultOnResponse::new().level(Level::INFO)),
     )
-    .with_state(AppState {
-      config,
-      connection,
-      snowflakes: Arc::new(Snowflakes {
-        user_snowflake: SnowflakeGenerator::new(0),
-        video_snowflake: SnowflakeGenerator::new(1),
-      }),
-    });
+    .with_state(state);
   let api = Router::new().nest("/api", app);
 
   info!(

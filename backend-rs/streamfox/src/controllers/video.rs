@@ -5,11 +5,12 @@ use crate::models::video;
 use crate::AppState;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::Json;
+use axum::{Extension, Json};
 use chrono::{DateTime, Utc};
 use entity::id::Id;
 use entity::video::Visibility;
 use serde::Serialize;
+use std::sync::Arc;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -60,9 +61,9 @@ pub struct VideoCreatedResponse {
 
 pub async fn create_video(
   State(state): State<AppState>,
-  user: User,
+  Extension(user): Extension<Arc<User>>,
 ) -> Result<(StatusCode, Json<VideoCreatedResponse>), HandlerError> {
-  let video = video::create(&state.connection, &state.snowflakes, user).await?;
+  let video = video::create(&state.connection, &state.snowflakes, &user).await?;
   Ok((
     StatusCode::CREATED,
     Json(VideoCreatedResponse {

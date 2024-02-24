@@ -72,7 +72,7 @@ impl From<video::Model> for Video {
 pub async fn create(
   connection: &DatabaseConnection,
   snowflakes: &Snowflakes,
-  creator: User,
+  creator: &User,
 ) -> Result<Video, DbErr> {
   let time = Local::now().fixed_offset();
   Ok(
