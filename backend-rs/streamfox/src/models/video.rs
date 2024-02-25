@@ -1,39 +1,45 @@
 use crate::models::base;
 use crate::models::user::User;
 use crate::Snowflakes;
-use chrono::{DateTime, Local, Utc};
+use chrono::Local;
 use entity::id::Id;
 use entity::video::{Status, Visibility};
 use entity::{user, video, view};
+use sea_orm::prelude::DateTimeWithTimeZone;
+use sea_orm::sea_query::Expr;
 use sea_orm::{
   ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseConnection, DbErr, EntityTrait,
-  FromQueryResult, JoinType, QuerySelect,
+  FromQueryResult, JoinType, QueryFilter, QuerySelect,
 };
 
 #[derive(FromQueryResult)]
 pub struct VideoResult {
   pub id: Id,
-  pub duration_secs: u32,
-  pub uploaded_at: DateTime<Utc>,
+  pub duration_secs: i32,
+  pub created_at: DateTimeWithTimeZone,
   pub name: String,
   pub description: String,
   pub visibility: Visibility,
-  pub views: u64,
-  pub likes: u64,
-  pub dislikes: u64,
+  pub views: i64,
+  pub likes: i32,
+  pub dislikes: i32,
 }
 
 pub async fn find_all(connection: &DatabaseConnection) -> Result<Vec<(VideoResult, User)>, DbErr> {
   video::Entity::find()
-    .find_also_related(user::Entity)
+    .filter(video::Column::Status.gte(Status::Complete))
+    .filter(video::Column::Visibility.gte(Visibility::Public))
     .join_rev(
-      JoinType::InnerJoin,
+      JoinType::LeftJoin,
       view::Entity::belongs_to(video::Entity)
         .from(view::Column::VideoId)
         .to(video::Column::Id)
         .into(),
     )
     .column_as(view::Column::Id.count(), "views")
+    .expr_as_(Expr::value(0), "likes")
+    .expr_as_(Expr::value(0), "dislikes")
+    .find_also_related(user::Entity)
     .group_by(video::Column::Id)
     .group_by(user::Column::Id)
     .into_model::<VideoResult, user::Model>()

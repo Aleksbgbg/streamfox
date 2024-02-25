@@ -12,6 +12,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::json;
 use std::collections::HashMap;
+use std::num::TryFromIntError;
 use thiserror::Error;
 use tracing::error;
 use validator::{Validate, ValidationErrors, ValidationErrorsKind};
@@ -71,6 +72,8 @@ pub enum HandlerError {
   #[error("No user was logged in but a user is required: {0}.")]
   UserRequired(#[from] AuthError),
 
+  #[error("Could not convert between integers.")]
+  ConvertIntegers(#[from] TryFromIntError),
   #[error("Database transaction failed.")]
   Database(#[from] DbErr),
   #[error("Could not create user.")]
@@ -139,6 +142,10 @@ impl IntoResponse for HandlerError {
 
       HandlerError::UserRequired(_) => self.into_generic(StatusCode::UNAUTHORIZED),
 
+      HandlerError::ConvertIntegers(ref inner) => {
+        error!("Convert integers: {}", inner);
+        self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)
+      }
       HandlerError::Database(ref inner) => {
         error!("Database: {}", inner);
         self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)

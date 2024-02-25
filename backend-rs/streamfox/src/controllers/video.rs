@@ -34,19 +34,21 @@ pub async fn get_videos(
     video::find_all(&state.connection)
       .await?
       .into_iter()
-      .map(|(video, user)| VideoResponse {
-        id: video.id,
-        creator: user.into(),
-        duration_secs: video.duration_secs,
-        uploaded_at: video.uploaded_at,
-        name: video.name,
-        description: video.description,
-        visibility: video.visibility,
-        views: video.views,
-        likes: 0,
-        dislikes: 0,
+      .map(|(video, user)| {
+        Ok(VideoResponse {
+          id: video.id,
+          creator: user.into(),
+          duration_secs: video.duration_secs.try_into()?,
+          uploaded_at: video.created_at.into(),
+          name: video.name,
+          description: video.description,
+          visibility: video.visibility,
+          views: video.views.try_into()?,
+          likes: video.likes.try_into()?,
+          dislikes: video.dislikes.try_into()?,
+        })
       })
-      .collect(),
+      .collect::<Result<_, HandlerError>>()?,
   ))
 }
 
