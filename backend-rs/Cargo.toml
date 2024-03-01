@@ -1,3 +1,16 @@
 [workspace]
 resolver = "2"
 members = ["streamfox", "migration", "entity", "fs", "fs-file"]
+
+[profile.release]
+opt-level = 3
+debug = "full"
+# split-debuginfo = '...'  # Platform-specific.
+strip = "none"
+debug-assertions = false
+overflow-checks = false
+lto = "fat"
+panic = "unwind"
+incremental = true
+codegen-units = 16
+rpath = false

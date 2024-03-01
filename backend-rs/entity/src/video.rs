@@ -2,7 +2,9 @@ use crate::id::Id;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
+#[derive(
+  Clone, Debug, PartialEq, Eq, PartialOrd, EnumIter, DeriveActiveEnum, Serialize, Deserialize,
+)]
 #[sea_orm(rs_type = "i16", db_type = "SmallInteger")]
 #[serde(untagged)]
 pub enum Status {

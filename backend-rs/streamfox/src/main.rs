@@ -1,3 +1,4 @@
+mod codec;
 mod config;
 mod controllers;
 mod models;
@@ -27,6 +28,11 @@ filesystem!(
   r"
 <ConfigRoot>
   streamfox_default_password #streamfox_default_password
+<DataRoot>
+  videos
+    <VideoId>
+      stream #video_stream
+      thumbnail #video_thumbnail
 "
 );
 
@@ -52,6 +58,7 @@ type AppState = Arc<State>;
 
 struct State {
   config: Config,
+  fs: MainFs,
   connection: DatabaseConnection,
   snowflakes: Snowflakes,
 }
@@ -67,6 +74,7 @@ async fn main() -> Result<(), AppError> {
   let fs = cascade! {
     MainFs::new();
     ..set(MainFsVar::ConfigRoot, config.app.config_root.clone());
+    ..set(MainFsVar::DataRoot, config.app.data_root.clone());
   };
 
   tracing_subscriber::fmt()
@@ -93,6 +101,7 @@ async fn main() -> Result<(), AppError> {
 
   let state = Arc::new(State {
     config,
+    fs,
     connection,
     snowflakes: Snowflakes {
       user_snowflake: SnowflakeGenerator::new(0),
@@ -107,6 +116,15 @@ async fn main() -> Result<(), AppError> {
   let authenticated = Router::new()
     .route("/user", routing::get(user::get_user))
     .route("/videos", routing::post(video::create_video))
+    .route(
+      "/videos/:video_id/stream",
+      routing::put(video::upload_video)
+        .layer(middleware::from_fn(video::require_owner))
+        .layer(middleware::from_fn_with_state(
+          Arc::clone(&state),
+          video::extract,
+        )),
+    )
     .layer(middleware::from_fn_with_state(
       Arc::clone(&state),
       user::extract,

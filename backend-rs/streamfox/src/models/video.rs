@@ -3,7 +3,7 @@ use crate::models::user::User;
 use crate::Snowflakes;
 use chrono::Local;
 use entity::id::Id;
-use entity::video::{Status, Visibility};
+use entity::video::{ActiveModel, Status, Visibility};
 use entity::{user, video, view};
 use sea_orm::prelude::DateTimeWithTimeZone;
 use sea_orm::sea_query::Expr;
@@ -100,4 +100,29 @@ pub async fn create(
     .await?
     .into(),
   )
+}
+
+pub async fn update(connection: &DatabaseConnection, mut video: ActiveModel) -> Result<(), DbErr> {
+  video.updated_at = ActiveValue::set(Local::now().fixed_offset());
+  video.update(connection).await?;
+  Ok(())
+}
+
+pub async fn find(
+  connection: &DatabaseConnection,
+  id: Id,
+) -> Result<Option<(video::Model, User)>, DbErr> {
+  video::Entity::find_by_id(id)
+    .find_also_related(user::Entity)
+    .one(connection)
+    .await?
+    .map(|(video, user)| {
+      Ok((
+        video,
+        user
+          .ok_or_else(|| DbErr::Custom("video creator was empty".into()))?
+          .into(),
+      ))
+    })
+    .transpose()
 }

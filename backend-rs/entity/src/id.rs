@@ -49,6 +49,12 @@ impl Display for Id {
   }
 }
 
+impl From<Id> for String {
+  fn from(value: Id) -> Self {
+    value.to_string()
+  }
+}
+
 impl FromStr for Id {
   type Err = bs58::decode::Error;
 

@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use tokio::fs::{self, File as TokioFile};
+use tokio::fs::{self, File as TokioFile, OpenOptions};
 
 #[derive(Debug)]
 pub struct File {
@@ -23,5 +23,13 @@ impl File {
     }
 
     TokioFile::create(&self.path).await
+  }
+
+  pub async fn open(&self) -> std::io::Result<TokioFile> {
+    if self.path.exists() {
+      OpenOptions::new().append(true).open(&self.path).await
+    } else {
+      self.create().await
+    }
   }
 }

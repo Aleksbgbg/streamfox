@@ -1,6 +1,7 @@
+use crate::codec::{GenerateThumbnailError, ProbeError};
 use crate::controllers::user::AuthError;
 use crate::models::user;
-use axum::extract::rejection::JsonRejection;
+use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::extract::{FromRequest, Request};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -54,8 +55,15 @@ impl IntoResponse for Errors {
   }
 }
 
+// #[derive(EnumString)]
+pub enum Object {
+  Video,
+}
+
 #[derive(Error, Debug)]
 pub enum HandlerError {
+  #[error("Could not parse IDs in URL path.")]
+  ParseUrlPath(#[from] PathRejection),
   #[error(transparent)]
   JsonRejection(#[from] JsonRejection),
   #[error(transparent)]
@@ -68,14 +76,34 @@ pub enum HandlerError {
   InvalidCredentials,
   #[error("User cannot be logged into.")]
   ImpossibleLogin,
+  #[error("Video overwriting is not allowed once upload has completed.")]
+  OverwriteVideo,
+  #[error("Content-Range header must specify the content start, end, and size.")]
+  InvalidRange,
+  #[error("Content-Range size does not match body size.")]
+  BodyRangeNoMatch,
+  #[error("Content-Range header must specify the same total size for every request.")]
+  InconsistentRange,
+  #[error("Could not probe video details.")]
+  ProbeVideo(#[from] ProbeError),
+  #[error("Could not generate video thumbnail.")]
+  GenerateThumbnail(#[from] GenerateThumbnailError),
 
   #[error("No user was logged in but a user is required: {0}.")]
   UserRequired(#[from] AuthError),
+
+  #[error("You do not own this object.")]
+  NotAnOwner,
+
+  #[error("Could not find object.")]
+  ObjectNotFound,
 
   #[error("Could not convert between integers.")]
   ConvertIntegers(#[from] TryFromIntError),
   #[error("Database transaction failed.")]
   Database(#[from] DbErr),
+  #[error("Input / output operation failed.")]
+  Io(#[from] std::io::Error),
   #[error("Could not create user.")]
   CreateUser(#[from] user::CreateError),
   #[error("Could not validate credentials.")]
@@ -126,7 +154,10 @@ fn format_error_messages(field: &str, errors: ValidationErrorsKind) -> Vec<Strin
 
 impl IntoResponse for HandlerError {
   fn into_response(self) -> Response {
+    tracing::debug!("Encountered {:?}", &self);
+
     match self {
+      HandlerError::ParseUrlPath(_) => self.into_generic(StatusCode::BAD_REQUEST),
       HandlerError::JsonRejection(_) => self.into_generic(StatusCode::BAD_REQUEST),
       HandlerError::Validation(validation_errors) => (StatusCode::BAD_REQUEST, {
         let mut errors = FAILED_VALIDATION.clone();
@@ -139,8 +170,18 @@ impl IntoResponse for HandlerError {
       HandlerError::EmailTaken => self.failed_validation(StatusCode::BAD_REQUEST, "emailAddress"),
       HandlerError::InvalidCredentials => self.into_generic(StatusCode::BAD_REQUEST),
       HandlerError::ImpossibleLogin => self.into_generic(StatusCode::BAD_REQUEST),
+      HandlerError::OverwriteVideo => self.into_generic(StatusCode::BAD_REQUEST),
+      HandlerError::InvalidRange => self.into_generic(StatusCode::BAD_REQUEST),
+      HandlerError::BodyRangeNoMatch => self.into_generic(StatusCode::BAD_REQUEST),
+      HandlerError::InconsistentRange => self.into_generic(StatusCode::BAD_REQUEST),
+      HandlerError::ProbeVideo(_) => self.into_generic(StatusCode::BAD_REQUEST),
+      HandlerError::GenerateThumbnail(_) => self.into_generic(StatusCode::BAD_REQUEST),
 
       HandlerError::UserRequired(_) => self.into_generic(StatusCode::UNAUTHORIZED),
+
+      HandlerError::NotAnOwner => self.into_generic(StatusCode::FORBIDDEN),
+
+      HandlerError::ObjectNotFound => self.into_generic(StatusCode::NOT_FOUND),
 
       HandlerError::ConvertIntegers(ref inner) => {
         error!("Convert integers: {}", inner);
@@ -148,6 +189,10 @@ impl IntoResponse for HandlerError {
       }
       HandlerError::Database(ref inner) => {
         error!("Database: {}", inner);
+        self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)
+      }
+      HandlerError::Io(ref inner) => {
+        error!("IO failed: {}", inner);
         self.into_generic(StatusCode::INTERNAL_SERVER_ERROR)
       }
       HandlerError::CreateUser(ref inner) => {
