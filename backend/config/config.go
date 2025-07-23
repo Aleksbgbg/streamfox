@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
@@ -27,7 +28,14 @@ type Config struct {
 var Values Config
 
 func SetupFromEnvironment() error {
-	if err := godotenv.Load(".env"); err != nil {
+	var configPath string
+	if len(os.Args) == 1 {
+		configPath = ".env"
+	} else {
+		configPath = os.Args[1]
+	}
+
+	if err := godotenv.Load(configPath); err != nil {
 		return fmt.Errorf("error loading .env file: %w", err)
 	}
 
